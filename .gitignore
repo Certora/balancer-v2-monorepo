@@ -22,3 +22,8 @@ cache/
 dist/
 pkg/balancer-js/src/typechain/*
 
+# Certora
+.certora*
+.last_confs
+certora_*
+resource_errors.json
