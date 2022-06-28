@@ -1,6 +1,6 @@
-diff -ruN ../pkg/.gitignore .gitignore
---- ../pkg/.gitignore	1969-12-31 18:00:00.000000000 -0600
-+++ .gitignore	2022-06-27 16:39:37.000000000 -0500
+diff -ruN .gitignore .gitignore
+--- .gitignore	1969-12-31 19:00:00.000000000 -0500
++++ .gitignore	2022-06-28 16:38:16.553950120 -0400
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
