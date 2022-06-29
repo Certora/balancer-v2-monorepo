@@ -6,6 +6,7 @@ certoraRun \
     --optimistic_loop \
     --loop_iter 3 \
     --staging \
+    --cache balancer \
     --send_only \
     --msg "Stable Pool sanity nondet all, more phantom"
 
@@ -26,6 +27,7 @@ certoraRun \
     --solc solc7.1 \
     --optimistic_loop \
     --loop_iter 3 \
+    --cache balancer \
     --settings -useBitVectorTheory \
     --send_only \
     --msg "WordCodec sanity"
