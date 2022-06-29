@@ -1,8 +1,8 @@
 make -C certora munged
 
 certoraRun \
-    certora/harness/WordCodecHarness.sol \
-    --verify WordCodecHarness:certora/spec/WordCodec.spec \
+    certora/harnesses/WordCodecHarness.sol \
+    --verify WordCodecHarness:certora/specs/WordCodec.spec \
     --solc solc7.1 \
     --cache balancer \
     --optimistic_loop \

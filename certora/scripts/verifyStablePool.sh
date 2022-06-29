@@ -3,8 +3,8 @@ then
     RULE="--rule $1"
 fi
 certoraRun \
-    certora/harness/PoolRegistryHarness.sol certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol\
-    --verify PoolRegistryHarness:certora/spec/PoolRegistry.spec \
+    certora/harnesses/PoolRegistryHarness.sol certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol\
+    --verify PoolRegistryHarness:certora/specs/PoolRegistry.spec \
     --staging \
     --cache balancer \
     --optimistic_loop \
