@@ -1,20 +1,24 @@
 make -C certora munged
 
 certoraRun \
-    certora/munged/pool-stable/contracts/test/MockStablePool.sol \
-    --verify MockStablePool:certora/spec/sanity.spec \
+    certora/munged/pool-stable/contracts/StablePool.sol \
+    --verify StablePool:certora/spec/sanity.spec \
     --optimistic_loop \
     --loop_iter 3 \
+    --staging \
     --send_only \
-    --msg "Stable Pool sanity"
+    --msg "Stable Pool sanity nondet all, more phantom"
 
-certoraRun \
-    certora/munged/pool-stable-phantom/contracts/test/MockStablePhantomPool.sol \
-    --verify MockStablePhantomPool:certora/spec/sanity.spec \
-    --optimistic_loop \
-    --loop_iter 3 \
-    --send_only \
-    --msg "Stable Phantom Pool sanity"
+
+#certoraRun \
+#    certora/munged/pool-stable-phantom/contracts/StablePhantomPool.sol \
+#    --verify StablePhantomPool:certora/spec/sanity.spec \
+#    --optimistic_loop \
+#    --loop_iter 3 \
+#    --staging \
+#    --send_only \
+#    --msg "Phantom Stable Pool sanity nondet all, more summaries"
+
 
 certoraRun \
     certora/harness/WordCodecHarness.sol \
