@@ -49,6 +49,10 @@ methods {
 
 	// stable pool
 	//_getAmplificationParameter() returns (uint256,bool) => NONDET
+
+    // authorizor functions
+    _getAuthorizor() => DISPATCHER(true)
+    _canPreform(bytes32, address) returns (bool) => DISPATCHER(true)
 }
 
 
