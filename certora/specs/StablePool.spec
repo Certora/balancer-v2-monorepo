@@ -1,8 +1,3 @@
-/*
-    This is a specification file for smart contract verification with the Certora prover.
-    For more information, visit: https://www.certora.com/
-*/
-
 import "../helpers/erc20.spec"
 
 // nondet all,				onSwap			|  onJoinPool
@@ -52,7 +47,8 @@ methods {
 
     // authorizor functions
     _getAuthorizor() => DISPATCHER(true)
-    _canPreform(bytes32, address) returns (bool) => DISPATCHER(true)
+    _canPerform(bytes32, address) returns (bool) => NONDET
+    canPerform(bytes32, address, address) returns (bool) => NONDET
 }
 
 

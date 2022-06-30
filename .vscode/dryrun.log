@@ -1,6 +1,6 @@
 make --dry-run --always-make --keep-going --print-directory
-make: Entering directory `/Users/teryanarmen/Desktop/Certora/balancer-v2-monorepo'
-make: Leaving directory `/Users/teryanarmen/Desktop/Certora/balancer-v2-monorepo'
+make: Entering directory `/Users/teryanarmen/Desktop/Certora/contracts/balancer-v2-monorepo'
+make: Leaving directory `/Users/teryanarmen/Desktop/Certora/contracts/balancer-v2-monorepo'
  
 make: *** No targets specified and no makefile found.  Stop.
 

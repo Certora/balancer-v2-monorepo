@@ -1,8 +1,3 @@
-/*
-    This is a specification file for smart contract verification with the Certora prover.
-    For more information, visit: https://www.certora.com/
-*/
-
 import "../helpers/erc20.spec"
 
 ////////////////////////////////////////////////////////////////////////////
