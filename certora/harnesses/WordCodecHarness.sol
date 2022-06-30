@@ -1,4 +1,5 @@
 pragma solidity ^0.7.0;
+pragma experimental ABIEncoderV2;
 
 import {WordCodec} from "../munged/solidity-utils/contracts/helpers/WordCodec.sol";
 
