@@ -7,8 +7,8 @@ certoraRun \
     certora/helpers/DummyERC20Impl.sol \
     certora/helpers/DummyERC20A.sol \
     certora/helpers/DummyERC20B.sol \
-    certora/munged/vault/contracts/Vault.sol \
-    --link StablePoolHarness:_vault=Vault \
+    certora/harnesses/SymbolicVault.sol \
+    --link StablePoolHarness:_vault=SymbolicVault \
     --verify StablePoolHarness:certora/specs/StablePool.spec \
     --staging \
     --cache balancer \

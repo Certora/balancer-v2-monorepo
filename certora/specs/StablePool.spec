@@ -39,14 +39,20 @@ methods {
     //_calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
 	//_calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     //_calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256)returns (uint256) => NONDET
+    _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
 	// stable pool
 	//_getAmplificationParameter() returns (uint256,bool) => NONDET
 
+    // vault 
+    getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
+    getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
+
+
     // authorizor functions
-    _getAuthorizor() => DISPATCHER(true)
+    getAuthorizor() returns address => DISPATCHER(true)
+    _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
 }

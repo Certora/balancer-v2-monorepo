@@ -1,16 +1,24 @@
-certoraRun certora/munged/pool-stable/contracts/StablePool.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
-    --verify StablePool:certora/ComplexityCheck/complexity.spec \
+certoraRun certora/harnesses/SymbolicVault.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
+    --verify SymbolicVault:certora/ComplexityCheck/complexity.spec \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
-    --msg "StablePool complexity check 1st and 10th"
+    --rule noRevert \
+    --msg "SymbolicVault noRevert"
 
-certoraRun certora/munged/pool-stable-phantom/contracts/StablePhantomPool.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
-    --verify StablePhantomPool:certora/ComplexityCheck/complexity.spec \
-    --optimistic_loop \
-    --loop_iter 3 \
-    --send_only \
-    --msg "PhantomStablePool complexity check 1st and 10th"
+# certoraRun certora/munged/pool-stable/contracts/StablePool.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
+#     --verify StablePool:certora/ComplexityCheck/complexity.spec \
+#     --optimistic_loop \
+#     --loop_iter 3 \
+#     --send_only \
+#     --msg "StablePool complexity check 1st and 10th"
+
+# certoraRun certora/munged/pool-stable-phantom/contracts/StablePhantomPool.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
+#     --verify StablePhantomPool:certora/ComplexityCheck/complexity.spec \
+#     --optimistic_loop \
+#     --loop_iter 3 \
+#     --send_only \
+#     --msg "PhantomStablePool complexity check 1st and 10th"
 
 
 # certoraRun  contracts/core/connext/facets/BaseConnextFacet.sol ComplexityCheck/DummyERC20A.sol ComplexityCheck/DummyERC20B.sol \
