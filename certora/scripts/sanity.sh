@@ -11,14 +11,14 @@ certoraRun \
     --msg "Stable Pool sanity nondet all, more phantom"
 
 
-#certoraRun \
-#    certora/munged/pool-stable-phantom/contracts/StablePhantomPool.sol \
-#    --verify StablePhantomPool:certora/specs/sanity.spec \
-#    --optimistic_loop \
-#    --loop_iter 3 \
-#    --staging \
-#    --send_only \
-#    --msg "Phantom Stable Pool sanity nondet all, more summaries"
+certoraRun \
+   certora/munged/pool-stable-phantom/contracts/StablePhantomPool.sol \
+   --verify StablePhantomPool:certora/specs/sanity.spec \
+   --optimistic_loop \
+   --loop_iter 3 \
+   --staging \
+   --send_only \
+   --msg "Phantom Stable Pool sanity nondet all, more summaries"
 
 
 certoraRun \
