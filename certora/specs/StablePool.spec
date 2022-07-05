@@ -59,19 +59,41 @@ methods {
 
 
 ////////////////////////////////////////////////////////////////////////////
-//                       Ghosts and definitions                           //
+//                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
 
-// TODO: add ghosts as necessary
+// assume sum of all balances initially equals 0
+ghost sum_all_users_BPT() returns uint256 {
+    init_state axiom sum_all_users_BPT() == 0;
+}
+
+// everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
+hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
+  havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
+}
 
 ////////////////////////////////////////////////////////////////////////////
-//                       Invariants                                       //
+//                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
 
-// TODO: Add invariants; document them in reports/ExampleReport.md
+/// @invariant cantBurnAllBPT
+/// @description Contract must not allow all BPT to be burned.
+invariant cantBurnAll()
+    totalSupply() > 0 
+
+/// @invariant noMonopoly
+/// @description One user must not own the whole BPT supply.
+invariant noMonopoly(address user)
+    totalSupply() > balanceOf(user)
+
+/// @invariant BPTSolvency
+/// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
+invariant solvency()
+    totalSupply() >= sum_all_users_BPT()
+
 
 ////////////////////////////////////////////////////////////////////////////
-//                       Rules                                            //
+//                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
 
 // onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
@@ -86,8 +108,29 @@ rule sanity(method f)
 	assert false;
 }
 
+/// @rule noFreeMinting
+/// @description Contract must not allow any user to mint BPT for free
+rule noFreeMinting(method f) {
+    uint256 totalSupplyBefore = totalSupply();
+    // define free?
+    uint256 totalSupplyAfter = totalSupply();
+    assert totalSupplyAfter == totalSupplyBefore;
+}
+
+/// @rule calculateBPTAccuracy
+/// @description Given a value for `_calculateBPT`, calling `x` should result in user's balance increasing by that value
+rule calculateBPTAccuracy(address user) {
+    assert false;
+}
+
+/// @rule balanceIncreaseCorrelation
+/// @description A BPT balance increase must be correlated with a token balance increase in the vault
+rule 
+
+
+
 ////////////////////////////////////////////////////////////////////////////
-//                       Helper Functions                                 //
+//                            Helper Functions                            //
 ////////////////////////////////////////////////////////////////////////////
 
 // TODO: Any additional helper functions

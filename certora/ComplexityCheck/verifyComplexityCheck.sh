@@ -1,9 +1,9 @@
 certoraRun certora/harnesses/SymbolicVault.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
     --verify SymbolicVault:certora/ComplexityCheck/complexity.spec \
+    --staging \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
-    --rule noRevert \
     --msg "SymbolicVault noRevert"
 
 # certoraRun certora/munged/pool-stable/contracts/StablePool.sol certora/ComplexityCheck/DummyERC20A.sol certora/ComplexityCheck/DummyERC20B.sol \
