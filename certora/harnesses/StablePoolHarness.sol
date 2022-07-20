@@ -19,5 +19,11 @@ contract StablePoolHarness is StablePool {
         address owner
     ) StablePool(vault, name, symbol, tokens, amplificationParameter, 
     swapFeePercentage, pauseWindowDuration, bufferPeriodDuration, owner) {}
+
+
+    // sets recovery mode on or off
+    function setRecoveryMode(bool enabled) public {
+        _setRecoveryMode(enabled);
+    }
 }
 

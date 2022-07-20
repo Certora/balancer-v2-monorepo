@@ -55,6 +55,9 @@ methods {
     _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
+
+    // harness functions
+    setRecoveryMode(bool)
 }
 
 
@@ -169,7 +172,8 @@ rule amplificationFactorFollowsEndTime(method f) {
     }
 }
 
-// start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
+/// @rule: amplificationFactorTwoDayWait
+/// @description: start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
 rule amplificationFactorTwoDayWait(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
@@ -192,6 +196,8 @@ rule amplificationFactorTwoDayWait(method f) {
     assert endValuePost == actualEndValue, "amplfication factor still changing after 2 days";
 }
 
+/// @rule: amplificationFactorNoMoreThanDouble
+/// @descrption: the amplification factor may not increase by more than a factor of two in a given day
 rule amplificationFactorNoMoreThanDouble(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
@@ -212,11 +218,30 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 
 // Recovery and Paused Modes
 
-// Basic operation must not revert
+/// @rule: noRevertOnRecoveryMode
+/// @description: When in recovery mode basic operations must not revert
+rule noRevertOnRecoveryMode(method f) {
+    env e; calldataarg args;
+    setRecoveryMode(e, true);
+    // require inRecoveryMode(e); // alternative way, should try both
+    f@withrevert(e, args);
 
-// Will not call math functions
+    assert !lastReverted, "recovery mode must not fail";
+}
 
-// Only governance can bring the contract into recovery mode
+/// @rule: recoveryModeSimple
+/// @description: none of the complex math functions will be called on recoveryMode
+
+
+/// @rule: recoveryModeGovernanceOnly
+/// @description: Only governance can bring the contract into recovery mode
+rule recoveryModeGovernanceOnly(method f) {
+    env e; calldataarg args;
+    bool recoveryMode_ = inRecoveryMode(e);
+    f(e, args);
+    bool _recoveryMode = inRecoveryMode(e);
+    assert e.msg.sender != getOwner(e) => recoveryMode_ == _recoveryMode, "non owner changed recovery mode with public function";
+}
 
  
 // Paused Mode:
