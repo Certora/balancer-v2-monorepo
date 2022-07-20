@@ -83,8 +83,8 @@ invariant cantBurnAll()
 
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
-invariant noMonopoly(address user)
-    totalSupply() > balanceOf(user)
+invariant noMonopoly(address user, env e)
+    totalSupply() > balanceOf(e, user)
 
 /// @invariant BPTSolvency
 /// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
@@ -138,23 +138,27 @@ rule calculateBPTAccuracy(address user) {
 
 // Amplification factor
 
-// increase amplification factor
-// call method f
-// for some e later than initial increase, amplification factor must be less than value set
+// returns value encoded in solidity for 1 day
 definition DAY() returns uint256 = 1531409238;
 
+
+/// @rule amplfiicationFactorFollowsEndTime
+/// @description: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
+/// amplification factor must be less than value set
 rule amplificationFactorFollowsEndTime(method f) {
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
-    uint256 startValue = _getAmplificationParameter(e);
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
 
     startAmplificationParameterUpdate(e, endValue, endTime);
     f(e, args); // call some arbitrary function
 
     env e_post;
-    require e_post.block.timestamp > e;
+    require e_post.block.timestamp > e.block.timestamp;
     require e_post.block.timestamp < endTime;
-    uint256 currentParam = _getAmplificationParameter(e_post);
+    uint256 currentParam;
+    currentParam, isUpdating = _getAmplificationParameter(e_post);
 
     if (endValue > startValue) {
         assert currentParam < endValue, "getter: parameter increased too fast";
@@ -169,7 +173,8 @@ rule amplificationFactorFollowsEndTime(method f) {
 rule amplificationFactorTwoDayWait(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
-    uint256 startValue = _getAmplificationParameter(e);
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     env e_f; calldataarg args;
@@ -177,17 +182,21 @@ rule amplificationFactorTwoDayWait(method f) {
 
     env e_2days;
     require e_2days.block.timestamp == e.block.timestamp + (2 * DAY());
-    uint256 actualEndValue = _getAmplificationParameter(e_days);
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_2days);
 
     env e_post;
-    require e_post.block.timestamp > e_end.block.timestamp;
-    assert _getAmplificationParameter(e_post) == actualEndValue, "amplfication factor still changing after 2 days";
+    require e_post.block.timestamp > e_2days.block.timestamp;
+    uint256 endValuePost;
+    endValuePost, isUpdating = _getAmplificationParameter(e_post);
+    assert endValuePost == actualEndValue, "amplfication factor still changing after 2 days";
 }
 
 rule amplificationFactorNoMoreThanDouble(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
-    uint256 startValue = _getAmplificationParameter(e);
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     calldataarg args; env e_f;
@@ -195,7 +204,8 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 
     env e_incr;
     require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
-    uint256 actualEndValue = _getAmplificationParameter(e_days);
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
 
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
 }
