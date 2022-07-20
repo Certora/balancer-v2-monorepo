@@ -16,10 +16,9 @@ certoraRun \
     --cache balancer \
     --optimistic_loop \
     --loop_iter 3 \
-    --solc solc7.0 \
+    --solc solc7.1 \
     --send_only \
     $RULE \
     --msg "StablePool with linking vault: $1" \
-    --debug
 
 
