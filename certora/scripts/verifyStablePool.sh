@@ -1,3 +1,5 @@
+make -C munged
+
 if [[ "$1" ]]
 then
     RULE="--rule $1"
@@ -14,8 +16,10 @@ certoraRun \
     --cache balancer \
     --optimistic_loop \
     --loop_iter 3 \
+    --solc solc7.0 \
     --send_only \
     $RULE \
-    --msg "StablePool with linking vault: $1"
+    --msg "StablePool with linking vault: $1" \
+    --debug
 
 

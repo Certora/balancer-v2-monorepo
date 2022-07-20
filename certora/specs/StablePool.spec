@@ -125,7 +125,6 @@ rule calculateBPTAccuracy(address user) {
 
 /// @rule balanceIncreaseCorrelation
 /// @description A BPT balance increase must be correlated with a token balance increase in the vault
-rule 
 
 
 
@@ -135,3 +134,87 @@ rule
 
 // TODO: Any additional helper functions
 
+
+
+// Amplification factor
+
+// increase amplification factor
+// call method f
+// for some e later than initial increase, amplification factor must be less than value set
+definition DAY() returns uint256 = 1531409238;
+
+rule amplificationFactorFollowsEndTime(method f) {
+    env e; calldataarg args;
+    uint256 endValue; uint256 endTime;
+    uint256 startValue = _getAmplificationParameter(e);
+
+    startAmplificationParameterUpdate(e, endValue, endTime);
+    f(e, args); // call some arbitrary function
+
+    env e_post;
+    require e_post.block.timestamp > e;
+    require e_post.block.timestamp < endTime;
+    uint256 currentParam = _getAmplificationParameter(e_post);
+
+    if (endValue > startValue) {
+        assert currentParam < endValue, "getter: parameter increased too fast";
+        assert currentParam > startValue, "amplification did not increase";
+    } else {
+        assert currentParam > endValue, "getter: parameter decreased too fast";
+        assert currentParam < startValue, "amplification did not decrease";
+    }
+}
+
+// start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
+rule amplificationFactorTwoDayWait(method f) {
+    env e; 
+    uint256 endValue; uint256 endTime;
+    uint256 startValue = _getAmplificationParameter(e);
+    startAmplificationParameterUpdate(e, endValue, endTime);
+
+    env e_f; calldataarg args;
+    f(e_f, args);
+
+    env e_2days;
+    require e_2days.block.timestamp == e.block.timestamp + (2 * DAY());
+    uint256 actualEndValue = _getAmplificationParameter(e_days);
+
+    env e_post;
+    require e_post.block.timestamp > e_end.block.timestamp;
+    assert _getAmplificationParameter(e_post) == actualEndValue, "amplfication factor still changing after 2 days";
+}
+
+rule amplificationFactorNoMoreThanDouble(method f) {
+    env e; 
+    uint256 endValue; uint256 endTime;
+    uint256 startValue = _getAmplificationParameter(e);
+    startAmplificationParameterUpdate(e, endValue, endTime);
+
+    calldataarg args; env e_f;
+    f(e_f, args);
+
+    env e_incr;
+    require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
+    uint256 actualEndValue = _getAmplificationParameter(e_days);
+
+    assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
+}
+
+// Recovery and Paused Modes
+
+// Basic operation must not revert
+
+// Will not call math functions
+
+// Only governance can bring the contract into recovery mode
+
+ 
+// Paused Mode:
+
+// All basic operations must revert
+
+ 
+
+// Pause + recovery mode
+
+// People can only withdraw 
