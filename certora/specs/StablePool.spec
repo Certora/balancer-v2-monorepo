@@ -1,3 +1,8 @@
+// HOW TO RUN THIS FILE: use bash certora/scripts/verifyStablePool.sh <rule> <msg> from the root of the project directory
+// <rule> and <msg> are OPTIONAL. If you don't include a rule, it will run all of the rules
+// BEFORE YOU CAN RUN ANY OF THE SPECS YOU MUST RUN: touch certora/applyHarness.patch
+
+
 import "../helpers/erc20.spec"
 
 // nondet all,				onSwap			|  onJoinPool
