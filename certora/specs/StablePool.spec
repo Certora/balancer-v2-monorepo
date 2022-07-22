@@ -219,18 +219,26 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 // Recovery and Paused Modes
 
 /// @rule: noRevertOnRecoveryMode
-/// @description: When in recovery mode basic operations must not revert
-rule noRevertOnRecoveryMode(method f) {
-    env e; calldataarg args;
-    setRecoveryMode(e, true);
-    // require inRecoveryMode(e); // alternative way, should try both
-    f@withrevert(e, args);
+/// @description: When in recovery mode the following operation must not revert
+/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
+/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
+// rule noRevertOnRecoveryMode(method f) {
+//     env e; calldataarg args;
+//     setRecoveryMode(e, true);
+//     // require inRecoveryMode(e); // alternative way, should try both
+//     f@withrevert(e, args);
 
-    assert !lastReverted, "recovery mode must not fail";
-}
+//     assert !lastReverted, "recovery mode must not fail";
+// }
 
-/// @rule: recoveryModeSimple
+/// @rule: recoveryModeSimpleMath
 /// @description: none of the complex math functions will be called on recoveryMode
+// rule recoveryModeSimpleMath(method f) {
+//     env e; calldataarg args;
+//     require inRecoveryMode(e);
+//     f@withrevert(e, args);
+//     assert (some check for math) => lastReverted, "no revert on math function"
+// }
 
 
 /// @rule: recoveryModeGovernanceOnly
@@ -248,6 +256,45 @@ rule recoveryModeGovernanceOnly(method f) {
 
 // All basic operations must revert
 
+rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
+{
+    env e; calldataarg args;
+    bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
+    paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+    f@withrevert(e, args);
+    assert paused => lastReverted, "basic operations succeeded on pause";
+}
+
+/// @rule: pauseStartOnlyPauseWindow
+/// @description: If a function sets the contract into pause mode, it must only be during the pauseWindow
+rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
+    env e; calldataarg args;
+    bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
+    paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+    require !paused_; // start in an unpaused state
+
+    // call any function
+    f(e, args);
+
+    bool _paused; uint256 dc1; uint256 dc2;
+    _paused, dc1, dc2 = getPausedState(e);
+    // if we are now paused, then the current time must be within the pauseWindow
+    assert _paused => e.block.timestamp <= pauseWindowEndTime, "paused after end window";
+}
+
+/// @rule: unpausedAfterBuffer
+/// @description: After the buffer window finishes, the contract may not enter the paused state
+rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
+    env e; calldataarg args;
+    // call some arbitrary function
+    f(e, args);
+
+    env e2;
+    require e2.block.timestamp >= e.block.timestamp; // shouldn't change the results, but we only care about checking pause after the function call
+    bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
+    paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+    assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
+}
  
 
 // Pause + recovery mode
