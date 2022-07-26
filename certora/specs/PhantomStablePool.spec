@@ -22,9 +22,9 @@ methods {
 	//_getAmplificationParameter() returns (uint256,bool) => NONDET
 
 	// phantom pool
-	//_trackDueProtocolFeeByInvariantIncrement(uint256,uint256,uint256[],uint256,uint256) => HAVOC_ECF
-	//_trackDueProtocolFeeByBpt(uint256,uint256) => HAVOC_ECF
-	//_onSwapTokenGivenBptIn(uint256,uint256,uint256,uint256[]) returns (uint256) => NONDET
+	_trackDueProtocolFeeByInvariantIncrement(uint256,uint256,uint256[],uint256,uint256) => HAVOC_ECF
+	_trackDueProtocolFeeByBpt(uint256,uint256) => HAVOC_ECF
+	_onSwapTokenGivenBptIn(uint256,uint256,uint256,uint256[]) returns (uint256) => NONDET
     //_onSwapTokenGivenBptOut(uint256,uint256,uint256,uint256[]) returns (uint256) => NONDET
 	//_skipBptIndex should be very easy...
 	//getProtocolSwapFeePercentageCache easy
