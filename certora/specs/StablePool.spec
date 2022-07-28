@@ -86,8 +86,8 @@ invariant cantBurnAll()
 
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
-invariant noMonopoly(address user, env e)
-    totalSupply() > balanceOf(e, user)
+invariant noMonopoly(address user)
+    totalSupply() > balanceOf(user)
 
 /// @invariant BPTSolvency
 /// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
@@ -128,6 +128,13 @@ rule calculateBPTAccuracy(address user) {
 
 /// @rule balanceIncreaseCorrelation
 /// @description A BPT balance increase must be correlated with a token balance increase in the vault
+rule balanceIncreaseCorrelation(env e, calldataarg args, method f) {
+    uint256 BPTBalanceBefore = balanceOf(e.msg.sender);
+    //uint256 tokenBalanceBefore = vault.balanceOf;
+    assert false;
+}
+    
+
 
 
 

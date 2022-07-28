@@ -5,21 +5,22 @@ import "../helpers/erc20.spec"
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
-	// _validateTokensAndGetBalances(bytes32, IERC20[]) returns (bytes32[]) => NONDET
+	_callPoolBalanceChange(uint8,bytes32,address,address,(address[],uint256[],bytes,bool),bytes32[]) returns (bytes32[], uint256[], uint256[]) => CONSTANT
+	//_processJoinPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT not summarizable yet
+	//_processExitPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT not summarizable yet (might work if we munge priv to internal)
 
-	    // all functions called by joinPool
+	// all functions called by joinPool
     //_joinOrExit(kind, poolId, sender, recipient, change);
-    //    _callPoolBalanceChange //
+    //   _callPoolBalanceChange
     //        _processJoinPoolTransfers
-	_processJoinPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT
     //                or
     //        _processExitPoolTransfers
-	_processExitPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT
-    //    _getPoolSpecialization
-    //            or
-    //    _setMinimalSwapInfoPoolBalances
-    //            or
-    //    _setGeneralPoolBalances
+
+    //   _getPoolSpecialization
+    //           or
+    //   _setMinimalSwapInfoPoolBalances
+    //           or
+    //   _setGeneralPoolBalances
 }
 
 // // Summarizable methods for swap 
