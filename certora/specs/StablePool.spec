@@ -15,7 +15,7 @@ methods {
     inRecoveryMode() returns (bool) envfree
 
 
-	// stable math
+	//// @dev stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
@@ -46,16 +46,18 @@ methods {
     //     uint256 swapFeePercentage) returns (uint256)
     //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
 
-    // vault 
+    //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
-    // authorizor functions
+
+    //// @dev authorizor functions
     getAuthorizor() returns address => DISPATCHER(true)
     _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
-    // harness functions
+
+    //// @dev harness functions
     setRecoveryMode(bool)
 
     _token0.balanceOf(address) returns(uint256) envfree
@@ -73,6 +75,10 @@ methods {
 
 }
 
+/// Add the following assumptions:
+///  - addresses `currentContract`, `token0`, ..., `token4` are distinct and ordered
+///  - `e.msg.sender` is distinct from `currentContract` and `token0` ... `token4`
+///  - there are at least 2 tokens and at most 5
 function setup(env e) { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
     require currentContract < _token0;
@@ -84,26 +90,28 @@ function setup(env e) {
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
 
-// assume sum of all balances initially equals 0
+/// A ghost tracking the sum of all BPT user balances in the pool
+///
+/// @dev we assume sum of all balances initially equals 0
 ghost sum_all_users_BPT() returns uint256 {
     init_state axiom sum_all_users_BPT() == 0;
 }
 
-// everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
+/// @dev keep `sum_all_users_BPT` up to date with the `_balances` mapping
 hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//                            Invariants                                  //
+//// ###                      Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
 
-/// @invariant cantBurnAllBPT
-/// @description Contract must not allow all BPT to be burned.
+/// @title Can't burn all BPT
+/// @notice Contract must not allow all BPT to be burned.
 invariant cantBurnAll()
     totalSupply() > 0 
 
-// totalSupply nonzero after onJoinPool is called
+/// `totalSupply` nonzero after `onJoinPool` is called
 rule nonzeroSupply(method f) filtered {
     f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
 } {
@@ -119,7 +127,8 @@ rule nonzeroSupply(method f) filtered {
     g(e2, args2); // user B had totalSupply tokens and exits
     assert totalSupply() > 0, "totalSupply must be greater than 0 after an arbitrary function call if the pool has been initialized";
 }
-/// @title totalSupply can only go 0 to non-zero if `onJoinPool` is called without reverting
+
+/// `totalSupply` can only become non-zero if `onJoinPool` is called without reverting.
 rule onlyOnJoinPoolCanInitialize(method f) {
     env e; calldataarg args;
     require totalSupply() == 0;
@@ -127,13 +136,13 @@ rule onlyOnJoinPoolCanInitialize(method f) {
     assert totalSupply() > 0 => f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool";
 }
 
-
-/// @invariant noMonopoly
-/// @description One user must not own the whole BPT supply.
+/// One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
     totalSupply() > balanceOf(e, user)
     {preserved { require e.msg.sender != 0; }}
 
+/// Reimplements [`noMonopoly`](#noMonopoly) as a rule
+/// @dev TODO: how/why is this different from `noMonopoly`?
 rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
     f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
 } {
@@ -145,8 +154,7 @@ rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
     assert totalSupply() > balanceOf(user), "totalSupply must be greater than 0 after onJoinPool is called";
 }
 
-/// @invariant BPTSolvency
-/// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
+/// Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
 invariant solvency()
     totalSupply() >= sum_all_users_BPT()
 
@@ -197,8 +205,8 @@ rule NoFreeBPTPerAccount(uint256 num, method f) filtered { f ->
 }
 
 
-// onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
-// onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
+/// @dev TODO: there is an unexplained comment `onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)`
+/// @dev TODO: there is an unexplained comment `onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)`
 rule sanity(method f) 
 {
 	env e;
@@ -217,8 +225,7 @@ rule sanity1(method f)
 	assert false;
 }
 
-/// @rule noFreeMinting
-/// @description Contract must not allow any user to mint BPT for free
+/// Contract must not allow any user to mint BPT for free
 rule noFreeMinting(method f) {
     uint256 totalSupplyBefore = totalSupply();
     // define free?
@@ -226,23 +233,19 @@ rule noFreeMinting(method f) {
     assert totalSupplyAfter == totalSupplyBefore;
 }
 
-/// @rule calculateBPTAccuracy
-/// @description Given a value for `_calculateBPT`, calling `x` should result in user's balance increasing by that value
+/// Given a value for `_calculateBPT`, calling `x` should result in user's
+/// balance increasing by that value
 rule calculateBPTAccuracy(address user) {
     assert false;
 }
 
-/// @rule balanceIncreaseCorrelation
-/// @description A BPT balance increase must be correlated with a token balance increase in the vault
+/// A BPT balance increase must be correlated with a token balance increase in
+/// the vault
 rule balanceIncreaseCorrelation(env e, calldataarg args, method f) {
     uint256 BPTBalanceBefore = balanceOf(e.msg.sender);
     //uint256 tokenBalanceBefore = vault.balanceOf;
     assert false;
 }
-    
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////
 //                            Helper Functions                            //
@@ -254,13 +257,13 @@ rule balanceIncreaseCorrelation(env e, calldataarg args, method f) {
 
 // Amplification factor
 
-// returns value encoded in solidity for 1 day
+/// returns value encoded in solidity for 1 day
 definition DAY() returns uint256 = 1531409238;
 
 
-/// @rule amplfiicationFactorFollowsEndTime
-/// @description: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
-/// amplification factor must be less than value set
+/// After starting an amplification factor increase and calling an artbirary
+/// function, for some `t` later than initial increase, the amplification
+/// factor must be less than value set
 rule amplificationFactorFollowsEndTime(method f) {
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
@@ -286,8 +289,22 @@ rule amplificationFactorFollowsEndTime(method f) {
     }
 }
 
-/// @rule: amplificationFactorTwoDayWait
-/// @description: start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
+/// The amplification parameter can't change within two days of the the
+/// `startAmplificationParameterUpdate`
+///
+/// @formula
+///    {
+///       startValue == amplificationParameter,
+///       !isUpdating
+///    }
+///    startAmplificationParameterUpdate(...);
+///    wait two days;
+///    {
+///       amplificationParameter == startValue
+///    }
+///
+/// @dev start the amplification factor changing. Wait 2 days. Check the value
+/// at that timestamp, and then assert the value doesn't change after
 rule amplificationFactorTwoDayWait(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
@@ -310,8 +327,7 @@ rule amplificationFactorTwoDayWait(method f) {
     assert endValuePost == actualEndValue, "amplfication factor still changing after 2 days";
 }
 
-/// @rule: amplificationFactorNoMoreThanDouble
-/// @descrption: the amplification factor may not increase by more than a factor of two in a given day
+/// The amplification factor may not increase by more than a factor of two in a given day
 rule amplificationFactorNoMoreThanDouble(method f) {
     env e; 
     uint256 endValue; uint256 endTime;
@@ -330,11 +346,12 @@ rule amplificationFactorNoMoreThanDouble(method f) {
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
 }
 
-// Recovery and Paused Modes
-/// @title rule: noRevertOnRecoveryMode
-/// @notice: When in recovery mode the following operation must not revert
-/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
-/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
+//// # Recovery and Paused Modes
+
+/// When in recovery mode the following operation must not revert onExitPool,
+/// but only when called by the Vault, and only when userData corresponds to a
+/// correct recovery mode call (that is, it is the abi encoding of the recovery
+/// exit enum and a bpt amount), and sender has sufficient bpt
 rule exitNonRevertingOnRecoveryMode(method f) {
     env e; calldataarg args;
     require e.msg.sender == getVault();
@@ -349,8 +366,7 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     assert !lastReverted, "recovery mode must not fail";
 }
 
-/// @rule: recoveryModeSimpleMath
-/// @description: none of the complex math functions will be called on recoveryMode
+// /// None of the complex math functions will be called on recoveryMode
 // rule recoveryModeSimpleMath(method f) {
 //     env e; calldataarg args;
 //     require inRecoveryMode();
@@ -359,8 +375,7 @@ rule exitNonRevertingOnRecoveryMode(method f) {
 // }
 
 
-/// @rule: recoveryModeGovernanceOnly
-/// @description: Only governance can bring the contract into recovery mode
+/// Only governance can bring the contract into recovery mode
 rule recoveryModeGovernanceOnly(method f) {
     env e; calldataarg args;
     bool recoveryMode_ = inRecoveryMode();
@@ -370,10 +385,9 @@ rule recoveryModeGovernanceOnly(method f) {
 }
 
  
-// Paused Mode:
+//// # Paused Mode
 
-/// @rule: basicOperationsRevertOnPause
-/// @description: All basic operations must revert while in a paused state
+/// All basic operations must revert while in a paused state
 rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
 {
     env e; calldataarg args;
@@ -384,9 +398,10 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
     assert paused => lastReverted, "basic operations succeeded on pause";
 }
 
-/// @title rule: pauseStartOnlyPauseWindow
-/// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow
-/// @notice passing 
+/// If a function sets the contract into pause mode, it must only be during the
+/// pauseWindow
+///
+/// @dev passing
 rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
@@ -402,9 +417,8 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     assert _paused => e.block.timestamp <= pauseWindowEndTime, "paused after end window";
 }
 
-/// @title: rule: unpausedAfterBuffer
-/// @notice: After the buffer window finishes, the contract may not enter the paused state
-/// @notice: passes
+/// After the buffer window finishes, the contract may not enter the paused state
+/// @dev passes
 rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     // call some arbitrary function
@@ -418,11 +432,12 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
  
-// Pause + recovery mode
+//// # Pause + recovery mode
+////
+//// The only allowed operation when the pool is both paused and in recovery
+//// mode is `withdraw`, and `withdraw` should never revert in this mode.
 
-// People can only withdraw 
-
-/// @title rule: prWithdrawOnly
+/// @title Withdraw doesn't revert when in paused recovery mode
 /// @notice if both paused and recovery mode is active, withdraw must never revert
 rule prWithdrawNeverReverts(method f) {
     env e; calldataarg args;
@@ -441,6 +456,7 @@ rule prWithdrawNeverReverts(method f) {
     assert !lastReverted, "recovery mode must not fail";
 }
 
+/// @title Non-withdraw functions always revert when in paused recovery mode
 rule prOtherFunctionsAlwaysRevert(method f) filtered { 
     f -> (f.selector != onExitPool(bytes32, address, address, uint256[], uint256, uint256, bytes).selector && !f.isView) } 
 {
@@ -454,3 +470,4 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {
 
     assert lastReverted, "function did not revert";
 }
+
