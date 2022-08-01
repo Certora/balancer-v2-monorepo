@@ -237,8 +237,7 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 /// @notice: When in recovery mode the following operation must not revert
 /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
 /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-/// @notice: passes
-rule exitNoRevertOnRecoveryMode(method f) {
+rule exitNonRevertingOnRecoveryMode(method f) {
     env e; calldataarg args;
     require e.msg.sender == getVault();
     require inRecoveryMode(e);
@@ -253,7 +252,7 @@ rule exitNoRevertOnRecoveryMode(method f) {
     uint256 lastChangeBlock;
     uint256 protocolSwapFeePercentage;
     bytes userData;
-    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
 
     assert !lastReverted, "recovery mode must not fail";
 }
@@ -312,6 +311,7 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
 
 /// @title: rule: unpausedAfterBuffer
 /// @notice: After the buffer window finishes, the contract may not enter the paused state
+/// @notice: passes
 rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     // call some arbitrary function
@@ -330,8 +330,26 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 
 // People can only withdraw
 
-/// @rule: prWithdrawOnly
-/// @description: if both paused and recovery mode is active, any function that is not withdraw must revert
-rule prWithdrawOnly(method f) {
-    assert false, "not yet implemented";
+/// @title rule: prWithdrawOnly
+/// @notice if both paused and recovery mode is active, withdraw must never revert
+rule prWithdrawNeverReverts(method f) {
+    env e; calldataarg args;
+    require e.msg.sender == getVault();
+    require inRecoveryMode(e);
+    f(e, args); // arbitrary f in case there is frontrunning
+    require inRecoveryMode(e); // needs to stay in recovery mode
+    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
+    bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
+    paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+
+    bytes32 poolId;
+    address sender;
+    address recipient;
+    uint256[] balances;
+    uint256 lastChangeBlock;
+    uint256 protocolSwapFeePercentage;
+    bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+
+    assert !lastReverted, "recovery mode must not fail";
 }
