@@ -5,6 +5,8 @@
 
 import "../helpers/erc20.spec"
 
+// using SymbolicVault as vault // dependent on implementation
+
 // nondet all,				onSwap			|  onJoinPool
 
 // nondet 		1st, 		onSwap 	timeout |  onJoinPool
@@ -32,7 +34,6 @@ import "../helpers/erc20.spec"
 ////////////////////////////////////////////////////////////////////////////
 //                      Methods                                           //
 ////////////////////////////////////////////////////////////////////////////
-
 methods {
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
@@ -53,6 +54,7 @@ methods {
     // vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
+    getVault() returns address envfree;
 
 
     // authorizor functions
@@ -166,6 +168,7 @@ rule amplificationFactorFollowsEndTime(method f) {
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
 
+    assert !inRecoveryMode(e);
     startAmplificationParameterUpdate(e, endValue, endTime);
     f(e, args); // call some arbitrary function
 
@@ -230,18 +233,30 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 
 // Recovery and Paused Modes
 
-/// @rule: noRevertOnRecoveryMode
-/// @description: When in recovery mode the following operation must not revert
+/// @title rule: noRevertOnRecoveryMode
+/// @notice: When in recovery mode the following operation must not revert
 /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
 /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-// rule noRevertOnRecoveryMode(method f) {
-//     env e; calldataarg args;
-//     setRecoveryMode(e, true);
-//     // require inRecoveryMode(e); // alternative way, should try both
-//     f@withrevert(e, args);
+/// @notice: passes
+rule exitNoRevertOnRecoveryMode(method f) {
+    env e; calldataarg args;
+    require e.msg.sender == getVault();
+    require inRecoveryMode(e);
+    f(e, args); // arbitrary f in case there is frontrunning
+    require inRecoveryMode(e); // needs to stay in recovery mode
+    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
 
-//     assert !lastReverted, "recovery mode must not fail";
-// }
+    bytes32 poolId;
+    address sender;
+    address recipient;
+    uint256[] balances;
+    uint256 lastChangeBlock;
+    uint256 protocolSwapFeePercentage;
+    bytes userData;
+    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+
+    assert !lastReverted, "recovery mode must not fail";
+}
 
 /// @rule: recoveryModeSimpleMath
 /// @description: none of the complex math functions will be called on recoveryMode
@@ -266,8 +281,8 @@ rule recoveryModeGovernanceOnly(method f) {
  
 // Paused Mode:
 
-// All basic operations must revert
-
+/// @rule: basicOperationsRevertOnPause
+/// @description: All basic operations must revert while in a paused state
 rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
 {
     env e; calldataarg args;
@@ -277,8 +292,9 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
     assert paused => lastReverted, "basic operations succeeded on pause";
 }
 
-/// @rule: pauseStartOnlyPauseWindow
-/// @description: If a function sets the contract into pause mode, it must only be during the pauseWindow
+/// @title rule: pauseStartOnlyPauseWindow
+/// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow
+/// @notice passing 
 rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
@@ -294,8 +310,8 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     assert _paused => e.block.timestamp <= pauseWindowEndTime, "paused after end window";
 }
 
-/// @rule: unpausedAfterBuffer
-/// @description: After the buffer window finishes, the contract may not enter the paused state
+/// @title: rule: unpausedAfterBuffer
+/// @notice: After the buffer window finishes, the contract may not enter the paused state
 rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     // call some arbitrary function
@@ -304,11 +320,18 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e2;
     require e2.block.timestamp >= e.block.timestamp; // shouldn't change the results, but we only care about checking pause after the function call
     bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
-    paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+    paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e2);
+    require bufferPeriodEndTime >= pauseWindowEndTime; 
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
  
 
 // Pause + recovery mode
 
-// People can only withdraw 
+// People can only withdraw
+
+/// @rule: prWithdrawOnly
+/// @description: if both paused and recovery mode is active, any function that is not withdraw must revert
+rule prWithdrawOnly(method f) {
+    assert false, "not yet implemented";
+}
