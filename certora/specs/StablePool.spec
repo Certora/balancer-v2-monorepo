@@ -71,6 +71,7 @@ methods {
     getToken2() returns(address) envfree
     getToken3() returns(address) envfree
     getToken4() returns(address) envfree
+    _getTotalTokens() returns (uint256) envfree
 }
 
 function setup() { 
@@ -80,6 +81,7 @@ function setup() {
     address token3 = getToken3();
     address token4 = getToken4();
     require token0<token1 && token1<token2 && token2<token3 && token3<token4;
+    require _getTotalTokens()>1 && _getTotalTokens()<6;
 }
 
 ////////////////////////////////////////////////////////////////////////////
