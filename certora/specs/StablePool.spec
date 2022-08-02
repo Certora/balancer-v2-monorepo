@@ -65,8 +65,22 @@ methods {
 
     // harness functions
     setRecoveryMode(bool)
+    
+    getToken0() returns(address) envfree
+    getToken1() returns(address) envfree
+    getToken2() returns(address) envfree
+    getToken3() returns(address) envfree
+    getToken4() returns(address) envfree
 }
 
+function setup() { 
+    address token0 = getToken0();
+    address token1 = getToken1();
+    address token2 = getToken2();
+    address token3 = getToken3();
+    address token4 = getToken4();
+    require token0<token1 && token1<token2 && token2<token3 && token3<token4;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
