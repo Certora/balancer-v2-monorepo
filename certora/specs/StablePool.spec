@@ -261,14 +261,9 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     require inRecoveryMode(e); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
 
-    bytes32 poolId;
-    address sender;
-    address recipient;
-    uint256[] balances;
-    uint256 lastChangeBlock;
-    uint256 protocolSwapFeePercentage;
-    bytes userData;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
 }
@@ -301,6 +296,7 @@ rule recoveryModeGovernanceOnly(method f) {
 rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
 {
     env e; calldataarg args;
+    require !inRecoveryMode(e); // we will test this case independently
     bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
     f@withrevert(e, args);
@@ -358,14 +354,23 @@ rule prWithdrawNeverReverts(method f) {
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
 
-    bytes32 poolId;
-    address sender;
-    address recipient;
-    uint256[] balances;
-    uint256 lastChangeBlock;
-    uint256 protocolSwapFeePercentage;
-    bytes userData;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
+}
+
+rule prOtherFunctionsAlwaysRevert(method f) filtered { 
+    f -> (f.selector != onExitPool(bytes32, address, address, uint256[], uint256, uint256).selector && !f.isView) } 
+{
+    env e; calldataarg args;
+
+    require inRecoveryMode(e);
+    bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
+    paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
+    require paused;
+    f@withrevert(e, args);
+
+    assert lastReverted, "function did not revert";
 }
