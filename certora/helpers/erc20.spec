@@ -4,7 +4,7 @@ methods {
     symbol()                              returns (string)          => DISPATCHER(true) 
     decimals()                            returns (string)          => DISPATCHER(true) 
     totalSupply()                         returns (uint256) envfree => DISPATCHER(true)
-    balanceOf(address)                    returns (uint256)         => DISPATCHER(true)
+    balanceOf(address)                    returns (uint256) envfree => DISPATCHER(true)
     allowance(address,address)            returns (uint)            => DISPATCHER(true)
     approve(address,uint256)              returns (bool)            => DISPATCHER(true)
     transfer(address,uint256)             returns (bool)            => DISPATCHER(true)
