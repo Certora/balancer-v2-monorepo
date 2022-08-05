@@ -2,11 +2,8 @@
 // <rule> and <msg> are OPTIONAL. If you don't include a rule, it will run all of the rules
 // BEFORE YOU CAN RUN ANY OF THE SPECS YOU MUST RUN: touch certora/applyHarness.patch
 
-
 import "../helpers/erc20.spec"
-
 // using SymbolicVault as vault // dependent on implementation
-
 // nondet all,				onSwap			|  onJoinPool
 
 // nondet 		1st, 		onSwap 	timeout |  onJoinPool
@@ -34,19 +31,21 @@ import "../helpers/erc20.spec"
 ////////////////////////////////////////////////////////////////////////////
 //                      Methods                                           //
 ////////////////////////////////////////////////////////////////////////////
+
 methods {
+    totalTokensBalance() returns (uint256 total) envfree
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
-    //_calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    //_calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    //_calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
-    //_calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-	//_calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
-    //_calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
+    _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+    _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+    _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
+    _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
+    _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
+    _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+	_calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
+    _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
+    _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
 	// stable pool
 	//_getAmplificationParameter() returns (uint256,bool) => NONDET
@@ -55,23 +54,36 @@ methods {
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
-
-
     // authorizor functions
     getAuthorizor() returns address => DISPATCHER(true)
     _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
-
     // harness functions
     setRecoveryMode(bool)
-    
+
+    // pow(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // powUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // powDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+
+    // exp(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // log(uint256 x, uint256 y) => ghost_division(x, y);
+    // ln(uint256 x, uint256 y) => ghost_ln(x);
+
+    // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // div(uint256 x, uint256 y) => ghost_division(x, y);
+    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
+    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
+
     getToken0() returns(address) envfree
     getToken1() returns(address) envfree
     getToken2() returns(address) envfree
     getToken3() returns(address) envfree
     getToken4() returns(address) envfree
     _getTotalTokens() returns (uint256) envfree
+
 }
 
 function setup() { 
@@ -98,6 +110,39 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
 }
 
+// ghost ghost_ln(uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. 
+//       x1 > x2 => ghost_ln(x1) > ghost_ln(x2);
+// }
+
+// ghost ghost_multiplication(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
+//       x1 > x2 => ghost_multiplication(x1, y) > ghost_multiplication(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 => ghost_multiplication(x, y1) > ghost_multiplication(x, y2);
+// }
+
+// ghost ghost_multiplication_round(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
+//       x1 > x2 => ghost_multiplication_round(x1, y) >= ghost_multiplication_round(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 => ghost_multiplication_round(x, y1) >= ghost_multiplication_round(x, y2);
+// }
+
+// ghost ghost_division(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
+//       x1 > x2 && y > 0 => ghost_division(x1, y) > ghost_division(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 && y2 > 0 => ghost_division(x, y1) < ghost_division(x, y2);
+// }
+
+// ghost ghost_division_round(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
+//       x1 > x2 && y>0 => ghost_division_round(x1, y) >= ghost_division_round(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 && y2>0 => ghost_division_round(x, y1) <= ghost_division_round(x, y2);
+// }
+
 ////////////////////////////////////////////////////////////////////////////
 //                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
@@ -109,8 +154,8 @@ invariant cantBurnAll()
 
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
-invariant noMonopoly(address user)
-    totalSupply() > balanceOf(user)
+invariant noMonopoly(address user, env e)
+    totalSupply() > balanceOf(e, user)
 
 /// @invariant BPTSolvency
 /// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
@@ -121,6 +166,24 @@ invariant solvency()
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
+
+rule NoFreeBPT(uint256 num, method f)
+{
+    setup();
+    env e;
+	calldataarg args;
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+	f(e,args);
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens;
+    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;
+}
 
 // onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
 // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
@@ -248,7 +311,6 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 }
 
 // Recovery and Paused Modes
-
 /// @title rule: noRevertOnRecoveryMode
 /// @notice: When in recovery mode the following operation must not revert
 /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
@@ -260,7 +322,6 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     f(e, args); // arbitrary f in case there is frontrunning
     require inRecoveryMode(e); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
@@ -337,10 +398,9 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
  
-
 // Pause + recovery mode
 
-// People can only withdraw
+// People can only withdraw 
 
 /// @title rule: prWithdrawOnly
 /// @notice if both paused and recovery mode is active, withdraw must never revert

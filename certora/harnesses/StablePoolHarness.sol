@@ -96,7 +96,7 @@ contract StablePoolHarness is StablePool {
             uint256[] memory amounts;
             uint256[] memory fees;
             require(_getTotalTokens() == balances.length, "length needs to be the same");
-            (amounts, fees) = super.onJoinPool(
+        (amounts, fees) = super.onExitPool(
                 poolId,
                 sender,
                 recipient,
@@ -187,6 +187,14 @@ contract StablePoolHarness is StablePool {
     }
 
 
+    function totalTokensBalance() public returns (uint256 total) {        
+        total = _token0.balanceOf(address(this));
+        total += _token1.balanceOf(address(this));
+        total += _token2.balanceOf(address(this));
+        total += _token3.balanceOf(address(this));
+        total += _token4.balanceOf(address(this));
+    }
+
     function getToken0() public returns (address) {
         return address(_token0);
     }
@@ -203,4 +211,3 @@ contract StablePoolHarness is StablePool {
         return address(_token4);
     }
 }
-
