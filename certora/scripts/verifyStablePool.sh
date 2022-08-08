@@ -16,10 +16,11 @@ certoraRun \
     --verify StablePoolHarness:certora/specs/StablePool.spec \
     --settings -enableEqualitySaturation=false,-Dverbose.times \
     --cache balancer \
+    --settings -enableEqualitySaturation=false \
     --staging \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
     $RULE \
-    --msg "StablePool with linking vault: $1" \
+    --msg "StablePool w/ enableEqualitySaturation=false and extra refactoring in queryAction: $1" \
 
