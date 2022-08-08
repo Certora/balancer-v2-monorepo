@@ -1,8 +1,13 @@
 // HOW TO RUN THIS FILE: use bash certora/scripts/verifyStablePool.sh <rule> <msg> from the root of the project directory
 // <rule> and <msg> are OPTIONAL. If you don't include a rule, it will run all of the rules
 // BEFORE YOU CAN RUN ANY OF THE SPECS YOU MUST RUN: touch certora/applyHarness.patch
-
 import "../helpers/erc20.spec"
+
+using DummyERC20A as _token0
+using DummyERC20B as _token1
+using DummyERC20C as _token2
+using DummyERC20D as _token3
+using DummyERC20E as _token4
 // using SymbolicVault as vault // dependent on implementation
 // nondet all,				onSwap			|  onJoinPool
 
@@ -36,14 +41,14 @@ methods {
     totalTokensBalance() returns (uint256 total) envfree
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
-    _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
-    _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-	_calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
-    _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
+    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
+    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
+	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
+    // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
@@ -77,23 +82,24 @@ methods {
     // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
     // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
 
+    _token0.balanceOf(address) returns(uint256) envfree
+    _token1.balanceOf(address) returns(uint256) envfree
+    _token2.balanceOf(address) returns(uint256) envfree
+    _token3.balanceOf(address) returns(uint256) envfree
+    _token4.balanceOf(address) returns(uint256) envfree
+
     getToken0() returns(address) envfree
     getToken1() returns(address) envfree
     getToken2() returns(address) envfree
     getToken3() returns(address) envfree
     getToken4() returns(address) envfree
-    _getTotalTokens() returns (uint256) envfree
+    getTotalTokens() returns (uint256) envfree
 
 }
 
 function setup() { 
-    address token0 = getToken0();
-    address token1 = getToken1();
-    address token2 = getToken2();
-    address token3 = getToken3();
-    address token4 = getToken4();
-    require token0<token1 && token1<token2 && token2<token3 && token3<token4;
-    require _getTotalTokens()>1 && _getTotalTokens()<6;
+    require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+    require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -201,6 +207,27 @@ rule NoFreeBPT(uint256 num, method f)
     assert totalBpt_>_totalBpt => totalTokens_>_totalTokens;
     assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;
 }
+
+rule NoFreeBPTPerAccount(uint256 num, method f)
+{
+    setup();
+    env e;
+	calldataarg args;
+
+    address u;
+    require u == e.msg.sender;
+    uint256 _bptPerUser = balanceOf(u);
+    uint256 _totalTokensPerUser = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u);
+
+	f(e,args);
+
+    uint256 bptPerUser_ = balanceOf(u);
+    uint256 totalTokensPerUser_ = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u);
+
+    assert bptPerUser_>_bptPerUser => _totalTokensPerUser>totalTokensPerUser_;
+    assert bptPerUser_<_bptPerUser => _totalTokensPerUser<totalTokensPerUser_;
+}
+
 
 // onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
 // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
