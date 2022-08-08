@@ -161,6 +161,14 @@ rule nonzeroSupply(method f) filtered {
     assert totalSupply() > 0;
 }
 
+rule cantGetToNonzeroSupply(method f) {
+    env e; calldataarg args;
+    require totalSupply() > 0;
+    f(e, args);
+    assert totalSupply() > 0;
+}
+
+
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
