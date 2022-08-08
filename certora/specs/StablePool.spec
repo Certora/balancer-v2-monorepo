@@ -152,6 +152,15 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
 invariant cantBurnAll()
     totalSupply() > 0 
 
+// totalSupply nonzero after onJoinPool is called
+rule nonzeroSupply(method f) filtered {
+    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
+} {
+    env e; calldataarg args;
+    f(e, args);
+    assert totalSupply() > 0;
+}
+
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
