@@ -28,8 +28,23 @@ methods {
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
+    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
+    //     uint256 tokenIndexIn,
+    //     uint256 tokenIndexOut,
+    //     uint256 tokenAmountIn,
+    //     uint256 invariant) returns (uint256) 
+    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
 	// stable pool
-	//_getAmplificationParameter() returns (uint256,bool) => NONDET
+	// _getAmplificationParameter() returns (uint256,bool) => NONDET
+
+    // _calcTokenInGivenExactBptOut(
+    //     uint256 amp,
+    //     uint256[] balances,
+    //     uint256 tokenIndex,
+    //     uint256 bptAmountOut,
+    //     uint256 bptTotalSupply,
+    //     uint256 swapFeePercentage) returns (uint256)
+    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
 
     // vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
@@ -58,8 +73,10 @@ methods {
 
 }
 
-function setup() { 
+function setup(env e) { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+    require currentContract < _token0;
+    require e.msg.sender < currentContract;
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
@@ -138,10 +155,9 @@ invariant solvency()
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
 
-rule NoFreeBPT(uint256 num, method f)
-{
-    setup();
+rule NoFreeBPT(uint256 num, method f) {
     env e;
+    setup(e);
 	calldataarg args;
 
     uint256 _totalBpt = totalSupply();
@@ -156,11 +172,15 @@ rule NoFreeBPT(uint256 num, method f)
     assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;
 }
 
-rule NoFreeBPTPerAccount(uint256 num, method f)
-{
-    setup();
+rule NoFreeBPTPerAccount(uint256 num, method f) filtered { f ->
+    f.selector != transfer(address,uint256).selector 
+    && f.selector != transferFrom(address,address,uint256).selector 
+} {
     env e;
+    setup(e);
 	calldataarg args;
+
+    require totalSupply() > 0;
 
     address u;
     require u == e.msg.sender;
