@@ -9,8 +9,6 @@ import "../munged/pool-stable/contracts/StablePool.sol";
 contract StablePoolHarness is StablePool {
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
-    bytes data_join;
-    bytes data_exit;
     address sender;
     address recepient;
     IERC20[] tokens;
@@ -40,8 +38,9 @@ contract StablePoolHarness is StablePool {
         address recipient,
         uint256[] memory balances,
         uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage
-    ) public onlyVault(poolId) returns (uint256[] memory, uint256[] memory) {
+        uint256 protocolSwapFeePercentage,
+        bytes memory userData
+    ) public override returns (uint256[] memory, uint256[] memory) {
         uint256[] memory amounts;
         uint256[] memory fees;
         require(_getTotalTokens() == balances.length, "length needs to be the same");
@@ -52,7 +51,7 @@ contract StablePoolHarness is StablePool {
             balances,
             lastChangeBlock,
             protocolSwapFeePercentage,
-            data_join
+            userData
         );
 
         _receiveAsset(_token0, sender, amounts[0], fees[0]);
@@ -92,8 +91,9 @@ contract StablePoolHarness is StablePool {
             address recipient,
             uint256[] memory balances,
             uint256 lastChangeBlock,
-            uint256 protocolSwapFeePercentage
-        ) public onlyVault(poolId) returns (uint256[] memory, uint256[] memory) {
+            uint256 protocolSwapFeePercentage,
+            bytes memory userData
+        ) public override returns (uint256[] memory, uint256[] memory) {
             uint256[] memory amounts;
             uint256[] memory fees;
             require(_getTotalTokens() == balances.length, "length needs to be the same");
@@ -104,7 +104,7 @@ contract StablePoolHarness is StablePool {
                 balances,
                 lastChangeBlock,
                 protocolSwapFeePercentage,
-                data_exit
+                userData
             );
 
         _sendAsset(_token0, recipient, amounts[0], fees[0]);
@@ -115,8 +115,8 @@ contract StablePoolHarness is StablePool {
             _sendAsset(_token3, recipient, amounts[3], fees[3]);
         else if (balances.length>4)
             _sendAsset(_token4, recipient, amounts[4], fees[4]);
-        }
-
+    }
+        
     function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee) public {
         token.transfer(recipient, amount);
         if (fee > 0) {
