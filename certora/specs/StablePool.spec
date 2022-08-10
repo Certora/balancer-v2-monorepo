@@ -1,6 +1,3 @@
-// HOW TO RUN THIS FILE: use bash certora/scripts/verifyStablePool.sh <rule> <msg> from the root of the project directory
-// <rule> and <msg> are OPTIONAL. If you don't include a rule, it will run all of the rules
-// BEFORE YOU CAN RUN ANY OF THE SPECS YOU MUST RUN: touch certora/applyHarness.patch
 import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
@@ -8,41 +5,18 @@ using DummyERC20B as _token1
 using DummyERC20C as _token2
 using DummyERC20D as _token3
 using DummyERC20E as _token4
-// using SymbolicVault as vault // dependent on implementation
-// nondet all,				onSwap			|  onJoinPool
-
-// nondet 		1st, 		onSwap 	timeout |  onJoinPool
-// nondet 		2nd, 		onSwap		 	|  onJoinPool 	timeout
-// nondet 		3rd, 		onSwap		 	|  onJoinPool 	timeout
-// nondet 		4th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		5th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		6th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		7th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		8th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		9th, 		onSwap 	timeout |  onJoinPool 	timeout
-// nondet 		10th,	 	onSwap 			|  onJoinPool 	timeout
-// nondet 		11th,	 	onSwap 	timeout |  onJoinPool 	timeout
-
-// nondet 1st and 10th, 	onSwap 			|  onJoinPool 	
-
-/// Functions that matter
-// _calculateInvariant matters for onJoinPool
-// _calcOutGivenIn matters for onSwap
-// _calcInGivenOut matters for onSwap
-// _getTokenBalanceGivenInvariantAndAllOtherBalances matters for onSwap
-
-// want properties of math functions which we can require
 
 ////////////////////////////////////////////////////////////////////////////
 //                      Methods                                           //
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
-    totalTokensBalance() returns (uint256 total) envfree
+    totalTokensBalance() returns (uint256) envfree
+    inRecoveryMode() returns (bool) envfree
+
+
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
@@ -51,21 +25,6 @@ methods {
     // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-=======
-=======
->>>>>>> Stashed changes
-    //_calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    //_calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    //_calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
-    //_calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-	//_calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
-    //_calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
@@ -83,21 +42,6 @@ methods {
     canPerform(bytes32, address, address) returns (bool) => NONDET
     // harness functions
     setRecoveryMode(bool)
-
-    // pow(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    // powUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // powDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-
-    // exp(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    // log(uint256 x, uint256 y) => ghost_division(x, y);
-    // ln(uint256 x, uint256 y) => ghost_ln(x);
-
-    // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // div(uint256 x, uint256 y) => ghost_division(x, y);
-    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
-    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -133,39 +77,6 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
 }
 
-// ghost ghost_ln(uint256) returns uint256 {
-//   axiom forall uint256 x1. forall uint256 x2. 
-//       x1 > x2 => ghost_ln(x1) > ghost_ln(x2);
-// }
-
-// ghost ghost_multiplication(uint256,uint256) returns uint256 {
-//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
-//       x1 > x2 => ghost_multiplication(x1, y) > ghost_multiplication(x2, y);
-//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
-//       y1 > y2 => ghost_multiplication(x, y1) > ghost_multiplication(x, y2);
-// }
-
-// ghost ghost_multiplication_round(uint256,uint256) returns uint256 {
-//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
-//       x1 > x2 => ghost_multiplication_round(x1, y) >= ghost_multiplication_round(x2, y);
-//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
-//       y1 > y2 => ghost_multiplication_round(x, y1) >= ghost_multiplication_round(x, y2);
-// }
-
-// ghost ghost_division(uint256,uint256) returns uint256 {
-//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
-//       x1 > x2 && y > 0 => ghost_division(x1, y) > ghost_division(x2, y);
-//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
-//       y1 > y2 && y2 > 0 => ghost_division(x, y1) < ghost_division(x, y2);
-// }
-
-// ghost ghost_division_round(uint256,uint256) returns uint256 {
-//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
-//       x1 > x2 && y>0 => ghost_division_round(x1, y) >= ghost_division_round(x2, y);
-//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
-//       y1 > y2 && y2>0 => ghost_division_round(x, y1) <= ghost_division_round(x, y2);
-// }
-
 ////////////////////////////////////////////////////////////////////////////
 //                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
@@ -179,16 +90,24 @@ invariant cantBurnAll()
 rule nonzeroSupply(method f) filtered {
     f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
 } {
-    env e; calldataarg args;
-    f(e, args);
-    assert totalSupply() > 0;
-}
+    //require !inRecoveryMode();
+    
+    env e1;
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onJoinPool(e1, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    assert totalSupply() > 0, "totalSupply must be greater than 0 after onJoinPool is called";
 
-rule cantGetToNonzeroSupply(method f) {
+    env e2; calldataarg args2; method g;
+    g(e2, args2); // user B had totalSupply tokens and exits
+    assert totalSupply() > 0, "totalSupply must be greater than 0 after an arbitrary function call if the pool has been initialized";
+}
+/// @title totalSupply can only go 0 to non-zero if `onJoinPool` is called without reverting
+rule onlyOnJoinPoolCanInitialize(method f) {
     env e; calldataarg args;
-    require totalSupply() > 0;
+    require totalSupply() == 0;
     f(e, args);
-    assert totalSupply() > 0;
+    assert totalSupply() > 0 => f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool";
 }
 
 
@@ -196,6 +115,18 @@ rule cantGetToNonzeroSupply(method f) {
 /// @description One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
     totalSupply() > balanceOf(e, user)
+    {preserved { require e.msg.sender != 0; }}
+
+rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
+    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
+} {
+    require !inRecoveryMode();
+    require !inRecoveryMode();
+    
+    calldataarg args1;
+    f(e1, args1); // user A joins with x tokens
+    assert totalSupply() > balanceOf(user), "totalSupply must be greater than 0 after onJoinPool is called";
+}
 
 /// @invariant BPTSolvency
 /// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
@@ -249,11 +180,19 @@ rule NoFreeBPTPerAccount(uint256 num, method f)
 // onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
 // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
 rule sanity(method f) 
-//filtered {f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector}
-//filtered {f -> f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector}
 {
 	env e;
 	calldataarg args;
+    require !inRecoveryMode();
+	f(e,args);
+	assert false;
+}
+
+rule sanity1(method f) 
+{
+	env e;
+	calldataarg args;
+    require inRecoveryMode();
 	f(e,args);
 	assert false;
 }
@@ -308,7 +247,7 @@ rule amplificationFactorFollowsEndTime(method f) {
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
 
-    assert !inRecoveryMode(e);
+    assert !inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
     f(e, args); // call some arbitrary function
 
@@ -379,13 +318,13 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 rule exitNonRevertingOnRecoveryMode(method f) {
     env e; calldataarg args;
     require e.msg.sender == getVault();
-    require inRecoveryMode(e);
+    require inRecoveryMode();
     f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(e); // needs to stay in recovery mode
+    require inRecoveryMode(); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
 }
@@ -394,7 +333,7 @@ rule exitNonRevertingOnRecoveryMode(method f) {
 /// @description: none of the complex math functions will be called on recoveryMode
 // rule recoveryModeSimpleMath(method f) {
 //     env e; calldataarg args;
-//     require inRecoveryMode(e);
+//     require inRecoveryMode();
 //     f@withrevert(e, args);
 //     assert (some check for math) => lastReverted, "no revert on math function"
 // }
@@ -404,9 +343,9 @@ rule exitNonRevertingOnRecoveryMode(method f) {
 /// @description: Only governance can bring the contract into recovery mode
 rule recoveryModeGovernanceOnly(method f) {
     env e; calldataarg args;
-    bool recoveryMode_ = inRecoveryMode(e);
+    bool recoveryMode_ = inRecoveryMode();
     f(e, args);
-    bool _recoveryMode = inRecoveryMode(e);
+    bool _recoveryMode = inRecoveryMode();
     assert e.msg.sender != getOwner(e) => recoveryMode_ == _recoveryMode, "non owner changed recovery mode with public function";
 }
 
@@ -418,7 +357,7 @@ rule recoveryModeGovernanceOnly(method f) {
 rule basicOperationsRevertOnPause(method f) filtered {f -> !f.isView }
 {
     env e; calldataarg args;
-    require !inRecoveryMode(e); // we will test this case independently
+    require !inRecoveryMode(); // we will test this case independently
     bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
     f@withrevert(e, args);
@@ -468,26 +407,26 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 rule prWithdrawNeverReverts(method f) {
     env e; calldataarg args;
     require e.msg.sender == getVault();
-    require inRecoveryMode(e);
+    require inRecoveryMode();
     f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(e); // needs to stay in recovery mode
+    require inRecoveryMode(); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
 
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
 }
 
 rule prOtherFunctionsAlwaysRevert(method f) filtered { 
-    f -> (f.selector != onExitPool(bytes32, address, address, uint256[], uint256, uint256).selector && !f.isView) } 
+    f -> (f.selector != onExitPool(bytes32, address, address, uint256[], uint256, uint256, bytes).selector && !f.isView) } 
 {
     env e; calldataarg args;
 
-    require inRecoveryMode(e);
+    require inRecoveryMode();
     bool paused; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
     require paused;
