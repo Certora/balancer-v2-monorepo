@@ -1,13 +1,24 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-08-01 15:25:11.000000000 -0700
++++ .gitignore	2022-08-08 14:57:52.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
 --- pool-stable/contracts/StablePool.sol	2022-06-20 21:05:13.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-01 15:25:11.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-08-10 10:09:07.000000000 -0700
+@@ -22,8 +22,8 @@
+ import "@balancer-labs/v2-solidity-utils/contracts/helpers/InputHelpers.sol";
+ import "@balancer-labs/v2-solidity-utils/contracts/helpers/WordCodec.sol";
+ 
+-import "@balancer-labs/v2-pool-utils/contracts/BaseGeneralPool.sol";
+-import "@balancer-labs/v2-pool-utils/contracts/LegacyBaseMinimalSwapInfoPool.sol";
++import "../../pool-utils/contracts/BaseGeneralPool.sol"; // MUNGED changed to path to be relative
++import "../../pool-utils/contracts/LegacyBaseMinimalSwapInfoPool.sol"; // MUNGED changed to path to be relative
+ 
+ import "./StableMath.sol";
+ 
 @@ -682,7 +682,7 @@
          precision = StableMath._AMP_PRECISION;
      }
@@ -19,7 +30,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
 diff -ruN pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
 --- pool-utils/contracts/BasePool.sol	2022-08-05 17:23:33.000000000 -0700
-+++ pool-utils/contracts/BasePool.sol	2022-08-01 15:25:10.000000000 -0700
++++ pool-utils/contracts/BasePool.sol	2022-08-08 14:57:52.000000000 -0700
 @@ -631,7 +631,7 @@
       * @dev Same as `_downscaleUp`, but for an entire array. This function does not return anything, but instead
       * *mutates* the `amounts` array.
@@ -31,7 +42,7 @@ diff -ruN pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
          }
 diff -ruN pool-utils/contracts/LegacyBasePool.sol pool-utils/contracts/LegacyBasePool.sol
 --- pool-utils/contracts/LegacyBasePool.sol	2022-08-07 15:41:40.000000000 -0700
-+++ pool-utils/contracts/LegacyBasePool.sol	2022-08-08 11:21:00.000000000 -0700
++++ pool-utils/contracts/LegacyBasePool.sol	2022-08-08 14:57:52.000000000 -0700
 @@ -355,7 +355,9 @@
          return (amountsOut, dueProtocolFeeAmounts);
      }
