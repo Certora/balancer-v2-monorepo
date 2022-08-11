@@ -181,7 +181,7 @@ contract StablePoolHarness is StablePool {
         _sendAsset(indexOut, recepient, amountOut);
     }
 
-    function balanceOf(uint256 num) public returns (uint256) {
+    function balanceOf(uint256 num) public view returns (uint256) {
         if (num==0)
             return _token0.balanceOf(address(this));
         else if (num==1)
@@ -195,7 +195,7 @@ contract StablePoolHarness is StablePool {
     }
 
 
-    function totalTokensBalance() public returns (uint256 total) {        
+    function totalTokensBalance() public view returns (uint256 total) {        
         total = _token0.balanceOf(address(this));
         total += _token1.balanceOf(address(this));
         total += _token2.balanceOf(address(this));
@@ -203,19 +203,19 @@ contract StablePoolHarness is StablePool {
         total += _token4.balanceOf(address(this));
     }
 
-    function getToken0() public returns (address) {
+    function getToken0() public view returns (address) {
         return address(_token0);
     }
-    function getToken1() public returns (address) {
+    function getToken1() public view returns (address) {
         return address(_token1);
     }
-    function getToken2() public returns (address) {
+    function getToken2() public view returns (address) {
         return address(_token2);
     }
-    function getToken3() public returns (address) {
+    function getToken3() public view returns (address) {
         return address(_token3);
     }
-    function getToken4() public returns (address) {
+    function getToken4() public view returns (address) {
         return address(_token4);
     }
     function getTotalTokens() public view returns (uint256) {

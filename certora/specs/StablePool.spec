@@ -216,7 +216,7 @@ rule sanity(method f)
 	assert false;
 }
 
-rule sanity1(method f) 
+rule sanityRecovery(method f) 
 {
 	env e;
 	calldataarg args;
