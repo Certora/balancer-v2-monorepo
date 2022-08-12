@@ -1,204 +1,14 @@
 diff -ruN .gitignore .gitignore
---- .gitignore	1969-12-31 19:00:00.000000000 -0500
-+++ .gitignore	2022-07-27 17:24:40.228371600 -0400
+--- .gitignore	1969-12-31 16:00:00.000000000 -0800
++++ .gitignore	2022-08-01 15:25:11.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
-diff -ruN interfaces/contracts/pool-stable/StablePoolUserData.sol interfaces/contracts/pool-stable/StablePoolUserData.sol
---- interfaces/contracts/pool-stable/StablePoolUserData.sol	2022-08-10 15:36:54.869809600 -0400
-+++ interfaces/contracts/pool-stable/StablePoolUserData.sol	2022-07-27 17:23:44.240990400 -0400
-@@ -30,12 +30,11 @@
-     }
- 
-     // Joins
--    // onJoinPool
-+
-     function initialAmountsIn(bytes memory self) internal pure returns (uint256[] memory amountsIn) {
-         (, amountsIn) = abi.decode(self, (JoinKind, uint256[]));
-     }
- 
--    // kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT
-     function exactTokensInForBptOut(bytes memory self)
-         internal
-         pure
-@@ -43,21 +42,21 @@
-     {
-         (, amountsIn, minBPTAmountOut) = abi.decode(self, (JoinKind, uint256[], uint256));
-     }
--    // kind == StablePoolUserData.JoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT
-+
-     function tokenInForExactBptOut(bytes memory self) internal pure returns (uint256 bptAmountOut, uint256 tokenIndex) {
-         (, bptAmountOut, tokenIndex) = abi.decode(self, (JoinKind, uint256, uint256));
-     }
- 
-     // Exits
--    // kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT
-+
-     function exactBptInForTokenOut(bytes memory self) internal pure returns (uint256 bptAmountIn, uint256 tokenIndex) {
-         (, bptAmountIn, tokenIndex) = abi.decode(self, (ExitKind, uint256, uint256));
-     }
--    // kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT
-+
-     function exactBptInForTokensOut(bytes memory self) internal pure returns (uint256 bptAmountIn) {
-         (, bptAmountIn) = abi.decode(self, (ExitKind, uint256));
-     }
--    // kind == StablePoolUserData.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT
-+
-     function bptInForExactTokensOut(bytes memory self)
-         internal
-         pure
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-07-22 10:25:24.293902400 -0400
-+++ pool-stable/contracts/StablePool.sol	2022-08-10 15:28:27.438628100 -0400
-@@ -25,7 +25,7 @@
- import "@balancer-labs/v2-pool-utils/contracts/BaseGeneralPool.sol";
- import "@balancer-labs/v2-pool-utils/contracts/LegacyBaseMinimalSwapInfoPool.sol";
- 
--import "./StableMath.sol";
-+import "../../../harnesses/StableMathHarness.sol";
- 
- /**
-  * @notice Pool designed to hold tokens of similar value.
-@@ -378,6 +378,101 @@
- 
-     // Exit
- 
-+    function onExitPool(
-+        bytes32 poolId,
-+        address sender,
-+        address recipient,
-+        uint256[] memory balances,
-+        uint256 lastChangeBlock,
-+        uint256 protocolSwapFeePercentage,
-+        bytes memory userData
-+    ) public virtual override onlyVault(poolId) returns (uint256[] memory, uint256[] memory) {
-+        uint256[] memory dueProtocolFeeAmounts;
-+        uint256[] memory amountsOut;
-+        uint256 bptAmountIn;
-+        // bool rm;
-+        // When a user calls `exitPool`, this is the first point of entry from the Vault.
-+        // We first check whether this is a Recovery Mode exit - if so, we proceed using this special lightweight exit
-+        // mechanism which avoids computing any complex values, interacting with external contracts, etc., and generally
-+        // should always work, even if the Pool's mathematics or a dependency break down.
-+        if (uint256(poolId)>3) {
-+            // This exit kind is only available in Recovery Mode.
-+            _ensureInRecoveryMode();
-+
-+            // Protocol fees are skipped when processing recovery mode exits, since these are pool-agnostic and it
-+            // is therefore impossible to know how many fees are due. For consistency, all regular joins and exits are
-+            // processed as if the protocol swap fee percentage was zero.
-+            dueProtocolFeeAmounts = new uint256[](balances.length);
-+
-+            (bptAmountIn, amountsOut) = _doRecoveryModeExit(balances, totalSupply(), userData, 1);
-+        } else {
-+            // Exits are unsupported when paused
-+            _ensureNotPaused();
-+
-+            uint256[] memory scalingFactors = _scalingFactors();
-+            _upscaleArray(balances, scalingFactors);
-+
-+            // Note we no longer use `balances` after calling `_onExitPool`, which may mutate it.
-+            (bptAmountIn, amountsOut, dueProtocolFeeAmounts) = _onExitPool(
-+                poolId,
-+                sender,
-+                recipient,
-+                balances,
-+                lastChangeBlock,
-+                inRecoveryMode() ? 0 : protocolSwapFeePercentage, // Protocol fees are disabled while in recovery mode
-+                scalingFactors,
-+                userData
-+            );
-+
-+            // Both amountsOut and dueProtocolFeeAmounts are amounts exiting the Pool, so we round down.
-+            _downscaleDownArray(amountsOut, scalingFactors);
-+            _downscaleDownArray(dueProtocolFeeAmounts, scalingFactors);
-+        }
-+
-+        _burnPoolTokens(sender, bptAmountIn);
-+
-+        return (amountsOut, dueProtocolFeeAmounts);
-+    }
-+
-+   function _doRecoveryModeExit(
-+        uint256[] memory balances,
-+        uint256 totalSupply,
-+        bytes memory userData,
-+        uint256 dummy
-+    ) internal virtual returns (uint256, uint256[] memory) {
-+        uint256 bptAmountIn;
-+
-+        uint256[] memory amountsOut = _computeProportionalAmountsOut(balances, totalSupply, bptAmountIn, 1);
-+
-+        return (bptAmountIn, amountsOut);
-+    }
-+
-+    function _computeProportionalAmountsOut(
-+        uint256[] memory balances,
-+        uint256 totalSupply,
-+        uint256 bptAmountIn,
-+        uint256 dummy
-+    ) internal pure returns (uint256[] memory amountsOut) {
-+        /**********************************************************************************************
-+        // exactBPTInForTokensOut                                                                    //
-+        // (per token)                                                                               //
-+        // aO = tokenAmountOut             /        bptIn         \                                  //
-+        // b = tokenBalance      a0 = b * | ---------------------  |                                 //
-+        // bptIn = bptAmountIn             \     bptTotalSupply    /                                 //
-+        // bpt = bptTotalSupply                                                                      //
-+        **********************************************************************************************/
-+
-+        // Since we're computing an amount out, we round down overall. This means rounding down on both the
-+        // multiplication and division.
-+
-+        uint256 bptRatio = bptAmountIn.divDown(totalSupply);
-+
-+        amountsOut = new uint256[](balances.length);
-+        for (uint256 i = 0; i < balances.length; i++) {
-+            amountsOut[i] = balances[i].mulDown(bptRatio);
-+        }
-+    }
-+
-     function _onExitPool(
-         bytes32,
-         address,
-@@ -420,7 +515,7 @@
-         uint256[] memory balances,
-         uint256[] memory scalingFactors,
-         bytes memory userData
--    ) private view returns (uint256, uint256[] memory) {
-+    ) public view returns (uint256, uint256[] memory) {
-         StablePoolUserData.ExitKind kind = userData.exitKind();
- 
-         if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
-@@ -435,7 +530,7 @@
-     }
- 
-     function _exitExactBPTInForTokenOut(uint256[] memory balances, bytes memory userData)
--        private
-+        public
-         view
-         returns (uint256, uint256[] memory)
-     {
-@@ -462,7 +557,7 @@
-     }
- 
-     function _exitExactBPTInForTokensOut(uint256[] memory balances, bytes memory userData)
--        private
-+        public
-         view
-         returns (uint256, uint256[] memory)
-     {
-@@ -477,7 +572,7 @@
-         uint256[] memory balances,
-         uint256[] memory scalingFactors,
-         bytes memory userData
--    ) private view returns (uint256, uint256[] memory) {
-+    ) public view returns (uint256, uint256[] memory) {
-         (uint256[] memory amountsOut, uint256 maxBPTAmountIn) = userData.bptInForExactTokensOut();
-         InputHelpers.ensureInputLengthMatch(amountsOut.length, _getTotalTokens());
-         _upscaleArray(amountsOut, scalingFactors);
-@@ -682,7 +777,7 @@
+--- pool-stable/contracts/StablePool.sol	2022-06-20 21:05:13.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-08-01 15:25:11.000000000 -0700
+@@ -682,7 +682,7 @@
          precision = StableMath._AMP_PRECISION;
      }
  
@@ -208,8 +18,8 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
 diff -ruN pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
---- pool-utils/contracts/BasePool.sol	2022-08-05 15:11:07.343021500 -0400
-+++ pool-utils/contracts/BasePool.sol	2022-07-27 17:23:46.851001800 -0400
+--- pool-utils/contracts/BasePool.sol	2022-08-05 17:23:33.000000000 -0700
++++ pool-utils/contracts/BasePool.sol	2022-08-01 15:25:10.000000000 -0700
 @@ -631,7 +631,7 @@
       * @dev Same as `_downscaleUp`, but for an entire array. This function does not return anything, but instead
       * *mutates* the `amounts` array.

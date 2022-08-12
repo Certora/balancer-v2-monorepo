@@ -26,25 +26,11 @@ methods {
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
-    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
-    //     uint256 tokenIndexIn,
-    //     uint256 tokenIndexOut,
-    //     uint256 tokenAmountIn,
-    //     uint256 invariant) returns (uint256) 
-    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
-	// stable pool
-	// _getAmplificationParameter() returns (uint256,bool) => NONDET
-
-    // _calcTokenInGivenExactBptOut(
-    //     uint256 amp,
-    //     uint256[] balances,
-    //     uint256 tokenIndex,
-    //     uint256 bptAmountOut,
-    //     uint256 bptTotalSupply,
-    //     uint256 swapFeePercentage) returns (uint256)
-    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
+    //// @dev "view" functions that call internal function with function pointers as input
+    queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
+    queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
 
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
