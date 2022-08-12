@@ -13,10 +13,12 @@ certoraRun \
     --link StablePoolHarness:_token0=DummyERC20A StablePoolHarness:_token1=DummyERC20B StablePoolHarness:_token2=DummyERC20C StablePoolHarness:_token3=DummyERC20D StablePoolHarness:_token4=DummyERC20E \
     --verify StablePoolHarness:certora/specs/StablePool.spec \
     --staging \
-    --settings -assumeUnwindCond,-b=3,-s=z3 --rule sanityRecovery \
+    --settings -enableEqualitySaturation=false \
+    --solc_args "['optimize', '--optimize-runs', '200']" \
     --cache balancer \
     --optimistic_loop \
+    --loop_iter 2 \
     --send_only \
     $RULE \
-    --msg "StablePool w/ enableEqualitySaturation=false and no summaries: $1" \
+    --msg "StablePool w/ enableEqualitySaturation=false solc optimizer runs: $1" \
 

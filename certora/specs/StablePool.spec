@@ -112,10 +112,8 @@ invariant cantBurnAll()
     totalSupply() > 0 
 
 /// `totalSupply` nonzero after `onJoinPool` is called
-rule nonzeroSupply(method f) filtered {
-    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
-} {
-    //require !inRecoveryMode();
+rule nonzeroSupply() {
+    require !inRecoveryMode();
     
     env e1;
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
