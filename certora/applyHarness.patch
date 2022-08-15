@@ -7,7 +7,16 @@ diff -ruN .gitignore .gitignore
 \ No newline at end of file
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
 --- pool-stable/contracts/StablePool.sol	2022-06-20 21:05:13.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-12 14:56:11.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-08-12 15:10:08.000000000 -0700
+@@ -420,7 +420,7 @@
+         uint256[] memory balances,
+         uint256[] memory scalingFactors,
+         bytes memory userData
+-    ) private view returns (uint256, uint256[] memory) {
++    ) internal view returns (uint256, uint256[] memory) { // MUNGED private => internal
+         StablePoolUserData.ExitKind kind = userData.exitKind();
+ 
+         if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
 @@ -682,7 +682,7 @@
          precision = StableMath._AMP_PRECISION;
      }

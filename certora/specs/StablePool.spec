@@ -11,8 +11,13 @@ using DummyERC20E as _token4
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
+    //// @dev envfree functions
     totalTokensBalance() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
+    zero() returns (address) envfree
+
+    //// @dev heavy but important function, want to fix timeout
+    _doExit(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
 
 
 	//// @dev stable math
@@ -89,41 +94,47 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//// ###                      Invariants                                  //
+//                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
-
-/// @title Can't burn all BPT
-/// @notice Contract must not allow all BPT to be burned.
-invariant cantBurnAll()
-    totalSupply() > 0 
-
-/// `totalSupply` nonzero after `onJoinPool` is called
-rule nonzeroSupply() {
-    require !inRecoveryMode();
-    
-    env e1;
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    onJoinPool(e1, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    assert totalSupply() > 0, "totalSupply must be greater than 0 after onJoinPool is called";
-
-    env e2; calldataarg args2; method g;
-    g(e2, args2); // user B had totalSupply tokens and exits
-    assert totalSupply() > 0, "totalSupply must be greater than 0 after an arbitrary function call if the pool has been initialized";
-}
-
-/// `totalSupply` can only become non-zero if `onJoinPool` is called without reverting.
-rule onlyOnJoinPoolCanInitialize(method f) {
-    env e; calldataarg args;
-    require totalSupply() == 0;
-    f(e, args);
-    assert totalSupply() > 0 => f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool";
-}
 
 /// One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
     totalSupply() > balanceOf(e, user)
     {preserved { require e.msg.sender != 0; }}
+
+/// @title Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
+invariant solvency()
+    totalSupply() >= sum_all_users_BPT()
+
+////////////////////////////////////////////////////////////////////////////
+//                               Rule                                     //
+////////////////////////////////////////////////////////////////////////////
+
+/// @title `totalSupply` must be non-zero if and only if `onJoinPool` is successfully called. Additionally, the balance of the zero adress must be non-zero if `onJoinPool` was successfully called.
+/// @dev Calling `onJoinPool` for the first time initializes the pool, minting some BPT to the zero address.
+rule onlyOnJoinPoolCanAndMustInitialize(method f) {
+    env e; calldataarg args; address zero;
+
+    require totalSupply() == 0;
+    require zero == 0;
+    
+    f(e, args);
+    
+    assert totalSupply() > 0  <=> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool and must initialize if called";
+    assert f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector => balanceOf(zero) > 0, "zero address must be minted some tokens on initialization";
+}
+
+// @title The zero address's BPT balance can never go from non-zero to zero.
+rule cantBurnZerosBPT(method f) {
+    address  zero = 0;
+
+    require balanceOf(zero) > 0;
+
+    env e; calldataarg args;
+    f(e, args); // vacuous for onSwap since ERC20 transfer revert when transferring to 0 address
+
+    assert balanceOf(zero) > 0, "zero address must always have non-zero balance";
+}
 
 /// Reimplements [`noMonopoly`](#noMonopoly) as a rule
 /// @dev TODO: how/why is this different from `noMonopoly`?
@@ -138,14 +149,6 @@ rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
     assert totalSupply() > balanceOf(user), "totalSupply must be greater than 0 after onJoinPool is called";
 }
 
-/// Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
-invariant solvency()
-    totalSupply() >= sum_all_users_BPT()
-
-
-////////////////////////////////////////////////////////////////////////////
-//                               Rule                                     //
-////////////////////////////////////////////////////////////////////////////
 
 rule NoFreeBPT(uint256 num, method f) {
     env e;

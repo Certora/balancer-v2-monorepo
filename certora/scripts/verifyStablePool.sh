@@ -14,11 +14,10 @@ certoraRun \
     --verify StablePoolHarness:certora/specs/StablePool.spec \
     --staging \
     --settings -enableEqualitySaturation=false \
-    --solc_args "['optimize', '--optimize-runs', '200']" \
     --cache balancer \
     --optimistic_loop \
     --loop_iter 2 \
     --send_only \
     $RULE \
-    --msg "StablePool w/ enableEqualitySaturation=false solc optimizer runs: $1" \
+    --msg "StablePool: $1" \
 
