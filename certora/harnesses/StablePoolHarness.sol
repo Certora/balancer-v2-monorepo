@@ -7,12 +7,14 @@ import "../munged/pool-stable/contracts/StablePool.sol";
 // methods for the spec to access internal state, or may override some of the
 // more complex methods in the original contract.
 contract StablePoolHarness is StablePool {
+    using SafeMath for uint256;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
     address recepient;
     IERC20[] tokens;
     address _protocolFeesCollector;
+    uint256[] collectedFees;
 
     constructor(
         IVault vault,
@@ -54,22 +56,23 @@ contract StablePoolHarness is StablePool {
             userData
         );
 
-        _receiveAsset(_token0, sender, amounts[0], fees[0]);
-        _receiveAsset(_token1, sender, amounts[1], fees[1]);
+        _receiveAsset(_token0, sender, amounts[0], fees[0], 0);
+        _receiveAsset(_token1, sender, amounts[1], fees[1], 1);
         if (balances.length>2)
-            _receiveAsset(_token2, sender, amounts[2], fees[2]);
+            _receiveAsset(_token2, sender, amounts[2], fees[2], 2);
         else if (balances.length>3)
-            _receiveAsset(_token3, sender, amounts[3], fees[3]);
+            _receiveAsset(_token3, sender, amounts[3], fees[3], 3);
         else if (balances.length>4)
-            _receiveAsset(_token4, sender, amounts[4], fees[4]);
+            _receiveAsset(_token4, sender, amounts[4], fees[4], 4);
     }
 
 
-    function _receiveAsset(IERC20 token, address sender, uint256 amount, uint256 fee) public {
+    function _receiveAsset(IERC20 token, address sender, uint256 amount, uint256 fee, uint256 id) public {
         require(token == _token0 || token == _token1 || token == _token2 || token == _token3 || token == _token4);
         token.transferFrom(sender, address(this), amount);
-        if (fee > 0) {
-            token.transfer(_protocolFeesCollector, fee);
+        if (fee > 0) { // changed so fees stay within this contract
+            token.transferFrom(sender, address(this), fee);
+            collectedFees[id] += fee;
         }
     }
 
@@ -97,6 +100,7 @@ contract StablePoolHarness is StablePool {
     ) public override returns (uint256[] memory, uint256[] memory) {
         uint256[] memory amounts;
         uint256[] memory fees;
+        require(recipient != address(this), "can not send pool tokes when exiting");
         require(_getTotalTokens() == balances.length, "length needs to be the same");
         uint256 inputBalance;
         for (uint256 i; i <balances.length; ++i) {
@@ -111,23 +115,23 @@ contract StablePoolHarness is StablePool {
                 lastChangeBlock,
                 protocolSwapFeePercentage,
                 userData
-            );
+        );
 
-        _sendAsset(_token0, recipient, amounts[0], fees[0]);
-        _sendAsset(_token1, recipient, amounts[1], fees[1]);
+        _sendAsset(_token0, recipient, amounts[0], fees[0], 0);
+        _sendAsset(_token1, recipient, amounts[1], fees[1], 1);
         if (balances.length>2)
-            _sendAsset(_token2, recipient, amounts[2], fees[2]);
+            _sendAsset(_token2, recipient, amounts[2], fees[2], 2);
         else if (balances.length>3)
-            _sendAsset(_token3, recipient, amounts[3], fees[3]);
+            _sendAsset(_token3, recipient, amounts[3], fees[3], 3);
         else if (balances.length>4)
-            _sendAsset(_token4, recipient, amounts[4], fees[4]);
+            _sendAsset(_token4, recipient, amounts[4], fees[4], 4);
     }
         
-    function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee) public {
+    function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee, uint256 id) public {
         require(token == _token0 || token == _token1 || token == _token2 || token == _token3 || token == _token4);
         token.transfer(recipient, amount);
         if (fee > 0) {
-            token.transfer(_protocolFeesCollector, fee);
+            collectedFees[id] += fee;
         }
     }
 
@@ -197,10 +201,26 @@ contract StablePoolHarness is StablePool {
 
     function totalTokensBalance() public view returns (uint256 total) {        
         total = _token0.balanceOf(address(this));
-        total += _token1.balanceOf(address(this));
-        total += _token2.balanceOf(address(this));
-        total += _token3.balanceOf(address(this));
-        total += _token4.balanceOf(address(this));
+        total = total.add(_token1.balanceOf(address(this)));
+        total = total.add(_token2.balanceOf(address(this)));
+        total = total.add(_token3.balanceOf(address(this)));
+        total = total.add(_token4.balanceOf(address(this)));
+    }
+
+    function totalFees() public view returns (uint256 total) {        
+        total = collectedFees[0];
+        total = total.add(collectedFees[1]);
+        total = total.add(collectedFees[2]);
+        total = total.add(collectedFees[3]);
+        total = total.add(collectedFees[4]);
+    }
+
+    function totalTokensBalanceUser(address user) public view returns (uint256 total) {        
+        total = _token0.balanceOf(user);
+        total = total.add(_token1.balanceOf(user));
+        total = total.add(_token2.balanceOf(user));
+        total = total.add(_token3.balanceOf(user));
+        total = total.add(_token4.balanceOf(user));
     }
 
     function getToken0() public view returns (address) {
