@@ -31,31 +31,9 @@ library StableMath {
 
     uint256 internal constant _MAX_STABLE_TOKENS = 5;
 
-    // Note on unchecked arithmetic:
-    // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
-    // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
-    // not make any unnecessary checks. We rely on a set of invariants to avoid having to use checked arithmetic (the
-    // Math library), including:
-    //  - the number of tokens is bounded by _MAX_STABLE_TOKENS
-    //  - the amplification parameter is bounded by _MAX_AMP * _AMP_PRECISION, which fits in 23 bits
-    //  - the token balances are bounded by 2^112 (guaranteed by the Vault) times 1e18 (the maximum scaling factor),
-    //    which fits in 172 bits
-    //
-    // This means e.g. we can safely multiply a balance by the amplification parameter without worrying about overflow.
 
-    // About swap fees on joins and exits:
-    // Any join or exit that is not perfectly balanced (e.g. all single token joins or exits) is mathematically
-    // equivalent to a perfectly balanced join or  exit followed by a series of swaps. Since these swaps would charge
-    // swap fees, it follows that (some) joins and exits should as well.
-    // On these operations, we split the token amounts in 'taxable' and 'non-taxable' portions, where the 'taxable' part
-    // is the one to which swap fees are applied.
-
-    // Computes the invariant given the current balances, using the Newton-Raphson approximation.
-    // The amplification parameter equals: A n^(n-1)
-    // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
-    // solhint-disable-previous-line max-line-length
     function _calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
-        internal
+        public
         pure
         returns (uint256)
     {
@@ -70,8 +48,10 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountIn,
         uint256 invariant
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
+        if (tokenAmountIn > 0) { require (value > 0);}
+        else require (value == 0);
         return value;
     }
 
@@ -82,9 +62,12 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountOut,
         uint256 invariant
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
-        return value;    }
+        if (tokenAmountOut > 0) { require (value > 0);}
+        else require (value == 0);
+        return value;    
+    }
 
     function _calcBptOutGivenExactTokensIn(
         uint256 amp,
@@ -92,8 +75,14 @@ library StableMath {
         uint256[] memory amountsIn,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
+        uint256 input;
+        for (uint256 i=0;i<amountsIn.length;++i) {
+            input += amountsIn[i];
+        }
+        if (input > 0) { require (value > 0);}
+        else require (value==0);
         return value;
     }
 
@@ -104,8 +93,10 @@ library StableMath {
         uint256 bptAmountOut,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
+        if (bptAmountOut > 0) { require (value > 0);}
+        else require (value == 0);
         return value;
     }
 
@@ -115,8 +106,14 @@ library StableMath {
         uint256[] memory amountsOut,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
+        uint256 input;
+        for (uint256 i=0;i<amountsOut.length;++i) {
+            input += amountsOut[i];
+        }
+        if (input > 0) { require (value > 0);}
+        else require (value == 0);
         return value;
     }
 
@@ -127,8 +124,10 @@ library StableMath {
         uint256 bptAmountIn,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
+        if (bptAmountIn > 0) { require (value > 0);}
+        else require (value == 0);
         return value;
     }
 
@@ -136,9 +135,15 @@ library StableMath {
         uint256[] memory balances,
         uint256 bptAmountIn,
         uint256 bptTotalSupply
-    ) internal pure returns (uint256[] memory) {
-        uint256 value;
-        return value;
+    ) public pure returns (uint256[] memory) {
+        uint256[] memory values;
+        uint256 output;
+        for (uint256 i=0;i<balances.length;++i) {
+            output += values[i];
+        }        
+        if (bptAmountIn > 0) { require (output > 0);}
+        else require (output == 0);
+        return values;
     }
 
     function _calcDueTokenProtocolSwapFeeAmount(
@@ -147,7 +152,7 @@ library StableMath {
         uint256 lastInvariant,
         uint256 tokenIndex,
         uint256 protocolSwapFeePercentage
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
         return value;
     }
@@ -157,7 +162,7 @@ library StableMath {
         uint256[] memory balances,
         uint256 invariant,
         uint256 tokenIndex
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
         return value;
     }
@@ -166,7 +171,7 @@ library StableMath {
         uint256[] memory balances,
         uint256 amp,
         uint256 supply
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         uint256 value;
         return value;
     }

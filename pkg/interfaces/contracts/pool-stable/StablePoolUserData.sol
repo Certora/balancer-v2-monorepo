@@ -30,11 +30,12 @@ library StablePoolUserData {
     }
 
     // Joins
-
+    // onJoinPool
     function initialAmountsIn(bytes memory self) internal pure returns (uint256[] memory amountsIn) {
         (, amountsIn) = abi.decode(self, (JoinKind, uint256[]));
     }
 
+    // kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT
     function exactTokensInForBptOut(bytes memory self)
         internal
         pure
@@ -42,21 +43,21 @@ library StablePoolUserData {
     {
         (, amountsIn, minBPTAmountOut) = abi.decode(self, (JoinKind, uint256[], uint256));
     }
-
+    // kind == StablePoolUserData.JoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT
     function tokenInForExactBptOut(bytes memory self) internal pure returns (uint256 bptAmountOut, uint256 tokenIndex) {
         (, bptAmountOut, tokenIndex) = abi.decode(self, (JoinKind, uint256, uint256));
     }
 
     // Exits
-
+    // kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT
     function exactBptInForTokenOut(bytes memory self) internal pure returns (uint256 bptAmountIn, uint256 tokenIndex) {
         (, bptAmountIn, tokenIndex) = abi.decode(self, (ExitKind, uint256, uint256));
     }
-
+    // kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT
     function exactBptInForTokensOut(bytes memory self) internal pure returns (uint256 bptAmountIn) {
         (, bptAmountIn) = abi.decode(self, (ExitKind, uint256));
     }
-
+    // kind == StablePoolUserData.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT
     function bptInForExactTokensOut(bytes memory self)
         internal
         pure
