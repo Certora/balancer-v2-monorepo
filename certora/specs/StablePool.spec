@@ -320,16 +320,13 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     require e.msg.sender == getVault();
     // require inRecoveryMode(e);
     // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(e); // needs to stay in recovery mode
+    require inRecoveryMode(); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
 
     setup();
-    require balances.length == _getTotalTokens()
     bytes32 poolId; address sender; address recipient; uint256[] balances;
-
-    require balances.length == _getTotalTokens();
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage); // Harness's onExitPool
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
 }
@@ -363,10 +360,10 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> (
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
         f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
-        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256).selector || 
+        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
         f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256,uint256).selector ||
-        f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256).selector) }
+        f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector) }
 {
     env e; calldataarg args;
     require !inRecoveryMode(); // we will test this case independently
@@ -421,7 +418,7 @@ rule prWithdrawNeverReverts(method f) {
     require e.msg.sender == getVault();
     // require inRecoveryMode(e);
     // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(e); // needs to stay in recovery mode
+    require inRecoveryMode(); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
@@ -439,7 +436,7 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
         f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
-        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256).selector || 
+        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
         f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256,uint256).selector) }
 {
