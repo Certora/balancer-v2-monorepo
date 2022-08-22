@@ -15,9 +15,11 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
+import "@balancer-labs/v2-pool-utils/contracts/ProtocolFeeCache.sol";
+
 import "./BaseWeightedPool.sol";
 
-abstract contract InvariantGrowthProtocolFees is BaseWeightedPool {
+abstract contract InvariantGrowthProtocolFees is BaseWeightedPool, ProtocolFeeCache {
     using FixedPoint for uint256;
 
     // This Pool pays protocol fees by measuring the growth of the invariant between joins and exits. Since weights are
@@ -33,32 +35,30 @@ abstract contract InvariantGrowthProtocolFees is BaseWeightedPool {
         return _lastPostJoinExitInvariant;
     }
 
-    function _beforeJoinExit(
+    function _getSwapProtocolFees(
         uint256[] memory preBalances,
         uint256[] memory normalizedWeights,
-        uint256 protocolSwapFeePercentage
-    ) internal virtual override {
+        uint256 preJoinExitSupply
+    ) internal view returns (uint256) {
+        uint256 protocolSwapFeePercentage = getProtocolFeePercentageCache(ProtocolFeeType.SWAP);
+
+        // We return immediately if the fee percentage is zero to avoid unnecessary computation.
+        if (protocolSwapFeePercentage == 0) return 0;
+
         // Before joins and exits, we measure the growth of the invariant compared to the invariant after the last join
         // or exit, which will have been caused by swap fees, and use it to mint BPT as protocol fees. This dilutes all
         // LPs, which means that new LPs will join the pool debt-free, and exiting LPs will pay any amounts due
         // before leaving.
 
-        // We return immediately if the fee percentage is zero (to avoid unnecessary computation), or when the pool is
-        // paused (to avoid complex computation during emergency withdrawals).
-        if ((protocolSwapFeePercentage == 0) || !_isNotPaused()) {
-            return;
-        }
-
         uint256 preJoinExitInvariant = WeightedMath._calculateInvariant(normalizedWeights, preBalances);
 
-        uint256 toMint = WeightedMath._calcDueProtocolSwapFeeBptAmount(
-            totalSupply(),
-            _lastPostJoinExitInvariant,
-            preJoinExitInvariant,
-            protocolSwapFeePercentage
-        );
-
-        _payProtocolFees(toMint);
+        return
+            WeightedMath._calcDueProtocolSwapFeeBptAmount(
+                preJoinExitSupply,
+                _lastPostJoinExitInvariant,
+                preJoinExitInvariant,
+                protocolSwapFeePercentage
+            );
     }
 
     function _afterJoinExit(
