@@ -237,6 +237,15 @@ rule balanceIncreaseCorrelation(env e, calldataarg args, method f) {
 // returns value encoded in solidity for 1 day
 definition DAY() returns uint256 = 1531409238;
 
+function getAmplificationFactor(env e) returns uint256 {
+    uint256 param; bool updating;
+    param, updating = _getAmplificationParameter(e);
+    return param;
+}
+
+invariant amplificationFactorBounded(env e)
+    getAmplificationFactor(e) < 5000 && getAmplificationFactor(e) > 1
+
 
 /// @rule amplfiicationFactorFollowsEndTime
 /// @description: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
@@ -333,12 +342,13 @@ rule exitNonRevertingOnRecoveryMode(method f) {
 
 /// @rule: recoveryModeSimpleMath
 /// @description: none of the complex math functions will be called on recoveryMode
-// rule recoveryModeSimpleMath(method f) {
-//     env e; calldataarg args;
-//     require inRecoveryMode();
-//     f@withrevert(e, args);
-//     assert (some check for math) => lastReverted, "no revert on math function"
-// }
+rule recoveryModeSimpleMath(method f) {
+    env e; calldataarg args;
+    require inRecoveryMode();
+    require !beenCalled();
+    f@withrevert(e, args);
+    assert beenCalled() => lastReverted, "math function didn't revert";
+}
 
 
 /// @rule: recoveryModeGovernanceOnly
@@ -356,6 +366,7 @@ rule recoveryModeGovernanceOnly(method f) {
 
 /// @rule: basicOperationsRevertOnPause
 /// @description: All basic operations must revert while in a paused state
+/// @notice: passes
 rule basicOperationsRevertOnPause(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -432,6 +443,7 @@ rule prWithdrawNeverReverts(method f) {
 
 /// @title rule: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
+/// @notice: passes
 rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
