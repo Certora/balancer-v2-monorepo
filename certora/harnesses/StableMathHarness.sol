@@ -37,10 +37,11 @@ library StableMath {
         pure
         returns (uint256)
     {
-        uint256 value;
-        return value;
+        require (amplificationParameter>0 && amplificationParameter<5000); 
+        return amplificationParameter * 2;
     }
 
+    
     function _calcOutGivenIn(
         uint256 amplificationParameter,
         uint256[] memory balances,
@@ -49,10 +50,7 @@ library StableMath {
         uint256 tokenAmountIn,
         uint256 invariant
     ) public pure returns (uint256) {
-        uint256 value;
-        if (tokenAmountIn > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return tokenAmountIn * 2;
     }
 
     function _calcInGivenOut(
@@ -63,10 +61,7 @@ library StableMath {
         uint256 tokenAmountOut,
         uint256 invariant
     ) public pure returns (uint256) {
-        uint256 value;
-        if (tokenAmountOut > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;    
+        return tokenAmountOut * 2;    
     }
 
     function _calcBptOutGivenExactTokensIn(
@@ -89,9 +84,7 @@ library StableMath {
         if (amountsIn.length>5)
             input += amountsIn[5];
 
-        if (input > 0) { require (value > 0);}
-        else require (value==0);
-        return value;
+        return input*2;
     }
 
     function _calcTokenInGivenExactBptOut(
@@ -103,10 +96,7 @@ library StableMath {
         uint256 currentInvariant,        
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
-        if (bptAmountOut > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return bptAmountOut * 2;
     }
 
     function _calcBptInGivenExactTokensOut(
@@ -117,7 +107,6 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
         uint256 input = amountsOut[0];
         input += amountsOut[1];
         if (amountsOut.length>2)
@@ -129,9 +118,7 @@ library StableMath {
         if (amountsOut.length>5)
             input += amountsOut[5];
 
-        if (input > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return input * 2;
     }
 
     function _calcTokenOutGivenExactBptIn(
@@ -143,10 +130,7 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
-        if (bptAmountIn > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return bptAmountIn * 2;
     }
 
     function _getTokenBalanceGivenInvariantAndAllOtherBalances(
@@ -155,8 +139,7 @@ library StableMath {
         uint256 invariant,
         uint256 tokenIndex
     ) public pure returns (uint256) {
-        uint256 value;
-        return value;
+        return invariant * 2;
     }
 
     function _getRate(
@@ -164,7 +147,6 @@ library StableMath {
         uint256 amp,
         uint256 supply
     ) public pure returns (uint256) {
-        uint256 value;
-        return value;
+        return amp * 2;
     }
 }

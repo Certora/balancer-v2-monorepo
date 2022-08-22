@@ -307,10 +307,16 @@ contract ComposableStablePool is
         bool isGivenIn = swapRequest.kind == IVault.SwapKind.GIVEN_IN;
 
         _upscaleArray(registeredBalances, scalingFactors);
-        swapRequest.amount = _upscale(
-            swapRequest.amount,
-            scalingFactors[isGivenIn ? registeredIndexIn : registeredIndexOut]
-        );
+        if (isGivenIn)
+            swapRequest.amount = _upscale(
+                swapRequest.amount,
+                scalingFactors[registeredIndexIn]
+            );
+        else
+            swapRequest.amount = _upscale(
+                swapRequest.amount,
+                scalingFactors[registeredIndexOut]
+            );
 
         (uint256 preJoinExitSupply, uint256[] memory balances) = _payProtocolFeesBeforeJoinExit(registeredBalances);
         (uint256 currentAmp, ) = _getAmplificationParameter();

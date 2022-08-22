@@ -1,32 +1,33 @@
-import "../helpers/erc20.spec"
+// import "../helpers/erc20.spec"
 
-using DummyERC20A as _token0
-using DummyERC20B as _token1
-using DummyERC20C as _token2
-using DummyERC20D as _token3
-using DummyERC20E as _token4
-using DummyERC20F as _token5
+// using DummyERC20A as _token0
+// using DummyERC20B as _token1
+// using ComposableStablePoolHarness as _token2
+// using DummyERC20D as _token3
+// using DummyERC20E as _token4
+// using DummyERC20F as _token5
 
 ////////////////////////////////////////////////////////////////////////////
 //                      Methods                                           //
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
-    totalTokensBalance() returns (uint256) envfree
+    totalTokensBalance(address u) returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
-
+    _getTotalTokens() envfree
+    requireOrder(address) envfree
+    totalSupply() envfree
+    balanceOf(address) returns (uint256) envfree
 	// stable math
-    // _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
-    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
-    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
-    // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    // _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
+    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256,uint256)returns (uint256) => DISPATCHER(true)
+    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
+    // _getRate(uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
 
     // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
     //     uint256 tokenIndexIn,
@@ -36,7 +37,7 @@ methods {
     //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
 	// stable pool
     getBptIndex() returns (uint256) envfree
-	_getAmplificationParameter() returns (uint256,bool) => NONDET
+	_getAmplificationParameter() returns (uint256,bool)
 
     // _calcTokenInGivenExactBptOut(
     //     uint256 amp,
@@ -48,34 +49,75 @@ methods {
     //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
 
     // vault 
-    getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
-    getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
+    // getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
+    // getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
-    // authorizor functions
-    getAuthorizor() returns address => DISPATCHER(true)
-    _getAuthorizor() returns address => DISPATCHER(true)
-    _canPerform(bytes32, address) returns (bool) => NONDET
-    canPerform(bytes32, address, address) returns (bool) => NONDET
-    // harness functions
-    setRecoveryMode(bool)
+    getAuthorizor() returns(address)=> NONDET
+    registerPool(uint8 specialization) returns (bytes32) => NONDET
+    registerTokens(bytes32, address[], address[]) => NONDET
+    getPoolTokenInfo(bytes32, address) returns (int256, uint256, uint256, address) => NONDET;
+    getPoolTokens(bytes32) returns (address[], uint256[], uint256) => NONDET;
+    getProtocolFeesCollector() returns (address) => NONDET;
 
-    _token0.balanceOf(address) returns(uint256) envfree
-    _token1.balanceOf(address) returns(uint256) envfree
-    _token2.balanceOf(address) returns(uint256) envfree
-    _token3.balanceOf(address) returns(uint256) envfree
-    _token4.balanceOf(address) returns(uint256) envfree
-    _token5.balanceOf(address) returns(uint256) envfree
+    // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
+    // _onJoinPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
+    // _doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+
+    // onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
+    // _onExitPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
+    // _doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+
+
+    _updateInvariantAfterJoinExit(int256, uint256[], uint256,uint256, uint256) => NONDET;
+
+    // IRateProvider
+    getRate() returns (uint256) => NONDET
+    // _getAuthorizor() returns address => DISPATCHER(true)
+    // _canPerform(bytes32, address) returns (bool) => NONDET
+    // canPerform(bytes32, address, address) returns (bool) => NONDET
+    // // harness functions
+    // setRecoveryMode(bool)
+
+    // balanceOf(address) returns(uint256) envfree => DISPATCHER(true)
+    // _token0.balanceOf(address) returns(uint256) envfree
+    // _token1.balanceOf(address) returns(uint256) envfree
+    // // _token2.balanceOf(address) returns(uint256) envfree
+    // _token3.balanceOf(address) returns(uint256) envfree
+    // _token4.balanceOf(address) returns(uint256) envfree
+    // _token5.balanceOf(address) returns(uint256) envfree
 
     getToken(uint256 num) returns(address) envfree
     getTotalTokens() returns (uint256) envfree
 
+    mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    div(uint256 x, uint256 y) => ghost_division(x, y);
+    divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
+    divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
+
+    insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
+    insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;
+    encodeUint(uint256,uint256,uint256) returns (bytes32) => NONDET;
+    encodeInt(int256,uint256,uint256) returns (bytes32) => NONDET;
+    decodeUint(bytes32,uint256,uint256) returns (uint256) => NONDET;
+    decodeInt(bytes32,uint256,uint256) returns (int256) => NONDET;
+    decodeBool(bytes32, uint256) returns (bool) => NONDET;
+    insertBits192(bytes32,bytes32,uint256) returns (bytes32) => NONDET;
+    insertBool(bytes32,bool,uint256) returns (bytes32) => NONDET;
 }
 
 function setup(env e) { 
-    require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
-    require currentContract == getToken(getBptIndex());
-    require e.msg.sender < _token0;
-    require getTotalTokens()>2 && getTotalTokens()<7;
+    // require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
+    // require currentContract == getToken(getBptIndex());
+    // require e.msg.sender < _token0;
+    // require getTotalTokens()>2 && getTotalTokens()<7;
+    // require getBptIndex() < getTotalTokens();
+    requireOrder(e.msg.sender);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -90,6 +132,36 @@ ghost sum_all_users_BPT() returns uint256 {
 // everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
 hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
+}
+
+ghost ghost_multiplication(uint256,uint256) returns uint256 {
+    axiom forall uint256 y1. forall uint256 y2. forall uint256 x1. forall uint256 x2. 
+        (x1 > x2 => ghost_multiplication(x1, y1) > ghost_multiplication(x2, y1)) &&
+        (y1 > y2 => ghost_multiplication(x1, y1) > ghost_multiplication(x1, y2)) &&
+        ((x1 == 0 || y1 == 0) => ghost_multiplication(x1,y1) == 0);
+}
+
+ghost ghost_multiplication_round(uint256,uint256) returns uint256 {
+    axiom forall uint256 y1. forall uint256 y2. forall uint256 x1. forall uint256 x2. 
+        (x1 > x2 => ghost_multiplication_round(x1, y1) >= ghost_multiplication_round(x2, y1)) &&
+        (y1 > y2 => ghost_multiplication_round(x1, y1) >= ghost_multiplication_round(x1, y2)) &&
+        ((x1 == 0 || y1 == 0) => ghost_multiplication_round(x1,y1) == 0);
+}
+
+ghost ghost_division(uint256,uint256) returns uint256 {
+    axiom forall uint256 x1. forall uint256 x2. forall uint256 y1. forall uint256 y2.         
+        (x1 == 0 => ghost_division(x1, y1) == 0 &&
+        x1 > x2 => ghost_division(x1, y1) > ghost_division(x2, y1) &&
+        y1 > y2 => ghost_division(x1, y1) < ghost_division(x1, y2)) ||
+        y1 == 1 => ghost_division(x1, y1) == x1;
+}
+
+ghost ghost_division_round(uint256,uint256) returns uint256 {
+    axiom forall uint256 x1. forall uint256 x2. forall uint256 y1. forall uint256 y2.         
+        (x1 == 0 => ghost_division_round(x1, y1) == 0 &&
+        x1 > x2 => ghost_division_round(x1, y1) >= ghost_division_round(x2, y1) &&
+        y1 > y2 => ghost_division_round(x1, y1) <= ghost_division_round(x1, y2)) ||
+        y1 == 1 => ghost_division_round(x1, y1) == x1;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -129,7 +201,7 @@ rule onlyOnJoinPoolCanInitialize(method f) {
 /// @invariant noMonopoly
 /// @description One user must not own the whole BPT supply.
 invariant noMonopoly(address user, env e)
-    totalSupply() > balanceOf(e, user)
+    totalSupply() > balanceOf(user)
     {preserved { require e.msg.sender != 0; }}
 
 rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
@@ -159,12 +231,12 @@ rule NoFreeBPT(uint256 num, method f) {
 	calldataarg args;
 
     uint256 _totalBpt = totalSupply();
-    uint256 _totalTokens = totalTokensBalance();
+    uint256 _totalTokens = totalTokensBalance(currentContract);
 
 	f(e,args);
 
     uint256 totalBpt_ = totalSupply();
-    uint256 totalTokens_ = totalTokensBalance();
+    uint256 totalTokens_ = totalTokensBalance(currentContract);
 
     assert totalBpt_>_totalBpt => totalTokens_>_totalTokens;
     assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;
@@ -183,12 +255,12 @@ rule NoFreeBPTPerAccount(uint256 num, method f) filtered { f ->
     address u;
     require u == e.msg.sender;
     uint256 _bptPerUser = balanceOf(u);
-    uint256 _totalTokensPerUser = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u) + _token5.balanceOf(u) - balanceOf(u);
+    uint256 _totalTokensPerUser = totalTokensBalance(u);
 
 	f(e,args);
 
     uint256 bptPerUser_ = balanceOf(u);
-    uint256 totalTokensPerUser_ = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u) + _token5.balanceOf(u) - balanceOf(u);
+    uint256 totalTokensPerUser_ = totalTokensBalance(u);
 
     assert bptPerUser_>_bptPerUser => _totalTokensPerUser>totalTokensPerUser_;
     assert bptPerUser_<_bptPerUser => _totalTokensPerUser<totalTokensPerUser_;
@@ -197,9 +269,13 @@ rule NoFreeBPTPerAccount(uint256 num, method f) filtered { f ->
 
 // onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
 // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
-rule sanity(method f) 
-{
+rule sanity(method f) filtered { f ->
+    f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
+    ||
+    f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
+} {
 	env e;
+    setup(e);
 	calldataarg args;
     require !inRecoveryMode();
 	f(e,args);
