@@ -15,7 +15,7 @@ contract StablePoolHarness is StablePool {
     IERC20[] tokens;
     address _protocolFeesCollector;
     uint256[] collectedFees;
-
+    
     constructor(
         IVault vault,
         string memory name,
@@ -242,47 +242,16 @@ contract StablePoolHarness is StablePool {
         return _getTotalTokens();
     }
 
-    function _calcTokenInGivenExactBptOut(
-        uint256 amp,
-        uint256[] memory balances,
-        uint256 tokenIndex,
-        uint256 bptAmountOut,
-        uint256 bptTotalSupply,
-        uint256 swapFeePercentage
-    ) public returns (uint256) {
-        // Token in, so we round up overall.
+    function minAmp() public pure returns (uint256) {
+        return StableMath._MIN_AMP;
+    }
 
-        // Get the current invariant
-        // uint256 currentInvariant = _calculateInvariant(amp, balances);
+    function maxAmp() public pure returns (uint256) {
+        return StableMath._MAX_AMP;
+    }
 
-        // // Calculate new invariant
-        // uint256 newInvariant = bptTotalSupply.add(bptAmountOut).divUp(bptTotalSupply).mulUp(currentInvariant);
-
-        // // Calculate amount in without fee.
-        // uint256 newBalanceTokenIndex = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-        //     amp,
-        //     balances,
-        //     newInvariant,
-        //     tokenIndex
-        // );
-        // uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
-
-        // // First calculate the sum of all token balances, which will be used to calculate
-        // // the current weight of each token
-        // uint256 sumBalances = 0;
-        // for (uint256 i = 0; i < balances.length; i++) {
-        //     sumBalances = sumBalances.add(balances[i]);
-        // }
-
-        // // We can now compute how much extra balance is being deposited and used in virtual swaps, and charge swap fees
-        // // accordingly.
-        // uint256 currentWeight = balances[tokenIndex].divDown(sumBalances);
-        // uint256 taxablePercentage = currentWeight.complement();
-        // uint256 taxableAmount = amountInWithoutFee.mulUp(taxablePercentage);
-        // uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount);
-
-        // // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
-        // return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
-        return bptAmountOut;
+    function sanitizeUserData(bytes memory userData) public {
+        (, uint256[] memory amountsIn, uint256 minBPTAmountOut) = abi.decode(userData, (StablePoolUserData.JoinKind, uint256, uint256));
+        InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
     }
 }

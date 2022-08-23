@@ -42,6 +42,8 @@ methods {
     canPerform(bytes32, address, address) returns (bool) => NONDET
     // harness functions
     setRecoveryMode(bool)
+    minAmp() returns(uint256) envfree
+    maxAmp() returns(uint256) envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -244,7 +246,7 @@ function getAmplificationFactor(env e) returns uint256 {
 }
 
 invariant amplificationFactorBounded(env e)
-    getAmplificationFactor(e) < 5000 && getAmplificationFactor(e) > 1
+    getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
 
 
 /// @rule amplfiicationFactorFollowsEndTime
@@ -340,16 +342,6 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     assert !lastReverted, "recovery mode must not fail";
 }
 
-/// @rule: recoveryModeSimpleMath
-/// @description: none of the complex math functions will be called on recoveryMode
-rule recoveryModeSimpleMath(method f) {
-    env e; calldataarg args;
-    require inRecoveryMode();
-    require !beenCalled();
-    f@withrevert(e, args);
-    assert beenCalled() => lastReverted, "math function didn't revert";
-}
-
 
 /// @rule: recoveryModeGovernanceOnly
 /// @description: Only governance can bring the contract into recovery mode
@@ -436,6 +428,16 @@ rule prWithdrawNeverReverts(method f) {
 
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+
+    require balances.length == getTotalTokens(); // correct number of tokens
+    uint256 i;
+    require i < balances.length && balances[i] > 0; // at least one token must have a nonzero value
+    uint256 bptIn; uint256 tokenIndex;
+    // tokenIndex, bptIn = exactTokensInForBptOut(userData);
+    // uint256[] amountsOut; uint256 maxBptIn;
+    // amountsOut, maxBptIn = bptInForExactTokensOut(userData);
+    // require tokenIndex < getTotalTokens();
+
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
