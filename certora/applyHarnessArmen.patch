@@ -1,6 +1,92 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-08-22 10:15:48.000000000 -0700
++++ .gitignore	2022-08-22 16:13:24.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
+diff -ruN pool-stable/contracts/ComposableStablePool.sol pool-stable/contracts/ComposableStablePool.sol
+--- pool-stable/contracts/ComposableStablePool.sol	2022-08-22 16:12:02.000000000 -0700
++++ pool-stable/contracts/ComposableStablePool.sol	2022-08-23 11:50:23.000000000 -0700
+@@ -304,7 +304,7 @@
+         uint256 registeredIndexIn,
+         uint256 registeredIndexOut,
+         uint256[] memory scalingFactors
+-    ) private returns (uint256) {
++    ) internal returns (uint256) { //MUNGED private => internal
+         bool isGivenIn = swapRequest.kind == IVault.SwapKind.GIVEN_IN;
+ 
+         _upscaleArray(registeredBalances, scalingFactors);
+@@ -645,14 +645,22 @@
+             uint256 preJoinExitInvariant
+         ) = _beforeJoinExit(registeredBalances);
+ 
+-
++        /* MUNGED instead of declaring functions we implement them directly
+             function(uint256[] memory, uint256, uint256, uint256, uint256[] memory, bytes memory)
+                 internal
+                 view
+                 returns (uint256, uint256[] memory) _doJoinOrExit
+          = (isJoin ? _doJoin : _doExit);
++         */
+ 
+-        (uint256 bptAmount, uint256[] memory amountsDelta) = _doJoinOrExit(
++        (uint256 bptAmount, uint256[] memory amountsDelta) = isJoin ? _doJoin(
++            balances,
++            currentAmp,
++            preJoinExitSupply,
++            preJoinExitInvariant,
++            scalingFactors,
++            userData
++        ) : _doExit(
+             balances,
+             currentAmp,
+             preJoinExitSupply,
+@@ -660,13 +668,18 @@
+             scalingFactors,
+             userData
+         );
+-
++    
+         // Unlike joinswaps, explicit joins do not mutate balances into the post join-exit balances so we must perform
+         // this mutation here.
+-        function(uint256, uint256) internal pure returns (uint256) _addOrSub = isJoin ? FixedPoint.add : FixedPoint.sub;
+-        _mutateAmounts(balances, amountsDelta, _addOrSub);
+-        uint256 postJoinExitSupply = _addOrSub(preJoinExitSupply, bptAmount);
+ 
++        // MUNGED bracketing to fix stack too deep issue
++        // function(uint256, uint256) internal pure returns (uint256) _addOrSub = isJoin ? FixedPoint.add : FixedPoint.sub; 
++        // CVL cant handle void functions
++
++        _mutateAmounts(balances, amountsDelta, isJoin); //MUNGED redeclare _addOrSub as mutation in _mutateAmounts, pass in bool to declare
++        
++        uint256 postJoinExitSupply = isJoin ? FixedPoint.add(preJoinExitSupply, bptAmount) : FixedPoint.sub(preJoinExitSupply, bptAmount);
++    
+         // Pass in the post-join balances to reset the protocol fee basis.
+         // We are minting bptAmount, increasing the total (and virtual) supply post-join
+         _updateInvariantAfterJoinExit(
+@@ -675,7 +688,7 @@
+             preJoinExitInvariant,
+             preJoinExitSupply,
+             postJoinExitSupply
+-        );
++        ); 
+ 
+         // For clarity and simplicity, arrays used and computed in lower level functions do not include BPT.
+         // But the amountsIn array passed back to the Vault must include BPT, so we add it back in here.
+@@ -950,13 +963,14 @@
+     function _mutateAmounts(
+         uint256[] memory toMutate,
+         uint256[] memory arguments,
+-        function(uint256, uint256) pure returns (uint256) mutation
++        bool isJoin // MUNGED change input to bool instead of void function
+     ) private pure {
++        // function(uint256, uint256) internal pure returns (uint256) mutation = isJoin ? FixedPoint.add : FixedPoint.sub; // MUNGED declare function inside instead of passing in
+         uint256 length = toMutate.length;
+         InputHelpers.ensureInputLengthMatch(length, arguments.length);
+ 
+         for (uint256 i = 0; i < length; ++i) {
+-            toMutate[i] = mutation(toMutate[i], arguments[i]);
++            toMutate[i] = isJoin ? FixedPoint.add(toMutate[i], arguments[i]) : FixedPoint.sub(toMutate[i], arguments[i]);
+         }
+     }
+ 

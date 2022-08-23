@@ -41,10 +41,14 @@ certoraRun \
     certora/helpers/DummyERC20A.sol \
     --verify ComposableStablePool:certora/specs/sanity.spec \
     --staging \
-    --settings -enableEqualitySaturation=false \
+    --settings -enableEqualitySaturation=false,-simplificationDepth=10 \
     --optimistic_loop \
-    --loop_iter 1 \
+    --loop_iter 3 \
     $RULE \
     --send_only \
-    --msg "ComposableStablePool _doJoin _doExit summs: $1" \
+    --msg "ComposableStablePool query mutate actual norecovery initialized: $1" \
     --packages @balancer-labs=node_modules/@balancer-labs \
+
+
+# --solc_args "['--optimize', '--optimize-runs', '200']" \
+# ,-simplificationDepth=10 \
