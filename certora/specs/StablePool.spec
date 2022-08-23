@@ -247,6 +247,9 @@ function getAmplificationFactor(env e) returns uint256 {
 
 invariant amplificationFactorBounded(env e)
     getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
+{ preserved {
+    require totalSupply() == 0 => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
+} }
 
 
 /// @rule amplfiicationFactorFollowsEndTime

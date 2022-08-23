@@ -250,8 +250,8 @@ contract StablePoolHarness is StablePool {
         return StableMath._MAX_AMP;
     }
 
-    function sanitizeUserData(bytes memory userData) public {
-        (, uint256[] memory amountsIn, uint256 minBPTAmountOut) = abi.decode(userData, (StablePoolUserData.JoinKind, uint256, uint256));
-        InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
-    }
+    // function sanitizeUserData(bytes memory userData) public {
+    //     (, uint256[] memory amountsIn, uint256 minBPTAmountOut) = abi.decode(userData, (StablePoolUserData.ExitKind, uint256[], uint256));
+    //     InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
+    // }
 }
