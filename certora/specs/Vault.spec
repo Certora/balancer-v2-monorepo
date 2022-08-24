@@ -5,7 +5,7 @@ import "../helpers/erc20.spec"
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
-	_callPoolBalanceChange(uint8,bytes32,address,address,(address[],uint256[],bytes,bool),bytes32[]) returns (bytes32[], uint256[], uint256[]) => CONSTANT
+	// _callPoolBalanceChange(uint8,bytes32,address,address,(address[],uint256[],bytes,bool),bytes32[]) returns (bytes32[], uint256[], uint256[]) => CONSTANT
 	//_processJoinPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT not summarizable yet
 	//_processExitPoolTransfers(address, (address[],uint256[],bytes,bool), bytes32[], uint256[], uint256[]) returns (bytes32[]) => CONSTANT not summarizable yet (might work if we munge priv to internal)
 
@@ -130,13 +130,6 @@ methods {
 ////////////////////////////////////////////////////////////////////////////
 
 rule sanity(method f) 
-filtered {
-	f -> f.selector == exitPool(bytes32,address,address,(address[],uint256[],bytes,bool)).selector ||
-	//f -> f.selector == Harness_doubleExitPool(bytes32, address, address, address, address, uint256, uint256, bool).selector ||
-	//f.selector == Harness_doubleJoinPool(bytes32, address, address, address, address, uint256, uint256, bool).selector ||
-	f.selector == joinPool(bytes32,address,address,(address[],uint256[],bytes,bool)).selector ||
-	f.selector == swap((bytes32,uint8,address,address,uint256,bytes),(address,bool,address,bool),uint256,uint256).selector
-}
 {
 	env e;
 	calldataarg args;

@@ -147,6 +147,7 @@ library StableMath {
         uint256 amp,
         uint256 supply
     ) public pure returns (uint256) {
+        require (amp>0 && amp<5000); 
         return amp * 2;
     }
 }

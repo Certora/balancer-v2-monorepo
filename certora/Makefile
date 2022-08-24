@@ -16,7 +16,7 @@ munged:  $(wildcard $(CONTRACTS_DIR)/*.sol) $(PATCH)
 	patch -p0 -d $@ < $(PATCH)
 
 record:
-	diff -ruN $(CONTRACTS_DIR) $(MUNGED_DIR) | sed 's+$(CONTRACTS_DIR)/++g' | sed 's+$(MUNGED_DIR)/++g' > $(PATCH)
+	diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts $(CONTRACTS_DIR) $(MUNGED_DIR) | sed 's+$(CONTRACTS_DIR)/++g' | sed 's+$(MUNGED_DIR)/++g' > $(PATCH)
 
 clean:
 	git clean -fdX

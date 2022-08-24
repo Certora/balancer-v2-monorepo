@@ -38,6 +38,7 @@ certoraRun \
     --settings -enableEqualitySaturation=false \
     --settings -s=z3 \
     --packages @balancer-labs=node_modules/@balancer-labs \
+    --solc_args "['--optimize', '--optimize-runs', '200']" \
     --path ./
     # --packages @balancer-labs=/mnt/c/Users/YufeiLi/Desktop/sms/certora/ComposableStablePool/node_modules/@balancer-labs
     # --packages_path node_modules
@@ -52,4 +53,4 @@ certoraRun \
     # --link ComposableStablePoolHarness:_token4=DummyERC20E \
     # --link ComposableStablePoolHarness:_token5=DummyERC20F \
 #  -showInternalFunctions,
-    # --solc_args "['--optimize', '--optimize-runs', '200']" \
+    
