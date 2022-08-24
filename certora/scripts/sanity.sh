@@ -41,14 +41,14 @@ certoraRun \
     certora/helpers/DummyERC20A.sol \
     --verify ComposableStablePool:certora/specs/sanity.spec \
     --staging \
-    --settings -enableEqualitySaturation=false,-simplificationDepth=10 \
+    --settings -enableEqualitySaturation=false,-simplificationDepth=2,-helpAdvanced=true \
     --optimistic_loop \
     --loop_iter 3 \
     $RULE \
     --send_only \
-    --msg "ComposableStablePool query mutate actual norecovery initialized: $1" \
+    --msg "ComposableStablePool depth 2 on mutate before update scaling mint: $1" \
     --packages @balancer-labs=node_modules/@balancer-labs \
 
 
 # --solc_args "['--optimize', '--optimize-runs', '200']" \
-# ,-simplificationDepth=10 \
+#  \
