@@ -254,8 +254,8 @@ contract StablePoolHarness is StablePool {
         return StableMath._MAX_AMP;
     }
 
-    function AMP_PRECISION() public pure {
-        require(StableMath._AMP_PRECISION == 1e3, "ignore this");
+    function AMP_PRECISION() public pure returns (uint256) {
+        return StableMath._AMP_PRECISION;
     }
 
     // function sanitizeUserData(bytes memory userData) public {

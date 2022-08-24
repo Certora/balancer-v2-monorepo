@@ -44,10 +44,10 @@ methods {
     canPerform(bytes32, address, address) returns (bool) => NONDET
     // harness functions
     setRecoveryMode(bool)
-    minAmp() returns(uint256) envfree
-    maxAmp() returns(uint256) envfree
-    initialized() returns(bool) envfree
-    AMP_PRECISION() envfree
+    minAmp() returns (uint256) envfree
+    maxAmp() returns (uint256) envfree
+    initialized() returns (bool) envfree
+    AMP_PRECISION() returns (uint256) envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -255,7 +255,7 @@ invariant amplificationFactorBounded(env e)
     require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _MIN_UPDATE_TIME() == DAY();
-    AMP_PRECISION();
+    require AMP_PRECISION() == 1000;
 } }
 
 
@@ -264,9 +264,9 @@ invariant amplificationFactorBounded(env e)
 /// amplification factor must be less than value set
 /// @notice: passes
 rule amplificationFactorFollowsEndTime(method f) {
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
-    AMP_PRECISION();
+    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    // require _MIN_UPDATE_TIME() == DAY();
+    // require AMP_PRECISION() == 1000;
 
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
@@ -296,9 +296,9 @@ rule amplificationFactorFollowsEndTime(method f) {
 /// @description: start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
 /// @notice: passes
 rule amplificationFactorTwoDayWait(method f) {
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
-    AMP_PRECISION();
+    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    // require _MIN_UPDATE_TIME() == DAY();
+    require AMP_PRECISION() == 1000;
 
     env e; 
     uint256 endValue; uint256 endTime;
@@ -327,7 +327,7 @@ rule amplificationFactorTwoDayWait(method f) {
 rule amplificationFactorNoMoreThanDouble(method f) {
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _MIN_UPDATE_TIME() == DAY();
-    AMP_PRECISION();
+    require AMP_PRECISION() == 1000;
 
     env e; 
     uint256 endValue; uint256 endTime;
@@ -353,7 +353,7 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 rule amplificationFactorUpdatingOneDay(method f) {
     require _MIN_UPDATE_TIME() == DAY();
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    AMP_PRECISION();
+    require AMP_PRECISION() == 1000;
 
     env e_pre;
     uint256 endValue; uint256 endTime;
