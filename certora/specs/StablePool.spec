@@ -13,6 +13,8 @@ using DummyERC20E as _token4
 methods {
     totalTokensBalance() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
+    _MIN_UPDATE_TIME() returns (uint256) envfree
+    _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
 
 
 	// stable math
@@ -44,6 +46,8 @@ methods {
     setRecoveryMode(bool)
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
+    initialized() returns(bool) envfree
+    AMP_PRECISION() envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -248,14 +252,22 @@ function getAmplificationFactor(env e) returns uint256 {
 invariant amplificationFactorBounded(env e)
     getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
 { preserved {
-    require totalSupply() == 0 => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
+    require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    AMP_PRECISION();
 } }
 
 
 /// @rule amplfiicationFactorFollowsEndTime
 /// @description: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
 /// amplification factor must be less than value set
+/// @notice: passes
 rule amplificationFactorFollowsEndTime(method f) {
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    AMP_PRECISION();
+
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
@@ -282,7 +294,12 @@ rule amplificationFactorFollowsEndTime(method f) {
 
 /// @rule: amplificationFactorTwoDayWait
 /// @description: start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
+/// @notice: passes
 rule amplificationFactorTwoDayWait(method f) {
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    AMP_PRECISION();
+
     env e; 
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
@@ -306,10 +323,16 @@ rule amplificationFactorTwoDayWait(method f) {
 
 /// @rule: amplificationFactorNoMoreThanDouble
 /// @descrption: the amplification factor may not increase by more than a factor of two in a given day
+/// @notice: passes
 rule amplificationFactorNoMoreThanDouble(method f) {
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    AMP_PRECISION();
+
     env e; 
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
+
     startValue, isUpdating = _getAmplificationParameter(e);
     startAmplificationParameterUpdate(e, endValue, endTime);
 
@@ -322,6 +345,33 @@ rule amplificationFactorNoMoreThanDouble(method f) {
     actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
 
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
+}
+
+/// @rule: amplificationFactorUpdatingOneDay
+/// @descrption: if the amplification factor starts updating, then it must continue so for one day
+/// @notice: passes
+rule amplificationFactorUpdatingOneDay(method f) {
+    require _MIN_UPDATE_TIME() == DAY();
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    AMP_PRECISION();
+
+    env e_pre;
+    uint256 endValue; uint256 endTime;
+    
+    // require endValue >= minAmp();
+    // require endValue <= maxAmp();
+
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e_pre);
+    require endValue != startValue;
+    require !isUpdating; // can't already be updating
+    startAmplificationParameterUpdate(e_pre, endValue, endTime);
+
+    env e_post;
+    require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + DAY());
+    uint256 actualEndValue; bool isUpdating_;
+    actualEndValue, isUpdating_ = _getAmplificationParameter(e_post);
+    assert isUpdating_, "must still be updating";
 }
 
 // Recovery and Paused Modes

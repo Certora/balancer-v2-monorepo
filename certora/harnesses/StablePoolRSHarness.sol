@@ -1,7 +1,7 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "../munged/pool-stable/contracts/StablePool.sol";
+import "./StablePoolRS.sol";
 
 // This is the contract that is actually verified; it may contain some helper
 // methods for the spec to access internal state, or may override some of the
@@ -15,7 +15,6 @@ contract StablePoolHarness is StablePool {
     IERC20[] tokens;
     address _protocolFeesCollector;
     uint256[] collectedFees;
-    bool public initialized;
     
     constructor(
         IVault vault,
@@ -28,10 +27,7 @@ contract StablePoolHarness is StablePool {
         uint256 bufferPeriodDuration,
         address owner
     ) StablePool(vault, name, symbol, tokens, amplificationParameter, 
-    swapFeePercentage, pauseWindowDuration, bufferPeriodDuration, owner) {
-        require(!initialized, "for rules");
-        initialized == true;
-    }
+    swapFeePercentage, pauseWindowDuration, bufferPeriodDuration, owner) {}
     
     // sets recovery mode on or off
     function setRecoveryMode(bool enabled) public {
@@ -245,21 +241,4 @@ contract StablePoolHarness is StablePool {
     function getTotalTokens() public view returns (uint256) {
         return _getTotalTokens();
     }
-
-    function minAmp() public pure returns (uint256) {
-        return StableMath._MIN_AMP;
-    }
-
-    function maxAmp() public pure returns (uint256) {
-        return StableMath._MAX_AMP;
-    }
-
-    function AMP_PRECISION() public pure {
-        require(StableMath._AMP_PRECISION == 1e3, "ignore this");
-    }
-
-    // function sanitizeUserData(bytes memory userData) public {
-    //     (, uint256[] memory amountsIn, uint256 minBPTAmountOut) = abi.decode(userData, (StablePoolUserData.ExitKind, uint256[], uint256));
-    //     InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
-    // }
 }
