@@ -11,13 +11,16 @@ using DummyERC20E as _token4
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
+    //// @dev envfree functions
     totalTokensBalance() returns (uint256) envfree
+    totalTokensBalanceUser(address) returns (uint256) envfree
+    totalFees() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
-    _MIN_UPDATE_TIME() returns (uint256) envfree
-    _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
+    //// @dev heavy but important function, want to fix timeout
+    //_doExit(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
 
 
-	// stable math
+	//// @dev stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
@@ -28,26 +31,23 @@ methods {
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
-	// stable pool
-	//_getAmplificationParameter() returns (uint256,bool) => NONDET
-
-    // vault 
+    //// @dev "view" functions that call internal function with function pointers as input
+    queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
+    queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
+    //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
-    // authorizor functions
+
+    //// @dev authorizor functions
     getAuthorizor() returns address => DISPATCHER(true)
     _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
-    // harness functions
+    //// @dev harness functions
     setRecoveryMode(bool)
-    minAmp() returns(uint256) envfree
-    maxAmp() returns(uint256) envfree
-    initialized() returns(bool) envfree
-    AMP_PRECISION() envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -64,21 +64,41 @@ methods {
 
 }
 
-function setup() { 
+/// Add the following assumptions:
+///  - addresses `currentContract`, `token0`, ..., `token4` are distinct and ordered
+///  - `e.msg.sender` is distinct from `currentContract` and `token0` ... `token4`
+///  - there are at least 2 tokens and at most 5
+function setup(env e) { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+    require currentContract < _token0;
+    require e.msg.sender < currentContract;
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
+function joinExit(env e, method f, address user) {
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    require recipient == user;
+    require sender == user;
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        require sender != currentContract;
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    }
+}
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
 
-// assume sum of all balances initially equals 0
+/// A ghost tracking the sum of all BPT user balances in the pool
+///
+/// @dev we assume sum of all balances initially equals 0
 ghost sum_all_users_BPT() returns uint256 {
     init_state axiom sum_all_users_BPT() == 0;
 }
 
-// everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
+/// @dev keep `sum_all_users_BPT` up to date with the `_balances` mapping
 hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
 }
@@ -87,104 +107,14 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
 //                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
 
-/// @invariant cantBurnAllBPT
-/// @description Contract must not allow all BPT to be burned.
-invariant cantBurnAll()
-    totalSupply() > 0 
-
-// totalSupply nonzero after onJoinPool is called
-rule nonzeroSupply(method f) filtered {
-    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
-} {
-    //require !inRecoveryMode();
-    
-    env e1;
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    onJoinPool(e1, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    assert totalSupply() > 0, "totalSupply must be greater than 0 after onJoinPool is called";
-
-    env e2; calldataarg args2; method g;
-    g(e2, args2); // user B had totalSupply tokens and exits
-    assert totalSupply() > 0, "totalSupply must be greater than 0 after an arbitrary function call if the pool has been initialized";
-}
-/// @title totalSupply can only go 0 to non-zero if `onJoinPool` is called without reverting
-rule onlyOnJoinPoolCanInitialize(method f) {
-    env e; calldataarg args;
-    require totalSupply() == 0;
-    f(e, args);
-    assert totalSupply() > 0 => f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool";
-}
-
-
-/// @invariant noMonopoly
-/// @description One user must not own the whole BPT supply.
-invariant noMonopoly(address user, env e)
-    totalSupply() > balanceOf(e, user)
-    {preserved { require e.msg.sender != 0; }}
-
-rule noMonopolyRule(method f, method g, env e1, env e2, address user) filtered {
-    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
-} {
-    require !inRecoveryMode();
-    require !inRecoveryMode();
-    
-    calldataarg args1;
-    f(e1, args1); // user A joins with x tokens
-    assert totalSupply() > balanceOf(user), "totalSupply must be greater than 0 after onJoinPool is called";
-}
-
-/// @invariant BPTSolvency
-/// @description Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
+/// @title Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
 invariant solvency()
     totalSupply() >= sum_all_users_BPT()
-
 
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
 
-rule NoFreeBPT(uint256 num, method f)
-{
-    setup();
-    env e;
-	calldataarg args;
-
-    uint256 _totalBpt = totalSupply();
-    uint256 _totalTokens = totalTokensBalance();
-
-	f(e,args);
-
-    uint256 totalBpt_ = totalSupply();
-    uint256 totalTokens_ = totalTokensBalance();
-
-    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens;
-    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;
-}
-
-rule NoFreeBPTPerAccount(uint256 num, method f)
-{
-    setup();
-    env e;
-	calldataarg args;
-
-    address u;
-    require u == e.msg.sender;
-    uint256 _bptPerUser = balanceOf(u);
-    uint256 _totalTokensPerUser = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u);
-
-	f(e,args);
-
-    uint256 bptPerUser_ = balanceOf(u);
-    uint256 totalTokensPerUser_ = _token0.balanceOf(u) + _token1.balanceOf(u) + _token2.balanceOf(u) + _token3.balanceOf(u) + _token4.balanceOf(u);
-
-    assert bptPerUser_>_bptPerUser => _totalTokensPerUser>totalTokensPerUser_;
-    assert bptPerUser_<_bptPerUser => _totalTokensPerUser<totalTokensPerUser_;
-}
-
-
-// onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256)
-// onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
 rule sanity(method f) 
 {
 	env e;
@@ -194,7 +124,7 @@ rule sanity(method f)
 	assert false;
 }
 
-rule sanity1(method f) 
+rule sanityRecovery(method f) 
 {
 	env e;
 	calldataarg args;
@@ -203,23 +133,102 @@ rule sanity1(method f)
 	assert false;
 }
 
-/// @rule noFreeMinting
-/// @description Contract must not allow any user to mint BPT for free
-rule noFreeMinting(method f) {
-    uint256 totalSupplyBefore = totalSupply();
-    // define free?
-    uint256 totalSupplyAfter = totalSupply();
-    assert totalSupplyAfter == totalSupplyBefore;
+rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered { 
+    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
+    || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
+} {
+    env e;
+    setup(e);
+	calldataarg args;
+    require totalSupply() > 0;
+    require e.msg.sender != currentContract;
+    require !inRecoveryMode();
+
+    address u;
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+    uint256 _totalFees = totalFees();
+
+    joinExit(e, f, u);
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+    uint256 totalFees_ = totalFees();
+
+    // no free minting 
+    // last fail was due to all tokens being sent to fee collector
+    // last fail due to fees not being collected to address(this)
+    // last fail due to starting with 0 total Supply
+    // pool joiner was pool
+    // speculating its recovery mode
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in users' total tokens";
+    // no unpaid burning
+    // not sure why it fails, could be rounding since its always in favor of protocol
+    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens || totalFees_<_totalFees, "a decrease in total BPT must lead to a decrease in users' total tokens";
 }
 
-/// @rule calculateBPTAccuracy
-/// @description Given a value for `_calculateBPT`, calling `x` should result in user's balance increasing by that value
+rule BPTBalanceCorrelatedWithTokenBalance(method f) filtered { f ->
+    f.selector != transfer(address,uint256).selector 
+    && f.selector != transferFrom(address,address,uint256).selector 
+    && (f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
+    || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector)
+} {
+    env e;
+    setup(e);
+	calldataarg args;
+
+    require totalSupply() > 0;
+    require !inRecoveryMode();
+
+    address u;
+    uint256 _bptPerUser = balanceOf(u);
+    uint256 _totalTokensPerUser = totalTokensBalanceUser(u);
+
+    joinExit(e, f, u);
+
+    uint256 bptPerUser_ = balanceOf(u);
+    uint256 totalTokensPerUser_ = totalTokensBalanceUser(u);
+
+    // no free minting for any user
+    // fails on join, bug? user mints tokens without his balance decreasing...
+    assert bptPerUser_>_bptPerUser => totalTokensPerUser_<_totalTokensPerUser, "an increase in a specfic user's balance of BPT should lead to a decrease in their total tokens";
+    // no unpaid burning for any user
+    assert bptPerUser_<_bptPerUser => totalTokensPerUser_>_totalTokensPerUser, "a decrease in a specfic user's balance of BPT should lead to an increase in their total tokens";
+}
+/// @title `totalSupply` must be non-zero if and only if `onJoinPool` is successfully called. Additionally, the balance of the zero adress must be non-zero if `onJoinPool` was successfully called.
+/// @dev Calling `onJoinPool` for the first time initializes the pool, minting some BPT to the zero address.
+rule onlyOnJoinPoolCanAndMustInitialize(method f) {
+    env e; calldataarg args; address zero;
+    require totalSupply() == 0;
+    require zero == 0;
+    
+    f(e, args);
+    
+    assert totalSupply() > 0  <=> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector, "onJoinPool must be the only function that can initialize a pool and must initialize if called";
+    assert f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector => balanceOf(zero) > 0, "zero address must be minted some tokens on initialization";
+}
+// @title The zero address's BPT balance can never go from non-zero to zero.
+rule cantBurnZerosBPT(method f) {
+    address  zero = 0;
+    require balanceOf(zero) > 0;
+    env e; calldataarg args;
+    f(e, args); // vacuous for onSwap since ERC20 transfer revert when transferring to 0 address
+    assert balanceOf(zero) > 0, "zero address must always have non-zero balance";
+}
+/// Given a value for `_calculateBPT`, calling `x` should result in user's
+/// balance increasing by that value
 rule calculateBPTAccuracy(address user) {
     assert false;
+
+    // declare
+
+    // action
+
+    // test
 }
 
-/// @rule balanceIncreaseCorrelation
-/// @description A BPT balance increase must be correlated with a token balance increase in the vault
+/// A BPT balance increase must be correlated with a token balance increase in
+/// the vault
 rule balanceIncreaseCorrelation(env e, calldataarg args, method f) {
     uint256 BPTBalanceBefore = balanceOf(e.msg.sender);
     //uint256 tokenBalanceBefore = vault.balanceOf;
