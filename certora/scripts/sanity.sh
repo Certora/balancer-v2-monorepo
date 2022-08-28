@@ -41,12 +41,12 @@ certoraRun \
     certora/helpers/DummyERC20A.sol \
     --verify ComposableStablePool:certora/specs/sanity.spec \
     --staging \
-    --settings -enableEqualitySaturation=false,-simplificationDepth=3 \
+    --settings -enableEqualitySaturation=false \
     --optimistic_loop \
     --loop_iter 3 \
     $RULE \
     --send_only \
-    --msg "ComposableStablePool no _queryAction, depth 3, high base summs and scaling: $1" \
+    --msg "ComposableStablePool on scaling: $1" \
     --packages @balancer-labs=node_modules/@balancer-labs \
 
 
