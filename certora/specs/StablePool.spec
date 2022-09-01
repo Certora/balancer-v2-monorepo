@@ -1,3 +1,4 @@
+
 import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
@@ -16,9 +17,16 @@ methods {
     totalTokensBalanceUser(address) returns (uint256) envfree
     totalFees() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
+
+    _MIN_UPDATE_TIME() returns (uint256) envfree
+    _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
+
     //// @dev heavy but important function, want to fix timeout
     //_doExit(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
+    //_doJoin(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
 
+    // stable pool
+	_getAmplificationParameter() returns (uint256,bool)
 
 	//// @dev stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
@@ -36,6 +44,7 @@ methods {
     //// @dev "view" functions that call internal function with function pointers as input
     queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
     queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
+    
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
@@ -46,12 +55,18 @@ methods {
     _getAuthorizor() returns address => DISPATCHER(true)
     _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => NONDET
+
     //// @dev harness functions
     setRecoveryMode(bool)
     minAmp() returns (uint256) envfree
     maxAmp() returns (uint256) envfree
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
+
+    minAmp() returns(uint256) envfree
+    maxAmp() returns(uint256) envfree
+    initialized() returns(bool) envfree
+    AMP_PRECISION() envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -68,14 +83,8 @@ methods {
 
 }
 
-/// Add the following assumptions:
-///  - addresses `currentContract`, `token0`, ..., `token4` are distinct and ordered
-///  - `e.msg.sender` is distinct from `currentContract` and `token0` ... `token4`
-///  - there are at least 2 tokens and at most 5
-function setup(env e) { 
+function setup() { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
-    require currentContract < _token0;
-    require e.msg.sender < currentContract;
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
@@ -91,6 +100,8 @@ function joinExit(env e, method f, address user) {
         onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     }
 }
+
+
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
@@ -142,7 +153,7 @@ rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered {
     || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
 } {
     env e;
-    setup(e);
+    setup();
 	calldataarg args;
     require totalSupply() > 0;
     require e.msg.sender != currentContract;
@@ -178,7 +189,7 @@ rule BPTBalanceCorrelatedWithTokenBalance(method f) filtered { f ->
     || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector)
 } {
     env e;
-    setup(e);
+    setup();
 	calldataarg args;
 
     require totalSupply() > 0;

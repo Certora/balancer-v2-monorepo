@@ -1,6 +1,6 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-08-28 10:01:41.000000000 -0700
++++ .gitignore	2022-08-12 14:56:11.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
@@ -26,17 +26,15 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData();
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
-diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-08-28 13:14:07.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-28 13:16:41.000000000 -0700
-@@ -48,8 +48,8 @@
-     // WARNING: this only limits *a single* amplification change to have a maximum rate of change of twice the original
-     // value daily. It is possible to perform multiple amplification changes in sequence to increase this value more
-     // rapidly: for example, by doubling the value every day it can increase by a factor of 8 over three days (2^3).
--    uint256 private constant _MIN_UPDATE_TIME = 1 days;
--    uint256 private constant _MAX_AMP_UPDATE_DAILY_RATE = 2;
-+    uint256 public constant _MIN_UPDATE_TIME = 1 days; //MUNGED private => public
-+    uint256 public constant _MAX_AMP_UPDATE_DAILY_RATE = 2; //MUNGED private => public
- 
-     bytes32 private _packedAmplificationData;
- 
+diff -ruN pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
+--- pool-utils/contracts/BasePool.sol	2022-08-05 17:23:33.000000000 -0700
++++ pool-utils/contracts/BasePool.sol	2022-08-12 14:56:11.000000000 -0700
+@@ -631,7 +631,7 @@
+      * @dev Same as `_downscaleUp`, but for an entire array. This function does not return anything, but instead
+      * *mutates* the `amounts` array.
+      */
+-        function _downscaleUpArray(uint256[] memory amounts, uint256[] memory scalingFactors) internal view {
++    function _downscaleUpArray(uint256[] memory amounts, uint256[] memory scalingFactors) internal view {
+         for (uint256 i = 0; i < _getTotalTokens(); ++i) {
+             amounts[i] = FixedPoint.divUp(amounts[i], scalingFactors[i]);
+         }
