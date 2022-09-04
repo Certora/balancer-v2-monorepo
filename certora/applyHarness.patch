@@ -1,13 +1,33 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-08-28 10:01:41.000000000 -0700
++++ .gitignore	2022-09-01 18:16:44.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
+diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
+--- interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-01 18:13:19.000000000 -0700
++++ interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-01 18:17:37.000000000 -0700
+@@ -28,6 +28,7 @@
+  * @dev Reverts with a revert reason containing `errorCode`. Only codes up to 999 are supported.
+  */
+ function _revert(uint256 errorCode) pure {
++    revert;/*
+     // We're going to dynamically create a revert string based on the error code, with the following format:
+     // 'BAL#{errorCode}'
+     // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).
+@@ -76,7 +77,7 @@
+ 
+         // Even if the string is only 7 bytes long, we need to return a full 32 byte slot containing it. The length of
+         // the encoded message is therefore 4 + 32 + 32 + 32 = 100.
+-        revert(0, 100)
++        revert(0, 100)*/
+     }
+ }
+ 
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-06-20 21:05:13.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-12 15:10:08.000000000 -0700
+--- pool-stable/contracts/StablePool.sol	2022-09-01 11:55:51.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-09-01 18:16:44.000000000 -0700
 @@ -420,7 +420,7 @@
          uint256[] memory balances,
          uint256[] memory scalingFactors,
@@ -26,17 +46,27 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData();
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
-diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-08-28 13:14:07.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-28 13:16:41.000000000 -0700
-@@ -48,8 +48,8 @@
-     // WARNING: this only limits *a single* amplification change to have a maximum rate of change of twice the original
-     // value daily. It is possible to perform multiple amplification changes in sequence to increase this value more
-     // rapidly: for example, by doubling the value every day it can increase by a factor of 8 over three days (2^3).
--    uint256 private constant _MIN_UPDATE_TIME = 1 days;
--    uint256 private constant _MAX_AMP_UPDATE_DAILY_RATE = 2;
-+    uint256 public constant _MIN_UPDATE_TIME = 1 days; //MUNGED private => public
-+    uint256 public constant _MAX_AMP_UPDATE_DAILY_RATE = 2; //MUNGED private => public
+diff -ruN solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/math/FixedPoint.sol
+--- solidity-utils/contracts/math/FixedPoint.sol	2022-06-20 13:18:36.000000000 -0700
++++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-01 18:29:52.000000000 -0700
+@@ -14,7 +14,7 @@
  
-     bytes32 private _packedAmplificationData;
+ pragma solidity ^0.7.0;
  
+-import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
++import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
+ 
+ import "./LogExpMath.sol";
+ 
+diff -ruN solidity-utils/contracts/math/Math.sol solidity-utils/contracts/math/Math.sol
+--- solidity-utils/contracts/math/Math.sol	2022-09-01 18:13:11.000000000 -0700
++++ solidity-utils/contracts/math/Math.sol	2022-09-01 18:28:05.000000000 -0700
+@@ -2,7 +2,7 @@
+ 
+ pragma solidity ^0.7.0;
+ 
+-import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
++import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
+ 
+ /**
+  * @dev Wrappers over Solidity's arithmetic operations with added overflow checks.
