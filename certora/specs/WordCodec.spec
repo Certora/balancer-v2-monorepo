@@ -8,6 +8,8 @@ methods {
     decodeBool(bytes32,uint256) returns bool envfree
     insertBits192(bytes32,bytes32,uint256) returns bytes32 envfree
     insertBool(bytes32,bool,uint256) returns bytes32 envfree
+    // _validateEncodingParams(uint256,uint256,uint256) envfree
+    // _validateEncodingParams(int256,uint256,uint256) envfree
 }
 
 rule insertUintIntegrity() {
@@ -81,4 +83,65 @@ rule insertBoolIntegrity() {
     uint256 offset;
     assert false, 
         "TODO: Replace placeholder assert message";
+}
+
+rule doesNotRevertImproperly() {
+    method f; env e; calldataarg args;
+    require e.msg.value == 0;
+
+    f@withrevert(e, args);
+
+    assert !lastReverted, "wordCodec method calls must not revert improperly";
+}
+
+
+
+rule uintInsertDecodeIntegrity() {
+    bytes32 word;
+    uint256 startingValue;
+    uint256 offset;
+    uint256 bitLength;
+
+    bytes32 newWord = insertUint(word, startingValue, offset, bitLength);
+    uint256 decodedValue = decodeUint(newWord, offset, bitLength);
+
+    assert startingValue == decodedValue, 
+        "Inserting and decoding a uint must return the original value";
+}
+
+rule intInsertDecodeIntegrity() {
+    bytes32 word;
+    int256 startingValue;
+    uint256 offset;
+    uint256 bitLength;
+
+    bytes32 newWord = insertInt(word, startingValue, offset, bitLength);
+    int256 decodedValue = decodeInt(newWord, offset, bitLength);
+
+    assert startingValue == decodedValue, 
+        "Inserting and decoding an int must return the original value";
+}
+
+rule uintEncodeDecodeIntegrity() {
+    uint256 startingValue;
+    uint256 offset;
+    uint256 bitLength;
+
+    bytes32 newWord = encodeUint(startingValue, offset, bitLength);
+    uint256 decodedValue = decodeUint(newWord, offset, bitLength);
+
+    assert startingValue == decodedValue, 
+        "Encoding and decoding a uint must return the original value";
+}
+
+rule intEncodeDecodeIntegrity() {
+    int256 startingValue;
+    uint256 offset;
+    uint256 bitLength;
+
+    bytes32 newWord = encodeInt(startingValue, offset, bitLength);
+    int256 decodedValue = decodeInt(newWord, offset, bitLength);
+
+    assert startingValue == decodedValue, 
+        "Encoding and decoding a uint must return the original value";
 }
