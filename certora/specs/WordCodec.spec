@@ -97,10 +97,7 @@ rule doesNotRevertImproperly() {
 
 
 rule uintInsertDecodeIntegrity() {
-    bytes32 word;
-    uint256 startingValue;
-    uint256 offset;
-    uint256 bitLength;
+    bytes32 word; uint256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = insertUint(word, startingValue, offset, bitLength);
     uint256 decodedValue = decodeUint(newWord, offset, bitLength);
@@ -110,10 +107,7 @@ rule uintInsertDecodeIntegrity() {
 }
 
 rule intInsertDecodeIntegrity() {
-    bytes32 word;
-    int256 startingValue;
-    uint256 offset;
-    uint256 bitLength;
+    bytes32 word; int256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = insertInt(word, startingValue, offset, bitLength);
     int256 decodedValue = decodeInt(newWord, offset, bitLength);
@@ -123,9 +117,7 @@ rule intInsertDecodeIntegrity() {
 }
 
 rule uintEncodeDecodeIntegrity() {
-    uint256 startingValue;
-    uint256 offset;
-    uint256 bitLength;
+    uint256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = encodeUint(startingValue, offset, bitLength);
     uint256 decodedValue = decodeUint(newWord, offset, bitLength);
@@ -135,13 +127,35 @@ rule uintEncodeDecodeIntegrity() {
 }
 
 rule intEncodeDecodeIntegrity() {
-    int256 startingValue;
-    uint256 offset;
-    uint256 bitLength;
+    int256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = encodeInt(startingValue, offset, bitLength);
     int256 decodedValue = decodeInt(newWord, offset, bitLength);
 
     assert startingValue == decodedValue, 
         "Encoding and decoding a uint must return the original value";
+}
+
+rule boolInsertDecodeIntegrity() {
+    bytes32 word; bool startingValue; uint256 offset;
+
+    bytes32 newWord = insertBool(word, startingValue, offset);
+    bool decodedValue = decodeBool(newWord, offset);
+
+    assert startingValue == decodedValue, 
+        "Inserting and decoding a bool must return the original value";
+}
+
+rule uintInsertBitIndependence() {
+    bytes32 word; uint256 bitOffset;
+    // require bitOffset < 256;
+    uint256 _bitValue = decodeBool(word, bitOffset);
+
+    uint256 offset; uint256 bitLength;
+    bytes32 newWord = insertUint(word, _, offset, bitLength);
+
+    uint256 bitValue_ = decodeBool(newWord, bitOffset);
+
+    assert _bitValue != bitValue_ => (offset <= bitOffset && bitOffset < (offset + bitLength)),
+        "If a bit changes value, it must be within the correct range";
 }
