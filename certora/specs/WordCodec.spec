@@ -149,12 +149,12 @@ rule boolInsertDecodeIntegrity() {
 rule uintInsertBitIndependence() {
     bytes32 word; uint256 bitOffset;
     // require bitOffset < 256;
-    uint256 _bitValue = decodeBool(word, bitOffset);
+    bool _bitValue = decodeBool(word, bitOffset);
 
     uint256 offset; uint256 bitLength;
     bytes32 newWord = insertUint(word, _, offset, bitLength);
 
-    uint256 bitValue_ = decodeBool(newWord, bitOffset);
+    bool bitValue_ = decodeBool(newWord, bitOffset);
 
     assert _bitValue != bitValue_ => (offset <= bitOffset && bitOffset < (offset + bitLength)),
         "If a bit changes value, it must be within the correct range";
