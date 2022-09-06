@@ -13,11 +13,23 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     address recepient;
     IERC20[] tokens;
     address _protocolFeesCollector;
+    // bool public initialized;
 
     constructor(
         NewPoolParams memory params
-    ) ComposableStablePool(params) {}
+    ) ComposableStablePool(params) {
+        require(params.tokens.length==2);
+        require(params.rateProviders.length==2);
+        require(params.tokenRateCacheDurations.length==2);
+        require(params.exemptFromYieldProtocolFeeFlags.length==2);
+        // require(!initialized, "for rules");
+        // initialized == true;
+    }
     
+    function getActionId(uint32 selector) view public returns (bytes32) {
+        return getActionId(bytes4(selector));
+    }
+
     // sets recovery mode on or off
     function setRecoveryMode(bool enabled) public {
         _setRecoveryMode(enabled);
@@ -57,7 +69,8 @@ contract ComposableStablePoolHarness is ComposableStablePool {
 
 
     function _receiveAsset(IERC20 token, address sender, uint256 amount, uint256 fee) public {
-        require(token == _token0 || token == _token1 || token == _token2 || token == _token3 || token == _token4 || token == _token5);
+        require(token == _token0 || token == _token1 || token == _token2);
+        // require(|| token == _token3 || token == _token4 || token == _token5);
         token.transferFrom(sender, address(this), amount);
         if (fee > 0) {
             token.transfer(_protocolFeesCollector, fee);
@@ -69,14 +82,14 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         _token0.transferFrom(sender, address(this), amount);
         else if (num == 1) 
             _token1.transferFrom(sender, address(this), amount);
-        else if (num == 2) 
-            _token2.transferFrom(sender, address(this), amount);
-        else if (num == 3) 
-            _token3.transferFrom(sender, address(this), amount);
-        else if (num == 4) 
-            _token4.transferFrom(sender, address(this), amount);
-        else if (num == 5) 
-            _token5.transferFrom(sender, address(this), amount);
+        // else if (num == 2) 
+        //     _token2.transferFrom(sender, address(this), amount);
+        // else if (num == 3) 
+        //     _token3.transferFrom(sender, address(this), amount);
+        // else if (num == 4) 
+        //     _token4.transferFrom(sender, address(this), amount);
+        // else if (num == 5) 
+        //     _token5.transferFrom(sender, address(this), amount);
     }
     
     // function onExitPool(
@@ -117,7 +130,8 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     // }
         
     function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee) public {
-        require(token == _token0 || token == _token1 || token == _token2 || token == _token3 || token == _token4 || token == _token5);
+        require(token == _token0 || token == _token1 || token == _token2);
+        // require(token == _token3 || token == _token4 || token == _token5);
         token.transfer(recipient, amount);
         if (fee > 0) {
             token.transfer(_protocolFeesCollector, fee);
@@ -131,12 +145,12 @@ contract ComposableStablePoolHarness is ComposableStablePool {
             _token1.transfer(recipient, amount);
         else if (num == 2) 
             _token2.transfer(recipient, amount);
-        else if (num == 3) 
-            _token3.transfer(recipient, amount);
-        else if (num == 4) 
-            _token4.transfer(recipient, amount);
-        else if (num == 5) 
-            _token5.transfer(recipient, amount);
+        // else if (num == 3) 
+        //     _token3.transfer(recipient, amount);
+        // else if (num == 4) 
+        //     _token4.transfer(recipient, amount);
+        // else if (num == 5) 
+        //     _token5.transfer(recipient, amount);
     }
 
     function onSwap(
@@ -181,12 +195,12 @@ contract ComposableStablePoolHarness is ComposableStablePool {
             return _token1.balanceOf(address(this));
         else if (num==2)
             return _token2.balanceOf(address(this));
-        else if (num==3)
-            return _token3.balanceOf(address(this));
-        else if (num==4)
-            return _token4.balanceOf(address(this));
-        else if (num==5)
-            return _token5.balanceOf(address(this));
+        // else if (num==3)
+        //     return _token3.balanceOf(address(this));
+        // else if (num==4)
+        //     return _token4.balanceOf(address(this));
+        // else if (num==5)
+        //     return _token5.balanceOf(address(this));
     }
 
 
@@ -194,9 +208,9 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         total = _token0.balanceOf(u);
         total += _token1.balanceOf(u);
         total += _token2.balanceOf(u);
-        total += _token3.balanceOf(u);
-        total += _token4.balanceOf(u);
-        total += _token5.balanceOf(u);
+        // total += _token3.balanceOf(u);
+        // total += _token4.balanceOf(u);
+        // total += _token5.balanceOf(u);
         total -= this.balanceOf(address(this));
     }
 
@@ -204,16 +218,17 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         if (num==0) return address(_token0);
         if (num==1) return address(_token1);
         if (num==2) return address(_token2);
-        if (num==3) return address(_token3);
-        if (num==4) return address(_token4);
-        if (num==5) return address(_token5);
+        // if (num==3) return address(_token3);
+        // if (num==4) return address(_token4);
+        // if (num==5) return address(_token5);
 
          _revert(Errors.INVALID_TOKEN);
     }
 
     function requireOrder(address e_sender) public {
         require (e_sender < address(_token0));
-        require (address(_token0)<address(_token1) && address(_token1)<address(_token2) && address(_token2)<address(_token3) && address(_token3)<address(_token4) && address(_token4)<address(_token5));
+        require (address(_token0)<address(_token1) && address(_token1)<address(_token2));
+        // require (address(_token2)<address(_token3) && address(_token3)<address(_token4) && address(_token4)<address(_token5));
         require (getTotalTokens()>2 && getTotalTokens()<=3);
         require (getBptIndex() < getTotalTokens());
         require (address(this) == address(getToken(getBptIndex())));
@@ -221,5 +236,16 @@ contract ComposableStablePoolHarness is ComposableStablePool {
 
     function getTotalTokens() public view returns (uint256) {
         return _getTotalTokens();
+    }
+    function minAmp() public pure returns (uint256) {
+        return StableMath._MIN_AMP;
+    }
+
+    function maxAmp() public pure returns (uint256) {
+        return StableMath._MAX_AMP;
+    }
+
+    function AMP_PRECISION() public pure returns (uint256) {
+        return StableMath._AMP_PRECISION;
     }
 }

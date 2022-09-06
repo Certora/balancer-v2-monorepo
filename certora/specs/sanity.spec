@@ -30,25 +30,35 @@ methods {
 	
 	//// @dev join functions, trying to fix timeouts
 	//_onJoinPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET
-	_doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-	//_joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    //_joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+	//_doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+	// _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    // _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
 	//// @dev exit functions, trying to fix timeouts
 	//_onExitPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET
-	_doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    //_exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    //_exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+	//_doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    // _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    // _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
-	//_mutateAmounts(uint256[],uint256[],bool) => NONDET
+	_mutateAmounts(uint256[],uint256[],bool) => NONDET
 
-	//_updateInvariantAfterJoinExit(uint256,uint256[],uint256,uint256,uint256) => NONDET
+	_updateInvariantAfterJoinExit(uint256,uint256[],uint256,uint256,uint256) => NONDET
     
 	// scaling
 	_upscaleArray(uint256[],uint256[]) => NONDET
-	_downscaleUpArray(uint256[],uint256[]) => NONDET
-	_downscaleDownArray(uint256[],uint256[]) => NONDET
+    _downscaleUp(uint256, uint256) => NONDET;
+    _downscaleUpArray(uint256[], uint256[]) => NONDET;
+    _downscaleDownArray(uint256[], uint256[]) => NONDET;
 
+    // exactBptInForTokenOut(bytes) returns (uint256, uint256) => NONDET;
+    // bptInForExactTokensOut(bytes) returns (uint256[], uint256) => NONDET;
+    // exactTokensInForBptOut(bytes) returns (uint256[], uint256) => NONDET;
+    // tokenInForExactBptOut(bytes) returns (uint256, uint256) => NONDET;
+
+    // _dropBptItem(uint256[]) returns (uint256[]) => NONDET;
+    // _dropBptItemFromBalances(uint256[]) returns (uint256, uint256[]) => NONDET;
+
+    getSwapFeePercentage() returns (uint256) => NONDET;
 	// mint/burn
 	//_mintPoolTokens(address, uint256) => NONDET
 

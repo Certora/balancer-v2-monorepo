@@ -41,14 +41,17 @@ certoraRun \
     certora/helpers/DummyERC20A.sol \
     --verify ComposableStablePool:certora/specs/sanity.spec \
     --staging \
-    --settings -enableEqualitySaturation=false \
+    --settings -enableEqualitySaturation=false,-simplificationDepth=3,-divideNoRemainder=true \
     --optimistic_loop \
     --loop_iter 3 \
+    --solc solc7.3 \
     $RULE \
     --send_only \
-    --msg "ComposableStablePool on scaling: $1" \
+    --msg "ComposableStablePool sanity: $1 $2" \
     --packages @balancer-labs=node_modules/@balancer-labs \
+    --solc_args "['--optimize', '--optimize-runs', '200']" 
 
 
-# --solc_args "['--optimize', '--optimize-runs', '200']" \
+# 
+# ,-simplificationDepth=3
 #  \

@@ -25,9 +25,9 @@ import "../munged/solidity-utils/contracts/math/Math.sol";
 library StableMath {
     using FixedPoint for uint256;
 
-    uint256 internal constant _MIN_AMP = 1;
-    uint256 internal constant _MAX_AMP = 5000;
-    uint256 internal constant _AMP_PRECISION = 1e3;
+    uint256 public constant _MIN_AMP = 1;
+    uint256 public constant _MAX_AMP = 5000;
+    uint256 public constant _AMP_PRECISION = 1e3;
 
     uint256 internal constant _MAX_STABLE_TOKENS = 5;
 
@@ -72,18 +72,17 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
+        // uint256 input;
+        // for (uint256 i; i< amountsIn.length; ++i) {
+        //     input += amountsIn[i];
+        //     if (input>0)
+        //         return input*2;
+        // }
+        // return 0;
         uint256 input = amountsIn[0];
         input += amountsIn[1];
         if (amountsIn.length>2)
             input += amountsIn[2];
-        if (amountsIn.length>3)
-            input += amountsIn[3];
-        if (amountsIn.length>4)
-            input += amountsIn[4];
-        if (amountsIn.length>5)
-            input += amountsIn[5];
-
         return input*2;
     }
 
@@ -107,17 +106,17 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
+        // uint256 input;
+        // for (uint256 i; i< amountsOut.length; ++i) {
+        //     input += amountsOut[i];
+        //     if (input>0)
+        //         return input*2;
+        // }
+        // return 0;
         uint256 input = amountsOut[0];
         input += amountsOut[1];
         if (amountsOut.length>2)
             input += amountsOut[2];
-        if (amountsOut.length>3)
-            input += amountsOut[3];
-        if (amountsOut.length>4)
-            input += amountsOut[4];
-        if (amountsOut.length>5)
-            input += amountsOut[5];
-
         return input * 2;
     }
 

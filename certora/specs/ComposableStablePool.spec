@@ -62,9 +62,9 @@ methods {
     // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
     // _onInitializePool(bytes32,address,address,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
 
-    _upscaleArray(uint256[], uint256[]) => NONDET;
     // _onJoinPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
     // _mintPoolTokens(address, uint256) => NONDET;
+    _upscaleArray(uint256[], uint256[]) => NONDET;
     _downscaleUp(uint256, uint256) => NONDET;
     _downscaleUpArray(uint256[], uint256[]) => NONDET;
     _downscaleDownArray(uint256[], uint256[]) => NONDET;
@@ -73,8 +73,8 @@ methods {
     // _getAmplificationParameter() returns (uint256, bool) => NONDET; 
     // _doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
-    // _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    // _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
     // onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
     // _doRecoveryModeExit(uint256[],uint256,bytes) returns (uint256, uint256[]) => NONDET;
@@ -86,11 +86,11 @@ methods {
     // _burnPoolTokens(address, uint256) => NONDET;
 
     // _doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    // _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-    // _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
+    _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
 
-    // _updateInvariantAfterJoinExit(int256, uint256[], uint256,uint256, uint256) => NONDET;
+    _updateInvariantAfterJoinExit(int256, uint256[], uint256,uint256, uint256) => NONDET;
 
     // IRateProvider
     getRate() returns (uint256) => NONDET

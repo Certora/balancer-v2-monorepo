@@ -1,4 +1,4 @@
-pragma solidity 0.7.3;
+pragma solidity 0.7.1;
 pragma experimental ABIEncoderV2;
 function _require(bool condition, uint256 errorCode) pure {
     if (!condition) _revert(errorCode);
@@ -3030,7 +3030,7 @@ interface IVault is ISignaturesValidator, ITemporarilyPausable, IAuthentication 
     // solhint-disable-previous-line func-name-mixedcase
 }
 contract BalancerPoolToken is ERC20Permit {
-    IVault private immutable _vault;
+    IVault internal immutable _vault;
 
     constructor(
         string memory tokenName,
@@ -3226,25 +3226,25 @@ interface IBasePool is IPoolSwapStructs {
      */
     function getScalingFactors() external view returns (uint256[] memory);
 
-    function queryJoin(
-        bytes32 poolId,
-        address sender,
-        address recipient,
-        uint256[] memory balances,
-        uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage,
-        bytes memory userData
-    ) external returns (uint256 bptOut, uint256[] memory amountsIn);
+    // function queryJoin(
+    //     bytes32 poolId,
+    //     address sender,
+    //     address recipient,
+    //     uint256[] memory balances,
+    //     uint256 lastChangeBlock,
+    //     uint256 protocolSwapFeePercentage,
+    //     bytes memory userData
+    // ) external returns (uint256 bptOut, uint256[] memory amountsIn);
 
-    function queryExit(
-        bytes32 poolId,
-        address sender,
-        address recipient,
-        uint256[] memory balances,
-        uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage,
-        bytes memory userData
-    ) external returns (uint256 bptIn, uint256[] memory amountsOut);
+    // function queryExit(
+    //     bytes32 poolId,
+    //     address sender,
+    //     address recipient,
+    //     uint256[] memory balances,
+    //     uint256 lastChangeBlock,
+    //     uint256 protocolSwapFeePercentage,
+    //     bytes memory userData
+    // ) external returns (uint256 bptIn, uint256[] memory amountsOut);
 }
 library Math {
     /**
@@ -4087,33 +4087,33 @@ abstract contract BasePool is IBasePool, BasePoolAuthorization, BalancerPoolToke
      * Like `IVault.queryBatchSwap`, this function is not view due to internal implementation details: the caller must
      * explicitly use eth_call instead of eth_sendTransaction.
      */
-    function queryJoin(
-        bytes32 poolId,
-        address sender,
-        address recipient,
-        uint256[] memory balances,
-        uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage,
-        bytes memory userData
-    ) external override returns (uint256 bptOut, uint256[] memory amountsIn) {
-        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+    // function queryJoin(
+    //     bytes32 poolId,
+    //     address sender,
+    //     address recipient,
+    //     uint256[] memory balances,
+    //     uint256 lastChangeBlock,
+    //     uint256 protocolSwapFeePercentage,
+    //     bytes memory userData
+    // ) external override returns (uint256 bptOut, uint256[] memory amountsIn) {
+    //     InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
 
-        _queryAction(
-            poolId,
-            sender,
-            recipient,
-            balances,
-            lastChangeBlock,
-            protocolSwapFeePercentage,
-            userData,
-            _onJoinPool,
-            _downscaleUpArray
-        );
+    //     _queryAction(
+    //         poolId,
+    //         sender,
+    //         recipient,
+    //         balances,
+    //         lastChangeBlock,
+    //         protocolSwapFeePercentage,
+    //         userData,
+    //         true, // _onJoinPool,
+    //         true // _downscaleUpArray
+    //     );
 
-        // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
-        // and we don't need to return anything here - it just silences compiler warnings.
-        return (bptOut, amountsIn);
-    }
+    //     // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+    //     // and we don't need to return anything here - it just silences compiler warnings.
+    //     return (bptOut, amountsIn);
+    // }
 
     /**
      * @notice "Dry run" `onExitPool`.
@@ -4126,33 +4126,33 @@ abstract contract BasePool is IBasePool, BasePoolAuthorization, BalancerPoolToke
      * Like `IVault.queryBatchSwap`, this function is not view due to internal implementation details: the caller must
      * explicitly use eth_call instead of eth_sendTransaction.
      */
-    function queryExit(
-        bytes32 poolId,
-        address sender,
-        address recipient,
-        uint256[] memory balances,
-        uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage,
-        bytes memory userData
-    ) external override returns (uint256 bptIn, uint256[] memory amountsOut) {
-        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+    // function queryExit(
+    //     bytes32 poolId,
+    //     address sender,
+    //     address recipient,
+    //     uint256[] memory balances,
+    //     uint256 lastChangeBlock,
+    //     uint256 protocolSwapFeePercentage,
+    //     bytes memory userData
+    // ) external override returns (uint256 bptIn, uint256[] memory amountsOut) {
+    //     InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
 
-        _queryAction(
-            poolId,
-            sender,
-            recipient,
-            balances,
-            lastChangeBlock,
-            protocolSwapFeePercentage,
-            userData,
-            _onExitPool,
-            _downscaleDownArray
-        );
+    //     _queryAction(
+    //         poolId,
+    //         sender,
+    //         recipient,
+    //         balances,
+    //         lastChangeBlock,
+    //         protocolSwapFeePercentage,
+    //         userData,
+    //         false, // _onExitPool,
+    //         false // _downscaleDownArray
+    //     );
 
-        // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
-        // and we don't need to return anything here - it just silences compiler warnings.
-        return (bptIn, amountsOut);
-    }
+    //     // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+    //     // and we don't need to return anything here - it just silences compiler warnings.
+    //     return (bptIn, amountsOut);
+    // }
 
     // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
     // upscaled.
@@ -4396,132 +4396,151 @@ abstract contract BasePool is IBasePool, BasePoolAuthorization, BalancerPoolToke
         return getVault().getAuthorizer();
     }
 
-    function _queryAction(
-        bytes32 poolId,
-        address sender,
-        address recipient,
-        uint256[] memory balances,
-        uint256 lastChangeBlock,
-        uint256 protocolSwapFeePercentage,
-        bytes memory userData,
-        function(bytes32, address, address, uint256[] memory, uint256, uint256, uint256[] memory, bytes memory)
-            internal
-            returns (uint256, uint256[] memory) _action,
-        function(uint256[] memory, uint256[] memory) internal view _downscaleArray
-    ) private {
-        // This uses the same technique used by the Vault in queryBatchSwap. Refer to that function for a detailed
-        // explanation.
+    // function _queryAction(
+    //     bytes32 poolId,
+    //     address sender,
+    //     address recipient,
+    //     uint256[] memory balances,
+    //     uint256 lastChangeBlock,
+    //     uint256 protocolSwapFeePercentage,
+    //     bytes memory userData,
+    //     bool isJoin,
+    //     bool scaleUp
+    //     // function(bytes32, address, address, uint256[] memory, uint256, uint256, uint256[] memory, bytes memory)
+    //     //     internal
+    //     //     returns (uint256, uint256[] memory) _action,
+    //     // function(uint256[] memory, uint256[] memory) internal view _downscaleArray
+    // ) private {
+    //     // This uses the same technique used by the Vault in queryBatchSwap. Refer to that function for a detailed
+    //     // explanation.
 
-        if (msg.sender != address(this)) {
-            // We perform an external call to ourselves, forwarding the same calldata. In this call, the else clause of
-            // the preceding if statement will be executed instead.
+    //     if (msg.sender != address(this)) {
+    //         // We perform an external call to ourselves, forwarding the same calldata. In this call, the else clause of
+    //         // the preceding if statement will be executed instead.
 
-            // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = address(this).call(msg.data);
+    //         // solhint-disable-next-line avoid-low-level-calls
+    //         (bool success, ) = address(this).call(msg.data);
 
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                // This call should always revert to decode the bpt and token amounts from the revert reason
-                switch success
-                    case 0 {
-                        // Note we are manually writing the memory slot 0. We can safely overwrite whatever is
-                        // stored there as we take full control of the execution and then immediately return.
+    //         // solhint-disable-next-line no-inline-assembly
+    //         assembly {
+    //             // This call should always revert to decode the bpt and token amounts from the revert reason
+    //             switch success
+    //                 case 0 {
+    //                     // Note we are manually writing the memory slot 0. We can safely overwrite whatever is
+    //                     // stored there as we take full control of the execution and then immediately return.
 
-                        // We copy the first 4 bytes to check if it matches with the expected signature, otherwise
-                        // there was another revert reason and we should forward it.
-                        returndatacopy(0, 0, 0x04)
-                        let error := and(mload(0), 0xffffffff00000000000000000000000000000000000000000000000000000000)
+    //                     // We copy the first 4 bytes to check if it matches with the expected signature, otherwise
+    //                     // there was another revert reason and we should forward it.
+    //                     returndatacopy(0, 0, 0x04)
+    //                     let error := and(mload(0), 0xffffffff00000000000000000000000000000000000000000000000000000000)
 
-                        // If the first 4 bytes don't match with the expected signature, we forward the revert reason.
-                        if eq(eq(error, 0x43adbafb00000000000000000000000000000000000000000000000000000000), 0) {
-                            returndatacopy(0, 0, returndatasize())
-                            revert(0, returndatasize())
-                        }
+    //                     // If the first 4 bytes don't match with the expected signature, we forward the revert reason.
+    //                     if eq(eq(error, 0x43adbafb00000000000000000000000000000000000000000000000000000000), 0) {
+    //                         returndatacopy(0, 0, returndatasize())
+    //                         revert(0, returndatasize())
+    //                     }
 
-                        // The returndata contains the signature, followed by the raw memory representation of the
-                        // `bptAmount` and `tokenAmounts` (array: length + data). We need to return an ABI-encoded
-                        // representation of these.
-                        // An ABI-encoded response will include one additional field to indicate the starting offset of
-                        // the `tokenAmounts` array. The `bptAmount` will be laid out in the first word of the
-                        // returndata.
-                        //
-                        // In returndata:
-                        // [ signature ][ bptAmount ][ tokenAmounts length ][ tokenAmounts values ]
-                        // [  4 bytes  ][  32 bytes ][       32 bytes      ][ (32 * length) bytes ]
-                        //
-                        // We now need to return (ABI-encoded values):
-                        // [ bptAmount ][ tokeAmounts offset ][ tokenAmounts length ][ tokenAmounts values ]
-                        // [  32 bytes ][       32 bytes     ][       32 bytes      ][ (32 * length) bytes ]
+    //                     // The returndata contains the signature, followed by the raw memory representation of the
+    //                     // `bptAmount` and `tokenAmounts` (array: length + data). We need to return an ABI-encoded
+    //                     // representation of these.
+    //                     // An ABI-encoded response will include one additional field to indicate the starting offset of
+    //                     // the `tokenAmounts` array. The `bptAmount` will be laid out in the first word of the
+    //                     // returndata.
+    //                     //
+    //                     // In returndata:
+    //                     // [ signature ][ bptAmount ][ tokenAmounts length ][ tokenAmounts values ]
+    //                     // [  4 bytes  ][  32 bytes ][       32 bytes      ][ (32 * length) bytes ]
+    //                     //
+    //                     // We now need to return (ABI-encoded values):
+    //                     // [ bptAmount ][ tokeAmounts offset ][ tokenAmounts length ][ tokenAmounts values ]
+    //                     // [  32 bytes ][       32 bytes     ][       32 bytes      ][ (32 * length) bytes ]
 
-                        // We copy 32 bytes for the `bptAmount` from returndata into memory.
-                        // Note that we skip the first 4 bytes for the error signature
-                        returndatacopy(0, 0x04, 32)
+    //                     // We copy 32 bytes for the `bptAmount` from returndata into memory.
+    //                     // Note that we skip the first 4 bytes for the error signature
+    //                     returndatacopy(0, 0x04, 32)
 
-                        // The offsets are 32-bytes long, so the array of `tokenAmounts` will start after
-                        // the initial 64 bytes.
-                        mstore(0x20, 64)
+    //                     // The offsets are 32-bytes long, so the array of `tokenAmounts` will start after
+    //                     // the initial 64 bytes.
+    //                     mstore(0x20, 64)
 
-                        // We now copy the raw memory array for the `tokenAmounts` from returndata into memory.
-                        // Since bpt amount and offset take up 64 bytes, we start copying at address 0x40. We also
-                        // skip the first 36 bytes from returndata, which correspond to the signature plus bpt amount.
-                        returndatacopy(0x40, 0x24, sub(returndatasize(), 36))
+    //                     // We now copy the raw memory array for the `tokenAmounts` from returndata into memory.
+    //                     // Since bpt amount and offset take up 64 bytes, we start copying at address 0x40. We also
+    //                     // skip the first 36 bytes from returndata, which correspond to the signature plus bpt amount.
+    //                     returndatacopy(0x40, 0x24, sub(returndatasize(), 36))
 
-                        // We finally return the ABI-encoded uint256 and the array, which has a total length equal to
-                        // the size of returndata, plus the 32 bytes of the offset but without the 4 bytes of the
-                        // error signature.
-                        return(0, add(returndatasize(), 28))
-                    }
-                    default {
-                        // This call should always revert, but we fail nonetheless if that didn't happen
-                        invalid()
-                    }
-            }
-        } else {
-            // This imitates the relevant parts of the bodies of onJoin and onExit. Since they're not virtual, we know
-            // that their implementations will match this regardless of what derived contracts might do.
+    //                     // We finally return the ABI-encoded uint256 and the array, which has a total length equal to
+    //                     // the size of returndata, plus the 32 bytes of the offset but without the 4 bytes of the
+    //                     // error signature.
+    //                     return(0, add(returndatasize(), 28))
+    //                 }
+    //                 default {
+    //                     // This call should always revert, but we fail nonetheless if that didn't happen
+    //                     invalid()
+    //                 }
+    //         }
+    //     } else {
+    //         // This imitates the relevant parts of the bodies of onJoin and onExit. Since they're not virtual, we know
+    //         // that their implementations will match this regardless of what derived contracts might do.
 
-            _beforeSwapJoinExit();
+    //         _beforeSwapJoinExit();
 
-            uint256[] memory scalingFactors = _scalingFactors();
-            _upscaleArray(balances, scalingFactors);
+    //         uint256[] memory scalingFactors = _scalingFactors();
+    //         _upscaleArray(balances, scalingFactors);
 
-            (uint256 bptAmount, uint256[] memory tokenAmounts) = _action(
-                poolId,
-                sender,
-                recipient,
-                balances,
-                lastChangeBlock,
-                protocolSwapFeePercentage,
-                scalingFactors,
-                userData
-            );
+    //         uint256 bptAmount; uint256[] memory tokenAmounts;
+    //         if (isJoin)
+    //             (bptAmount, tokenAmounts) = _onJoinPool(
+    //                 poolId,
+    //                 sender,
+    //                 recipient,
+    //                 balances,
+    //                 lastChangeBlock,
+    //                 protocolSwapFeePercentage,
+    //                 scalingFactors,
+    //                 userData
+    //             );
+    //         else
+    //             (bptAmount, tokenAmounts) = _onExitPool(
+    //                 poolId,
+    //                 sender,
+    //                 recipient,
+    //                 balances,
+    //                 lastChangeBlock,
+    //                 protocolSwapFeePercentage,
+    //                 scalingFactors,
+    //                 userData
+    //             );
 
-            _downscaleArray(tokenAmounts, scalingFactors);
 
-            // solhint-disable-next-line no-inline-assembly
-            assembly {
-                // We will return a raw representation of `bptAmount` and `tokenAmounts` in memory, which is composed of
-                // a 32-byte uint256, followed by a 32-byte for the array length, and finally the 32-byte uint256 values
-                // Because revert expects a size in bytes, we multiply the array length (stored at `tokenAmounts`) by 32
-                let size := mul(mload(tokenAmounts), 32)
+    //         if (scaleUp) 
+    //             _downscaleUpArray(tokenAmounts, scalingFactors);
+    //         else
+    //             _downscaleDownArray(tokenAmounts, scalingFactors);
 
-                // We store the `bptAmount` in the previous slot to the `tokenAmounts` array. We can make sure there
-                // will be at least one available slot due to how the memory scratch space works.
-                // We can safely overwrite whatever is stored in this slot as we will revert immediately after that.
-                let start := sub(tokenAmounts, 0x20)
-                mstore(start, bptAmount)
+    //         // solhint-disable-next-line no-inline-assembly
+    //         assembly {
+    //             // We will return a raw representation of `bptAmount` and `tokenAmounts` in memory, which is composed of
+    //             // a 32-byte uint256, followed by a 32-byte for the array length, and finally the 32-byte uint256 values
+    //             // Because revert expects a size in bytes, we multiply the array length (stored at `tokenAmounts`) by 32
+    //             let size := mul(mload(tokenAmounts), 32)
 
-                // We send one extra value for the error signature "QueryError(uint256,uint256[])" which is 0x43adbafb
-                // We use the previous slot to `bptAmount`.
-                mstore(sub(start, 0x20), 0x0000000000000000000000000000000000000000000000000000000043adbafb)
-                start := sub(start, 0x04)
+    //             // We store the `bptAmount` in the previous slot to the `tokenAmounts` array. We can make sure there
+    //             // will be at least one available slot due to how the memory scratch space works.
+    //             // We can safely overwrite whatever is stored in this slot as we will revert immediately after that.
+    //             let start := sub(tokenAmounts, 0x20)
+    //             mstore(start, bptAmount)
 
-                // When copying from `tokenAmounts` into returndata, we copy the additional 68 bytes to also return
-                // the `bptAmount`, the array 's length, and the error signature.
-                revert(start, add(size, 68))
-            }
-        }
-    }
+    //             // We send one extra value for the error signature "QueryError(uint256,uint256[])" which is 0x43adbafb
+    //             // We use the previous slot to `bptAmount`.
+    //             mstore(sub(start, 0x20), 0x0000000000000000000000000000000000000000000000000000000043adbafb)
+    //             start := sub(start, 0x04)
+
+    //             // When copying from `tokenAmounts` into returndata, we copy the additional 68 bytes to also return
+    //             // the `bptAmount`, the array 's length, and the error signature.
+    //             revert(start, add(size, 68))
+    //         }
+    //     }
+    // }
 }
 interface IRateProvider {
     /**
@@ -4552,12 +4571,12 @@ abstract contract ComposableStablePoolStorage is BasePool {
     uint256 private immutable _bptIndex;
 
     // These are the registered tokens: one of them will be the BPT.
-    IERC20 private immutable _token0;
-    IERC20 private immutable _token1;
-    IERC20 private immutable _token2;
-    IERC20 private immutable _token3;
-    IERC20 private immutable _token4;
-    IERC20 private immutable _token5;
+    IERC20 internal immutable _token0;
+    IERC20 internal immutable _token1;
+    IERC20 internal immutable _token2;
+    IERC20 internal immutable _token3;
+    IERC20 internal immutable _token4;
+    IERC20 internal immutable _token5;
 
     // All token balances are normalized to behave as if the token had 18 decimals. We assume a token's decimals will
     // not change throughout its lifetime, and store the corresponding scaling factor for each at construction time.
@@ -5247,10 +5266,11 @@ library StableMath {
         pure
         returns (uint256)
     {
-        uint256 value;
-        return value;
+        require (amplificationParameter>0 && amplificationParameter<5000); 
+        return amplificationParameter * 2;
     }
 
+    
     function _calcOutGivenIn(
         uint256 amplificationParameter,
         uint256[] memory balances,
@@ -5259,10 +5279,7 @@ library StableMath {
         uint256 tokenAmountIn,
         uint256 invariant
     ) public pure returns (uint256) {
-        uint256 value;
-        if (tokenAmountIn > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return tokenAmountIn * 2;
     }
 
     function _calcInGivenOut(
@@ -5273,10 +5290,7 @@ library StableMath {
         uint256 tokenAmountOut,
         uint256 invariant
     ) public pure returns (uint256) {
-        uint256 value;
-        if (tokenAmountOut > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;    
+        return tokenAmountOut * 2;    
     }
 
     function _calcBptOutGivenExactTokensIn(
@@ -5288,13 +5302,18 @@ library StableMath {
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
         uint256 value;
-        uint256 input;
-        for (uint256 i=0;i<amountsIn.length;++i) {
-            input += amountsIn[i];
-        }
-        if (input > 0) { require (value > 0);}
-        else require (value==0);
-        return value;
+        uint256 input = amountsIn[0];
+        input += amountsIn[1];
+        if (amountsIn.length>2)
+            input += amountsIn[2];
+        if (amountsIn.length>3)
+            input += amountsIn[3];
+        if (amountsIn.length>4)
+            input += amountsIn[4];
+        if (amountsIn.length>5)
+            input += amountsIn[5];
+
+        return input*2;
     }
 
     function _calcTokenInGivenExactBptOut(
@@ -5306,10 +5325,7 @@ library StableMath {
         uint256 currentInvariant,        
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
-        if (bptAmountOut > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return bptAmountOut * 2;
     }
 
     function _calcBptInGivenExactTokensOut(
@@ -5320,14 +5336,18 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
-        uint256 input;
-        for (uint256 i=0;i<amountsOut.length;++i) {
-            input += amountsOut[i];
-        }
-        if (input > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        uint256 input = amountsOut[0];
+        input += amountsOut[1];
+        if (amountsOut.length>2)
+            input += amountsOut[2];
+        if (amountsOut.length>3)
+            input += amountsOut[3];
+        if (amountsOut.length>4)
+            input += amountsOut[4];
+        if (amountsOut.length>5)
+            input += amountsOut[5];
+
+        return input * 2;
     }
 
     function _calcTokenOutGivenExactBptIn(
@@ -5339,10 +5359,7 @@ library StableMath {
         uint256 currentInvariant,
         uint256 swapFeePercentage
     ) public pure returns (uint256) {
-        uint256 value;
-        if (bptAmountIn > 0) { require (value > 0);}
-        else require (value == 0);
-        return value;
+        return bptAmountIn * 2;
     }
 
     function _getTokenBalanceGivenInvariantAndAllOtherBalances(
@@ -5351,8 +5368,7 @@ library StableMath {
         uint256 invariant,
         uint256 tokenIndex
     ) public pure returns (uint256) {
-        uint256 value;
-        return value;
+        return invariant * 2;
     }
 
     function _getRate(
@@ -5360,8 +5376,8 @@ library StableMath {
         uint256 amp,
         uint256 supply
     ) public pure returns (uint256) {
-        uint256 value;
-        return value;
+        require (amp>0 && amp<5000); 
+        return amp * 2;
     }
 }
 abstract contract ComposableStablePoolProtocolFees is
@@ -5847,7 +5863,7 @@ abstract contract BaseGeneralPool is IGeneralPool, BasePool {
         uint256[] memory balances,
         uint256 indexIn,
         uint256 indexOut
-    ) external override onlyVault(swapRequest.poolId) returns (uint256) {
+    ) public override onlyVault(swapRequest.poolId) returns (uint256) {
         _beforeSwapJoinExit();
 
         _validateIndexes(indexIn, indexOut, _getTotalTokens());
@@ -6200,10 +6216,16 @@ contract ComposableStablePool is
         bool isGivenIn = swapRequest.kind == IVault.SwapKind.GIVEN_IN;
 
         _upscaleArray(registeredBalances, scalingFactors);
-        swapRequest.amount = _upscale(
-            swapRequest.amount,
-            isGivenIn? scalingFactors[registeredIndexIn] : scalingFactors[registeredIndexOut]
-        );
+        if (isGivenIn)
+            swapRequest.amount = _upscale(
+                swapRequest.amount,
+                scalingFactors[registeredIndexIn]
+            );
+        else
+            swapRequest.amount = _upscale(
+                swapRequest.amount,
+                scalingFactors[registeredIndexOut]
+            );
 
         (uint256 preJoinExitSupply, uint256[] memory balances) = _payProtocolFeesBeforeJoinExit(registeredBalances);
         (uint256 currentAmp, ) = _getAmplificationParameter();
@@ -6533,27 +6555,36 @@ contract ComposableStablePool is
 
         uint256 preJoinExitInvariant = StableMath._calculateInvariant(currentAmp, balances);
 
-
-            function(uint256[] memory, uint256, uint256, uint256, uint256[] memory, bytes memory)
-                internal
-                view
-                returns (uint256, uint256[] memory) _doJoinOrExit
-         = (isJoin ? _doJoin : _doExit);
-
-        (uint256 bptAmount, uint256[] memory amountsDelta) = _doJoinOrExit(
-            balances,
-            currentAmp,
-            preJoinExitSupply,
-            preJoinExitInvariant,
-            scalingFactors,
-            userData
-        );
-
+        uint256 bptAmount;
+        uint256[] memory amountsDelta;
+        if (isJoin) {
+            (bptAmount, amountsDelta) = _doJoin(
+                balances,
+                currentAmp,
+                preJoinExitSupply,
+                preJoinExitInvariant,
+                scalingFactors,
+                userData
+            );
+        } else {
+            (bptAmount, amountsDelta) = _doExit(
+                balances,
+                currentAmp,
+                preJoinExitSupply,
+                preJoinExitInvariant,
+                scalingFactors,
+                userData
+            );
+        }
         // Unlike joinswaps, explicit joins do not mutate balances into the post join-exit balances so we must perform
         // this mutation here.
-        function(uint256, uint256) internal pure returns (uint256) _addOrSub = isJoin ? FixedPoint.add : FixedPoint.sub;
-        _mutateAmounts(balances, amountsDelta, _addOrSub);
-        uint256 postJoinExitSupply = _addOrSub(preJoinExitSupply, bptAmount);
+                function(uint256, uint256) internal pure returns (uint256) _addOrSub = isJoin ? FixedPoint.add : FixedPoint.sub;
+        _mutateAmounts(balances, amountsDelta, isJoin);
+        uint256 postJoinExitSupply;
+        if (isJoin)
+            postJoinExitSupply = FixedPoint.add(preJoinExitSupply, bptAmount);
+        else
+            postJoinExitSupply = FixedPoint.sub(preJoinExitSupply, bptAmount);
 
         // Pass in the post-join balances to reset the protocol fee basis.
         // We are minting bptAmount, increasing the total (and virtual) supply post-join
@@ -6809,13 +6840,16 @@ contract ComposableStablePool is
     function _mutateAmounts(
         uint256[] memory toMutate,
         uint256[] memory arguments,
-        function(uint256, uint256) pure returns (uint256) mutation
+        bool isJoin
     ) private pure {
         uint256 length = toMutate.length;
         InputHelpers.ensureInputLengthMatch(length, arguments.length);
 
         for (uint256 i = 0; i < length; ++i) {
-            toMutate[i] = mutation(toMutate[i], arguments[i]);
+            if (isJoin) 
+                toMutate[i] = FixedPoint.add(toMutate[i], arguments[i]);
+            else
+                toMutate[i] = FixedPoint.sub(toMutate[i], arguments[i]);
         }
     }
 
