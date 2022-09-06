@@ -12,79 +12,7 @@ methods {
     // _validateEncodingParams(int256,uint256,uint256) envfree
 }
 
-rule insertUintIntegrity() {
-    bytes32 word;
-    uint256 value;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule insertIntIntegrity() {
-    bytes32 word;
-    int256 value;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule encodeUintIntegrity() {
-    uint256 value;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule encodeIntIntegrity() {
-    int256 value;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule decodeUintIntegrity() {
-    bytes32 word;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule decodeIntIntegrity() {
-    bytes32 word;
-    uint256 offset;
-    uint256 bitLength;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule decodeBoolIntegrity() {
-    bytes32 word;
-    uint256 offset;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule insertBits192Integrity() {
-    bytes32 word;
-    bytes32 value;
-    uint256 offset;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
-rule insertBoolIntegrity() {
-    bytes32 word;
-    bool value;
-    uint256 offset;
-    assert false, 
-        "TODO: Replace placeholder assert message";
-}
-
+// needs reworking
 rule doesNotRevertImproperly() {
     method f; env e; calldataarg args;
     require e.msg.value == 0;
@@ -93,8 +21,6 @@ rule doesNotRevertImproperly() {
 
     assert !lastReverted, "wordCodec method calls must not revert improperly";
 }
-
-
 
 rule uintInsertDecodeIntegrity() {
     bytes32 word; uint256 startingValue; uint256 offset; uint256 bitLength;
