@@ -138,7 +138,7 @@ rule intEncodeDecodeIntegrity() {
 
 rule boolInsertDecodeIntegrity() {
     bytes32 word; bool startingValue; uint256 offset;
-
+    // require offset < 256;
     bytes32 newWord = insertBool(word, startingValue, offset);
     bool decodedValue = decodeBool(newWord, offset);
 
@@ -156,6 +156,20 @@ rule uintInsertBitIndependence() {
 
     bool bitValue_ = decodeBool(newWord, bitOffset);
 
-    assert _bitValue != bitValue_ => (offset <= bitOffset && bitOffset < (offset + bitLength)),
+    assert _bitValue != bitValue_ => ((offset + bitLength) > bitOffset && bitOffset >= offset),
+        "If a bit changes value, it must be within the correct range";
+}
+
+// check logic during daytime
+rule boolInsertBitIndependence() {
+    bytes32 word; uint256 bitOffset;
+    bool _bitValue = decodeBool(word, bitOffset);
+
+    uint256 offset;
+    bytes32 newWord = insertBool(word, _, offset);
+
+    bool bitValue_ = decodeBool(newWord, bitOffset);
+
+    assert _bitValue != bitValue_ => bitOffset == offset,
         "If a bit changes value, it must be within the correct range";
 }
