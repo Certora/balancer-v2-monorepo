@@ -137,12 +137,12 @@ rule intEncodeDecodeIntegrity() {
 }
 
 rule boolInsertDecodeIntegrity() {
-    bytes32 word; bool startingValue; uint256 offset;
+    bytes32 word; bool _value; uint256 offset;
     // require offset < 256;
-    bytes32 newWord = insertBool(word, startingValue, offset);
-    bool decodedValue = decodeBool(newWord, offset);
+    bytes32 newWord = insertBool(word, _value, offset);
+    bool value_ = decodeBool(newWord, offset);
 
-    assert startingValue == decodedValue, 
+    assert _value == value_, 
         "Inserting and decoding a bool must return the original value";
 }
 
