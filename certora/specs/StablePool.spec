@@ -29,7 +29,7 @@ methods {
 	_getAmplificationParameter() returns (uint256,bool)
 
 	//// @dev stable math
-    _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
+    //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => newCalcInvariant(ampParam, balances[0], balances[1])
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
@@ -63,11 +63,6 @@ methods {
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
 
-    minAmp() returns(uint256) envfree
-    maxAmp() returns(uint256) envfree
-    initialized() returns(bool) envfree
-    AMP_PRECISION() envfree
-
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
     _token2.balanceOf(address) returns(uint256) envfree
@@ -93,6 +88,8 @@ function joinExit(env e, method f, address user) {
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
     require recipient == user;
     require sender == user;
+    require balances[0] > 0;
+    require balances[1] > 0;
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         require sender != currentContract;
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
@@ -101,6 +98,11 @@ function joinExit(env e, method f, address user) {
     }
 }
 
+function newCalcInvariant(uint256 ampParam, uint256 balance1, uint256 balance2) returns uint256 {
+    uint256 invar;
+    require invar > 0;
+    return invar;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
@@ -148,6 +150,9 @@ rule sanityRecovery(method f)
 	assert false;
 }
 
+// balances == 0 && totalSupply == 0 => no mint
+// everything zero or all nonzero
+
 rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered { 
     f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
     || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
@@ -171,9 +176,9 @@ rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered {
     uint256 totalFees_ = totalFees();
 
     // no free minting 
-    // last fail was due to all tokens being sent to fee collector
-    // last fail due to fees not being collected to address(this)
-    // last fail due to starting with 0 total Supply
+    // last fail was due to all tokens being sent to fee collector (fixed in our symbolic vault)
+    // last fail due to fees not being collected to address(this) (fixed in our symbolic vault)
+    // last fail due to starting with 0 total Supply (might be bug?)
     // pool joiner was pool
     // speculating its recovery mode
     assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in users' total tokens";
