@@ -27,7 +27,7 @@ diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfa
  
 diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
 --- pool-stable/contracts/StableMath.sol	2022-09-01 11:55:51.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-04 12:13:24.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-06 17:48:11.000000000 -0700
 @@ -30,7 +30,7 @@
      uint256 internal constant _AMP_PRECISION = 1e3;
  
@@ -37,15 +37,20 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      // Note on unchecked arithmetic:
      // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
      // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
-@@ -59,6 +59,7 @@
+@@ -58,7 +58,11 @@
+         internal
          pure
          returns (uint256)
-     {
-+        return balances[0] < balances[1] ? 2 * balances[0] : 2* balances[1];
+-    {
++    {   
++        return balances[0] > balances[1] ? balances[1] * 2 : balances[0] * 2
++        //invar < balances[0] * balances[1];
++        //invar > balances[0] + balances[1];
++        //return balances[0] + balances[1];
          /**********************************************************************************************
          // invariant                                                                                 //
          // D = invariant                                                  D^(n+1)                    //
-@@ -69,7 +70,7 @@
+@@ -69,7 +73,7 @@
          **********************************************************************************************/
  
          // Always round down, to match Vyper's arithmetic (which always truncates).
@@ -54,7 +59,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          uint256 sum = 0; // S in the Curve version
          uint256 numTokens = balances.length;
          for (uint256 i = 0; i < numTokens; i++) {
-@@ -117,6 +118,7 @@
+@@ -117,6 +121,7 @@
          }
  
          _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
@@ -62,6 +67,57 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      }
  
      // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.
+@@ -264,7 +269,7 @@
+         uint256 bptAmountOut,
+         uint256 bptTotalSupply,
+         uint256 swapFeePercentage
+-    ) internal pure returns (uint256) {
++    ) internal pure returns (uint256 ret) {
+         // Token in, so we round up overall.
+ 
+         // Get the current invariant
+@@ -281,7 +286,7 @@
+             tokenIndex
+         );
+         uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
+-
++        //return amountInWithoutFee;
+         // First calculate the sum of all token balances, which will be used to calculate
+         // the current weight of each token
+         uint256 sumBalances = 0;
+@@ -297,7 +302,13 @@
+         uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount);
+ 
+         // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
+-        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
++        ret = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
++        return ret; // not asserting nonzero output.
++        if (ret > 0) {
++            return ret;
++        } else {
++            revert();
++        }
+     }
+ 
+     /*
+@@ -478,7 +489,7 @@
+         uint256 tokenIndex
+     ) internal pure returns (uint256) {
+         // Rounds result up overall
+-
++        return 10;
+         uint256 ampTimesTotal = amplificationParameter * balances.length;
+         uint256 sum = balances[0];
+         uint256 P_D = balances[0] * balances.length;
+@@ -502,7 +513,7 @@
+         // We multiply the first iteration outside the loop with the invariant to set the value of the
+         // initial approximation.
+         uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
+-
++        return tokenBalance;
+         for (uint256 i = 0; i < 255; i++) {
+             prevTokenBalance = tokenBalance;
+ 
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
 --- pool-stable/contracts/StablePool.sol	2022-09-01 11:55:51.000000000 -0700
 +++ pool-stable/contracts/StablePool.sol	2022-09-04 12:48:38.000000000 -0700

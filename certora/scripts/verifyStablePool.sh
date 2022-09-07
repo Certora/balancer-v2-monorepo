@@ -12,14 +12,13 @@ certoraRun \
     certora/helpers/DummyERC20E.sol \
     --link StablePoolHarness:_token0=DummyERC20A StablePoolHarness:_token1=DummyERC20B StablePoolHarness:_token2=DummyERC20C StablePoolHarness:_token3=DummyERC20D StablePoolHarness:_token4=DummyERC20E \
     --verify StablePoolHarness:certora/specs/StablePool.spec \
-    --staging \
-    --settings -t=1000,-mediumTimeout=50,-depth=30,-enableEqualitySaturation=false \
+    --settings -enableEqualitySaturation=false \
     --cache balancerOld \
     --optimistic_loop \
     --loop_iter 2 \
     --send_only \
     $RULE \
-    --msg "StablePool: $1" \
+    --msg "StablePool calcTokenInOut nonsumm, calcInvar constant sum, calcBal 10: $1" \
 
     # --settings -enableEqualitySaturation=false \
 

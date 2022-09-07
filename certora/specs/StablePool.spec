@@ -29,16 +29,16 @@ methods {
 	_getAmplificationParameter() returns (uint256,bool)
 
 	//// @dev stable math
-    //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => newCalcInvariant(ampParam, balances[0], balances[1])
+    //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
+    //_calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => ALWAYS(1)
     // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
     // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
+    //_getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
     //// @dev "view" functions that call internal function with function pointers as input
@@ -88,20 +88,14 @@ function joinExit(env e, method f, address user) {
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
     require recipient == user;
     require sender == user;
-    require balances[0] > 0;
-    require balances[1] > 0;
+    //require balances[0] > 0; // even with these requires, _calcInvar returns zero.
+    //require balances[1] > 0;
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         require sender != currentContract;
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     }
-}
-
-function newCalcInvariant(uint256 ampParam, uint256 balance1, uint256 balance2) returns uint256 {
-    uint256 invar;
-    require invar > 0;
-    return invar;
 }
 
 ////////////////////////////////////////////////////////////////////////////
