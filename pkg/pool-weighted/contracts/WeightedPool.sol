@@ -16,12 +16,12 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "./BaseWeightedPool.sol";
-import "./InvariantGrowthProtocolFees.sol";
+import "./WeightedPoolProtocolFees.sol";
 
 /**
  * @dev Basic Weighted Pool with immutable weights.
  */
-contract WeightedPool is BaseWeightedPool, InvariantGrowthProtocolFees {
+contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
     using FixedPoint for uint256;
 
     uint256 private constant _MAX_TOKENS = 8;
@@ -64,6 +64,7 @@ contract WeightedPool is BaseWeightedPool, InvariantGrowthProtocolFees {
         string symbol;
         IERC20[] tokens;
         uint256[] normalizedWeights;
+        IRateProvider[] rateProviders;
         address[] assetManagers;
         uint256 swapFeePercentage;
     }
@@ -89,6 +90,7 @@ contract WeightedPool is BaseWeightedPool, InvariantGrowthProtocolFees {
             false
         )
         ProtocolFeeCache(protocolFeeProvider, ProtocolFeeCache.DELEGATE_PROTOCOL_SWAP_FEES_SENTINEL)
+        WeightedPoolProtocolFees(params.tokens.length, params.rateProviders)
     {
         uint256 numTokens = params.tokens.length;
         InputHelpers.ensureInputLengthMatch(numTokens, params.normalizedWeights.length);
@@ -183,14 +185,14 @@ contract WeightedPool is BaseWeightedPool, InvariantGrowthProtocolFees {
      */
     function _scalingFactor(IERC20 token) internal view virtual override returns (uint256) {
         // prettier-ignore
-        if (token == _token0) { return _scalingFactor0; }
-        else if (token == _token1) { return _scalingFactor1; }
-        else if (token == _token2) { return _scalingFactor2; }
-        else if (token == _token3) { return _scalingFactor3; }
-        else if (token == _token4) { return _scalingFactor4; }
-        else if (token == _token5) { return _scalingFactor5; }
-        else if (token == _token6) { return _scalingFactor6; }
-        else if (token == _token7) { return _scalingFactor7; }
+        if (token == _token0) { return _getScalingFactor0(); }
+        else if (token == _token1) { return _getScalingFactor1(); }
+        else if (token == _token2) { return _getScalingFactor2(); }
+        else if (token == _token3) { return _getScalingFactor3(); }
+        else if (token == _token4) { return _getScalingFactor4(); }
+        else if (token == _token5) { return _getScalingFactor5(); }
+        else if (token == _token6) { return _getScalingFactor6(); }
+        else if (token == _token7) { return _getScalingFactor7(); }
         else {
             _revert(Errors.INVALID_TOKEN);
         }
@@ -202,39 +204,197 @@ contract WeightedPool is BaseWeightedPool, InvariantGrowthProtocolFees {
 
         // prettier-ignore
         {
-            scalingFactors[0] = _scalingFactor0;
-            scalingFactors[1] = _scalingFactor1;
-            if (totalTokens > 2) { scalingFactors[2] = _scalingFactor2; } else { return scalingFactors; }
-            if (totalTokens > 3) { scalingFactors[3] = _scalingFactor3; } else { return scalingFactors; }
-            if (totalTokens > 4) { scalingFactors[4] = _scalingFactor4; } else { return scalingFactors; }
-            if (totalTokens > 5) { scalingFactors[5] = _scalingFactor5; } else { return scalingFactors; }
-            if (totalTokens > 6) { scalingFactors[6] = _scalingFactor6; } else { return scalingFactors; }
-            if (totalTokens > 7) { scalingFactors[7] = _scalingFactor7; } else { return scalingFactors; }
+            scalingFactors[0] = _getScalingFactor0();
+            scalingFactors[1] = _getScalingFactor1();
+            if (totalTokens > 2) { scalingFactors[2] = _getScalingFactor2(); } else { return scalingFactors; }
+            if (totalTokens > 3) { scalingFactors[3] = _getScalingFactor3(); } else { return scalingFactors; }
+            if (totalTokens > 4) { scalingFactors[4] = _getScalingFactor4(); } else { return scalingFactors; }
+            if (totalTokens > 5) { scalingFactors[5] = _getScalingFactor5(); } else { return scalingFactors; }
+            if (totalTokens > 6) { scalingFactors[6] = _getScalingFactor6(); } else { return scalingFactors; }
+            if (totalTokens > 7) { scalingFactors[7] = _getScalingFactor7(); } else { return scalingFactors; }
         }
 
         return scalingFactors;
     }
 
-    // InvariantGrowthProtocolFees
+    // Initialize
+
+    function _onInitializePool(
+        bytes32 poolId,
+        address sender,
+        address recipient,
+        uint256[] memory scalingFactors,
+        bytes memory userData
+    ) internal virtual override returns (uint256, uint256[] memory) {
+        // Initialize `_athRateProduct` if the Pool will pay protocol fees on yield.
+        // Not initializing this here properly will cause all joins/exits to revert.
+        if (!_isExemptFromYieldProtocolFees()) _updateATHRateProduct(_getRateProduct(_getNormalizedWeights()));
+
+        return super._onInitializePool(poolId, sender, recipient, scalingFactors, userData);
+    }
+
+    // WeightedPoolProtocolFees functions
 
     function _beforeJoinExit(uint256[] memory preBalances, uint256[] memory normalizedWeights)
         internal
         virtual
         override
+        returns (uint256)
     {
-        uint256 protocolFeesToBeMinted = _getSwapProtocolFees(preBalances, normalizedWeights, totalSupply());
+        uint256 supplyBeforeFeeCollection = totalSupply();
+        uint256 invariant = WeightedMath._calculateInvariant(normalizedWeights, preBalances);
+        (uint256 protocolFeesToBeMinted, uint256 athRateProduct) = _getPreJoinExitProtocolFees(
+            invariant,
+            normalizedWeights,
+            supplyBeforeFeeCollection
+        );
+
+        // We then update the recorded value of `athRateProduct` to ensure we only collect fees on yield once.
+        // A zero value for `athRateProduct` represents that it is unchanged so we can skip updating it.
+        if (athRateProduct > 0) {
+            _updateATHRateProduct(athRateProduct);
+        }
+
+        if (protocolFeesToBeMinted > 0) {
+            _payProtocolFees(protocolFeesToBeMinted);
+        }
+        return supplyBeforeFeeCollection.add(protocolFeesToBeMinted);
+    }
+
+    function _afterJoinExit(
+        uint256[] memory preBalances,
+        uint256[] memory balanceDeltas,
+        uint256[] memory normalizedWeights,
+        uint256 preJoinExitSupply,
+        uint256 postJoinExitSupply
+    ) internal virtual override {
+        uint256 protocolFeesToBeMinted = _getPostJoinExitProtocolFees(
+            preBalances,
+            balanceDeltas,
+            normalizedWeights,
+            preJoinExitSupply,
+            postJoinExitSupply
+        );
 
         if (protocolFeesToBeMinted > 0) {
             _payProtocolFees(protocolFeesToBeMinted);
         }
     }
 
-    function _afterJoinExit(
-        bool isJoin,
-        uint256[] memory preBalances,
-        uint256[] memory balanceDeltas,
-        uint256[] memory normalizedWeights
-    ) internal virtual override(BaseWeightedPool, InvariantGrowthProtocolFees) {
-        InvariantGrowthProtocolFees._afterJoinExit(isJoin, preBalances, balanceDeltas, normalizedWeights);
+    function _updatePostJoinExit(uint256 postJoinExitInvariant)
+        internal
+        virtual
+        override(BaseWeightedPool, WeightedPoolProtocolFees)
+    {
+        WeightedPoolProtocolFees._updatePostJoinExit(postJoinExitInvariant);
+    }
+
+    function _beforeProtocolFeeCacheUpdate() internal override {
+        // The `getRate()` function depends on the actual supply, which in turn depends on the cached protocol fee
+        // percentages. Changing these would therefore result in the rate changing, which is not acceptable as this is a
+        // sensitive value.
+        // Because of this, we pay any due protocol fees *before* updating the cache, making it so that the new
+        // percentages only affect future operation of the Pool, and not past fees. As a result, `getRate()` is
+        // unaffected by the cached protocol fee percentages changing.
+
+        // Given that this operation is state-changing and relatively complex, we only allow it as long as the Pool is
+        // not paused.
+        _ensureNotPaused();
+
+        uint256 invariant = getInvariant();
+
+        (uint256 protocolFeesToBeMinted, uint256 athRateProduct) = _getPreJoinExitProtocolFees(
+            invariant,
+            _getNormalizedWeights(),
+            totalSupply()
+        );
+
+        if (protocolFeesToBeMinted > 0) {
+            _payProtocolFees(protocolFeesToBeMinted);
+        }
+
+        // With the fees paid, we now store the current invariant and update the ATH rate product (if necessary),
+        // marking the Pool as free of protocol debt.
+
+        _updatePostJoinExit(invariant);
+        if (athRateProduct > 0) {
+            _updateATHRateProduct(athRateProduct);
+        }
+    }
+
+    /**
+     * @notice Returns the effective BPT supply.
+     *
+     * @dev This would be the same as `totalSupply` however the Pool owes debt to the Protocol in the form of unminted
+     * BPT, which will be minted immediately before the next join or exit. We need to take these into account since,
+     * even if they don't yet exist, they will effectively be included in any Pool operation that involves BPT.
+     *
+     * In the vast majority of cases, this function should be used instead of `totalSupply()`.
+     */
+    function getActualSupply() public view returns (uint256) {
+        uint256 supply = totalSupply();
+
+        (uint256 protocolFeesToBeMinted, ) = _getPreJoinExitProtocolFees(
+            getInvariant(),
+            _getNormalizedWeights(),
+            supply
+        );
+
+        return supply.add(protocolFeesToBeMinted);
+    }
+
+    /**
+     * @notice Returns the appreciation of one BPT relative to the underlying tokens.
+     * @dev This is equivalent to `BaseWeightedPool.getRate()`, with a correction factor to the total supply.
+     * We add on the to-be-minted protocol fees to the total supply to dilute the value of the remaining BPT.
+     * This prevents the Pool's rate being affected by the collection of protocol fees.
+     */
+    function getRate() public view override returns (uint256) {
+        uint256 supply = totalSupply();
+        uint256 invariant = getInvariant();
+        (uint256 protocolFeesToBeMinted, ) = _getPreJoinExitProtocolFees(invariant, _getNormalizedWeights(), supply);
+        return Math.mul(invariant, _getTotalTokens()).divDown(supply.add(protocolFeesToBeMinted));
+    }
+
+    function _onDisableRecoveryMode() internal override {
+        // Update the postJoinExitInvariant to the value of the currentInvariant, zeroing out any protocol swap fees.
+        _updatePostJoinExit(getInvariant());
+
+        // Update the athRateProduct to the value of the current rateProduct, zeroing out any protocol yield fees.
+        if (!_isExemptFromYieldProtocolFees()) {
+            _updateATHRateProduct(_getRateProduct(_getNormalizedWeights()));
+        }
+    }
+
+    function _getScalingFactor0() internal view returns (uint256) {
+        return _scalingFactor0;
+    }
+
+    function _getScalingFactor1() internal view returns (uint256) {
+        return _scalingFactor1;
+    }
+
+    function _getScalingFactor2() internal view returns (uint256) {
+        return _scalingFactor2;
+    }
+
+    function _getScalingFactor3() internal view returns (uint256) {
+        return _scalingFactor3;
+    }
+
+    function _getScalingFactor4() internal view returns (uint256) {
+        return _scalingFactor4;
+    }
+
+    function _getScalingFactor5() internal view returns (uint256) {
+        return _scalingFactor5;
+    }
+
+    function _getScalingFactor6() internal view returns (uint256) {
+        return _scalingFactor6;
+    }
+
+    function _getScalingFactor7() internal view returns (uint256) {
+        return _scalingFactor7;
     }
 }

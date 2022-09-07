@@ -31,6 +31,7 @@ export default {
     const {
       tokens,
       weights,
+      rateProviders,
       assetManagers,
       swapFeePercentage,
       poolType,
@@ -48,6 +49,7 @@ export default {
       vault,
       tokens,
       weights,
+      TypesConverter.toAddresses(rateProviders),
       assetManagers,
       swapFeePercentage,
       poolType,
@@ -64,6 +66,7 @@ export default {
     const {
       tokens,
       weights,
+      rateProviders,
       assetManagers,
       swapFeePercentage,
       pauseWindowDuration,
@@ -135,6 +138,7 @@ export default {
               symbol: SYMBOL,
               tokens: tokens.addresses,
               normalizedWeights: weights,
+              rateProviders: rateProviders,
               assetManagers: assetManagers,
               swapFeePercentage: swapFeePercentage,
             },
@@ -153,10 +157,11 @@ export default {
   },
 
   async _deployFromFactory(params: WeightedPoolDeployment, vault: Vault): Promise<Contract> {
+    // Note that we only support asset managers with the standalone deploy method.
     const {
       tokens,
       weights,
-      assetManagers,
+      rateProviders,
       swapFeePercentage,
       swapEnabledOnStart,
       mustAllowlistLPs,
@@ -248,7 +253,7 @@ export default {
           SYMBOL,
           tokens.addresses,
           weights,
-          assetManagers,
+          rateProviders,
           swapFeePercentage,
           owner
         );
