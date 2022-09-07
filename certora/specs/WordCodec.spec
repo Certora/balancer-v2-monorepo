@@ -121,20 +121,20 @@ rule boolInsertBitIndependence() {
 
 // This rule relies heavily on logic from insertUint in the path for encodeUint.
 // Consider alternate approaches if possible.
-rule uintInsertEncodeEquivalence() {
-    bytes32 word; uint256 value; uint256 offset; uint256 bitLength;
-    storage beforeChanges = lastStorage;
-    // moving value into word using insertUint
-    bytes32 wordA = insertUint(word, value, offset, bitLength);// at beforeChanges;
-    // moving value into word using encodeUint
-    bytes32 valueWord = encodeUint(value, offset, bitLength) at beforeChanges;
-    uint256 mask = (1 << bitLength) - 1;
-    bytes32 preparedWord = bytes32(uint256(word) & ~(mask << offset));
-    bytes32 wordB = preparedWord | valueWord;
+// rule uintInsertEncodeEquivalence() {
+//     bytes32 word; uint256 value; uint256 offset; uint256 bitLength;
+//     storage beforeChanges = lastStorage;
+//     // moving value into word using insertUint
+//     bytes32 wordA = insertUint(word, value, offset, bitLength);// at beforeChanges;
+//     // moving value into word using encodeUint
+//     bytes32 valueWord = encodeUint(value, offset, bitLength) at beforeChanges;
+//     uint256 mask = (1 << bitLength) - 1;
+//     bytes32 preparedWord = bytes32(uint256(word) & ~(mask << offset));
+//     bytes32 wordB = preparedWord | valueWord;
 
-    assert wordA == wordB, 
-        "Encoding a uint and moving the appropriate values into a given word must yield the same result as inserting the uint into that same word";
-}
+//     assert wordA == wordB, 
+//         "Encoding a uint and moving the appropriate values into a given word must yield the same result as inserting the uint into that same word";
+// }
 
 
 rule uintInsertEncodeEquivalenceII() {
