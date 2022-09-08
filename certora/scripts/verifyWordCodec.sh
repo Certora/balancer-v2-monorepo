@@ -3,7 +3,7 @@ then
     RULE="--rule $1"
 fi
 
-make -C certora munged
+# make -C certora munged
 
 certoraRun \
     certora/harnesses/WordCodecHarness.sol \

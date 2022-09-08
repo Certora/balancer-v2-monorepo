@@ -16,13 +16,64 @@ methods {
 rule doesNotRevertImproperly() {
     method f; env e; calldataarg args;
     require e.msg.value == 0;
-
+    // when we call our methods, if they revert it is only because they called _validateEncodingParams which reverted
+    // e.g. when f == insertUint
+    // f calls _validateEncodingParams
+    // if _validateEncodingParams reverts, store that result, 
+    // then when f reverts, make sure _validateEncodingParams had also reverted
     f@withrevert(e, args);
-
+    
     assert !lastReverted, "wordCodec method calls must not revert improperly";
 }
 
 //// # Integrity ///////////////////////////////////////////////////////////////
+
+function placeDecodeValue(method f, bytes32 word, uint256 offset, uint256 bitLength) returns bool {
+    if (f.selector == insertUint(bytes32,uint256,uint256,uint256).selector) {
+        uint256 uintValue;
+        bytes32 newWord = insertUint(word, uintValue, offset, bitLength);
+        uint256 decodedValue = decodeUint(newWord, offset, bitLength);
+        return uintValue == decodedValue;
+    }
+    else if (f.selector == insertInt(bytes32,int256,uint256,uint256).selector) {
+        int256 intValue;
+        bytes32 newWord = insertInt(word, intValue, offset, bitLength);
+        int256 decodedValue = decodeInt(newWord, offset, bitLength);
+        return intValue == decodedValue;
+    }
+    else if (f.selector == encodeUint(uint256,uint256,uint256).selector) {
+        uint256 uintValue;
+        bytes32 newWord = encodeUint(uintValue, offset, bitLength);
+        uint256 decodedValue = decodeUint(newWord, offset, bitLength);
+        return uintValue == decodedValue;
+    }
+    else if (f.selector == encodeInt(int256,uint256,uint256).selector) {
+        int256 intValue;
+        bytes32 newWord = encodeInt(intValue, offset, bitLength);
+        int256 decodedValue = decodeInt(newWord, offset, bitLength);
+        return intValue == decodedValue;
+    }
+    else if (f.selector == insertBool(bytes32,bool,uint256).selector) {
+        bool boolValue;
+        require offset < 256;
+        bytes32 newWord = insertBool(word, boolValue, offset);
+        bool decodedValue = decodeBool(newWord, offset);
+        return boolValue == decodedValue;
+    }
+    else {
+        // require false;
+        return false;
+    }
+}
+
+rule codecIntegrity() {
+    method f; bytes32 word; uint256 offset; uint256 bitLength;
+
+    bool identity = placeDecodeValue(f, word, offset, bitLength);
+
+    assert identity, 
+        "placing and decoding a value must return the original value";
+}
 
 rule uintInsertDecodeIntegrity() {
     bytes32 word; uint256 startingValue; uint256 offset; uint256 bitLength;
@@ -66,12 +117,12 @@ rule intEncodeDecodeIntegrity() {
 
 // add @dev comment regarding offset
 rule boolInsertDecodeIntegrity() {
-    bytes32 word; bool _value; uint256 offset;
+    bytes32 word; bool startingValue; uint256 offset;
     // require offset < 256;
-    bytes32 newWord = insertBool(word, _value, offset);
-    bool value_ = decodeBool(newWord, offset);
+    bytes32 newWord = insertBool(word, startingValue, offset);
+    bool decodedValue = decodeBool(newWord, offset);
 
-    assert _value == value_, 
+    assert startingValue == decodedValue, 
         "Inserting and decoding a bool must return the original value";
 }
 
@@ -79,7 +130,6 @@ rule boolInsertDecodeIntegrity() {
 
 rule uintInsertBitIndependence() {
     bytes32 word; uint256 bitOffset;
-    // require bitOffset < 256;
     bool _bitValue = decodeBool(word, bitOffset);
 
     uint256 offset; uint256 bitLength;
@@ -87,8 +137,9 @@ rule uintInsertBitIndependence() {
 
     bool bitValue_ = decodeBool(newWord, bitOffset);
 
-    // comment about below range, perhaps
-    assert _bitValue != bitValue_ => ((offset + bitLength) > bitOffset && bitOffset >= offset),
+    // bitOffset of a changed bit can be as small as offset but may not reach 
+    // offset + bitLength
+    assert _bitValue != bitValue_ => (offset <= bitOffset && bitOffset < (offset + bitLength)),
         "If a bit changes value, it must be within the correct range";
 }
 
@@ -111,10 +162,12 @@ rule boolInsertBitIndependence() {
 
 // Shelving this rule for now to try a simpler approach
 
+// (5) decode section of word, insert arbitrary value into section of word, insert decoded value into section, 
+// check to see that original word and new word are same
 // (4) Encoding a uint and |ing it with a word having zeros in the right range is eq to inserting that uint
 // bytes32 word
-// require word[range] == 000000
-// require decodeUint(word, value, offset) == 0
+// require word[range] == 000000 (idea)
+// require decodeUint(word, value, offset) == 0 (possible syntax)
 // (3) try Armen approach w 2 x casting functions in harness (easy but ugly)
 // (2) try casting things to uint256 and compare uint words to each other in assert
 // (1) cvl syntax is to_uint256() look for bytes32 analog [to_bytes32()?]
@@ -123,11 +176,12 @@ rule boolInsertBitIndependence() {
 // Consider alternate approaches if possible.
 // rule uintInsertEncodeEquivalence() {
 //     bytes32 word; uint256 value; uint256 offset; uint256 bitLength;
-//     storage beforeChanges = lastStorage;
+
 //     // moving value into word using insertUint
-//     bytes32 wordA = insertUint(word, value, offset, bitLength);// at beforeChanges;
+//     bytes32 wordA = insertUint(word, value, offset, bitLength);
+
 //     // moving value into word using encodeUint
-//     bytes32 valueWord = encodeUint(value, offset, bitLength) at beforeChanges;
+//     bytes32 valueWord = encodeUint(value, offset, bitLength);
 //     uint256 mask = (1 << bitLength) - 1;
 //     bytes32 preparedWord = bytes32(uint256(word) & ~(mask << offset));
 //     bytes32 wordB = preparedWord | valueWord;
@@ -137,21 +191,19 @@ rule boolInsertBitIndependence() {
 // }
 
 
-rule uintInsertEncodeEquivalenceII() {
+rule uintEncodeInsertZeroWordEquivalence() {
     uint256 value; uint256 offset; uint256 bitLength;
-    storage beforeChanges = lastStorage;
 
     bytes32 zeroWord = 0;
     bytes32 wordA = insertUint(zeroWord, value, offset, bitLength);
 
-    bytes32 wordB = encodeUint(value, offset, bitLength) at beforeChanges;
-
-    // bytes32 zeroWord;
-    // require zeroWord == 0
+    bytes32 wordB = encodeUint(value, offset, bitLength);
 
     assert wordA == wordB, 
         "Inserting a value into an empty word must yield the same result as encoding that value";
 }
+
+// calling twice
 
 // try to generalize bit independence functions with CVL function / semi-
 // parametric rule
@@ -164,9 +216,3 @@ rule uintInsertEncodeEquivalenceII() {
 // rule to show decoding from 0 gives 0
 
 // consider rules for 192 method
-
-// consider rules for flags being overwritten or not (probably not)
-
-// CVL function above might be useful for revert behavior rule(s)
-
-// potential bool behavior fix change uint256 -> uint8 (yufei's idea)
