@@ -18,7 +18,6 @@ certoraRun \
     --loop_iter 2 \
     --send_only \
     $RULE \
-    --msg "StablePool calcTokenInOut nonsumm, calcInvar constant sum, calcBal 10: $1" \
-
+    --msg "StablePool nondet invar: $1" \
     # --settings -enableEqualitySaturation=false \
 

@@ -11,6 +11,7 @@ certoraRun \
     --loop_iter 2 \
     --send_only \
     $RULE \
-    --msg "StableMath top bottom sum: $1" \
+    --msg "StableMath no setts 1000: $1" \
 
     #--settings -t=500,-mediumTimeout=30,-depth=20,-enableEqualitySaturation=false \
+    #--settings -divideNoRemainder=true,-s=z3_def,yices,z3,-smt_hashingScheme=PlainInjectivity,-t=1000,-mediumTimeout=30,-depth=40 \

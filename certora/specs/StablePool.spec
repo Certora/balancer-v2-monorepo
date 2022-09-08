@@ -28,8 +28,12 @@ methods {
     // stable pool
 	_getAmplificationParameter() returns (uint256,bool)
 
-	//// @dev stable math
-    //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
+    //// @dev functions called by stable math functions to remove dynamic array from funtion signature
+    getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
+    calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => newCalcInvar(balance1,balance2)
+	
+    //// @dev stable math
+    _calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
@@ -86,21 +90,43 @@ function setup() {
 function joinExit(env e, method f, address user) {
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    require recipient == user;
-    require sender == user;
-    //require balances[0] > 0; // even with these requires, _calcInvar returns zero.
-    //require balances[1] > 0;
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender != currentContract;
+        require sender != currentContract; // times out if I remove this 
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     }
 }
 
+// invariant must be greater than the sum of pool's token balances and less than the product 
+function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
+    uint256 invar;
+    require invar >= balance1 + balance2;
+    require invar <= balance1 * balance2;
+    require determineInvariant[balance1][balance2] == invar;
+    return invar;
+}
+
+// if invariant increases, the new balance should be greater than the previous balance.
+function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns uint256 {
+    uint256 newBalance;
+    uint256 oldInvariant = determineInvariant[balance1][balance2];
+    if (index == 0) {
+        require newInvariant > oldInvariant => newBalance > balance1;
+    } else {
+        require newInvariant > oldInvariant => newBalance > balance2;
+    }
+    return newBalance;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
+
+/// A ghost tracking values for an invariant given two token balances;
+///
+/// @dev we assume only 2 tokens in a pool and that a bounded arbitrary value for the invariant
+ghost mapping(uint256 => mapping(uint256 => uint256)) determineInvariant;
 
 /// A ghost tracking the sum of all BPT user balances in the pool
 ///
@@ -147,16 +173,13 @@ rule sanityRecovery(method f)
 // balances == 0 && totalSupply == 0 => no mint
 // everything zero or all nonzero
 
-rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered { 
-    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
-    || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
-} {
+rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) {
     env e;
     setup();
 	calldataarg args;
-    require totalSupply() > 0;
-    require e.msg.sender != currentContract;
-    require !inRecoveryMode();
+    //require totalSupply() > 0;
+    //require e.msg.sender != currentContract;
+    //require !inRecoveryMode();
 
     address u;
     uint256 _totalBpt = totalSupply();
@@ -178,7 +201,7 @@ rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered {
     assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in users' total tokens";
     // no unpaid burning
     // not sure why it fails, could be rounding since its always in favor of protocol
-    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens || totalFees_<_totalFees, "a decrease in total BPT must lead to a decrease in users' total tokens";
+    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;// || totalFees_<_totalFees, "a decrease in total BPT must lead to a decrease in users' total tokens";
 }
 
 rule BPTBalanceCorrelatedWithTokenBalance(method f) filtered { f ->

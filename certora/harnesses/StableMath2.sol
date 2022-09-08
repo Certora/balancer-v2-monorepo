@@ -14,8 +14,8 @@
 
 pragma solidity ^0.7.0;
 
-import "@balancer-labs/v2-solidity-utils/contracts/math/FixedPoint.sol";
-import "@balancer-labs/v2-solidity-utils/contracts/math/Math.sol";
+import "../munged/solidity-utils/contracts/math/FixedPoint.sol";
+import "../munged/solidity-utils/contracts/math/Math.sol";
 
 // These functions start with an underscore, as if they were part of a contract and not a library. At some point this
 // should be fixed. Additionally, some variables have non mixed case names (e.g. P_D) that relate to the mathematical
@@ -57,97 +57,44 @@ contract StableMath {
         }
     }
 
+    function getFloor2(uint256 val1, uint256 val2) external pure returns (uint256 min) {
+        min = val1 > val2 ? val2 : val1;
+        min=Math.mul(min,2);
+    }
+
+    function getSum2(uint256 val1, uint256 val2) public pure returns(uint256 sum) {
+        return val1 + val2;
+    }
+
     function debug(uint256 val) public pure returns(uint256) {
         return val;
     }
 
+        // math flag
+    // jaroslav
+        // bound initial inputs (in rule/contract)
+    // yuval
+    // fuzzer
+    function loopIt1(
+        uint256 invariant,
+        uint256 numTokens,
+        uint256 ampTimesTotal,
+        uint256 sum,
+        uint256 val1,
+        uint256 val2
+    ) public pure returns(uint256) {
+        uint256 D_P = invariant;
 
+        D_P = Math.divDown(Math.mul(invariant, invariant), Math.mul(val1, numTokens));
+        D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(val2, numTokens));
 
-    // Note on unchecked arithmetic:
-    // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
-    // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
-    // not make any unnecessary checks. We rely on a set of invariants to avoid having to use checked arithmetic (the
-    // Math library), including:
-    //  - the number of tokens is bounded by _MAX_STABLE_TOKENS
-    //  - the amplification parameter is bounded by _MAX_AMP * _AMP_PRECISION, which fits in 23 bits
-    //  - the token balances are bounded by 2^112 (guaranteed by the Vault) times 1e18 (the maximum scaling factor),
-    //    which fits in 172 bits
-    //
-    // This means e.g. we can safely multiply a balance by the amplification parameter without worrying about overflow.
+        uint256 top = Math.mul((Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))), invariant);
+        invariant = Math.divDown(Math.mul((ampTimesTotal - _AMP_PRECISION), invariant), _AMP_PRECISION).add(Math.mul((numTokens + 1), D_P));
+            
+        
+        invariant = top / invariant; // top / bottom; // top.divDown(bottom);
 
-    // About swap fees on joins and exits:
-    // Any join or exit that is not perfectly balanced (e.g. all single token joins or exits) is mathematically
-    // equivalent to a perfectly balanced join or  exit followed by a series of swaps. Since these swaps would charge
-    // swap fees, it follows that (some) joins and exits should as well.
-    // On these operations, we split the token amounts in 'taxable' and 'non-taxable' portions, where the 'taxable' part
-    // is the one to which swap fees are applied.
-
-    // Computes the invariant given the current balances, using the Newton-Raphson approximation.
-    // The amplification parameter equals: A n^(n-1)
-    // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
-    // solhint-disable-previous-line max-line-length
-    function _calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
-        public
-        pure
-        returns (uint256)
-    {
-        /**********************************************************************************************
-        // invariant                                                                                 //
-        // D = invariant                                                  D^(n+1)                    //
-        // A = amplification coefficient      A  n^n S + D = A D n^n + -----------                   //
-        // S = sum of balances                                             n^n P                     //
-        // P = product of balances                                                                   //
-        // n = number of tokens                                                                      //
-        **********************************************************************************************/
-
-        // Always round down, to match Vyper's arithmetic (which always truncates).
-
-        uint256 sum = 0; // S in the Curve version
-        uint256 numTokens = balances.length;
-        for (uint256 i = 0; i < numTokens; i++) {
-            sum = sum.add(balances[i]);
-        }
-        if (sum == 0) {
-            return 0;
-        }
-
-        uint256 prevInvariant; // Dprev in the Curve version
-        uint256 invariant = sum; // D in the Curve version
-        uint256 ampTimesTotal = amplificationParameter * numTokens; // Ann in the Curve version
-
-        for (uint256 i = 0; i < 255; i++) {
-            uint256 D_P = invariant;
-            for (uint256 j = 0; j < numTokens; j++) {
-                // (D_P * invariant) / (balances[j] * numTokens)
-                D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[j], numTokens));
-            }
-
-            prevInvariant = invariant;
-
-            invariant = Math.divDown(
-                Math.mul(
-                    // (ampTimesTotal * sum) / AMP_PRECISION + D_P * numTokens
-                    (Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))),
-                    invariant
-                ),
-                // ((ampTimesTotal - _AMP_PRECISION) * invariant) / _AMP_PRECISION + (numTokens + 1) * D_P
-                (
-                    Math.divDown(Math.mul((ampTimesTotal - _AMP_PRECISION), invariant), _AMP_PRECISION).add(
-                        Math.mul((numTokens + 1), D_P)
-                    )
-                )
-            );
-
-            if (invariant > prevInvariant) {
-                if (invariant - prevInvariant <= 1) {
-                    return invariant;
-                }
-            } else if (prevInvariant - invariant <= 1) {
-                return invariant;
-            }
-        }
-
-        _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
+        return (invariant);
     }
 
     function _calculateInvariantOnce(uint256 amplificationParameter, uint256[] memory balances)
@@ -211,6 +158,7 @@ contract StableMath {
         invariant = Math.divDown(
             Math.mul(
                 // (ampTimesTotal * sum) / AMP_PRECISION + D_P * numTokens
+                // (ampTimesTotal * sum) / (AMP_PRECISION / numTokens) + D_P
                 (Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))),invariant
             ),
             // ((ampTimesTotal - _AMP_PRECISION) * invariant) / _AMP_PRECISION + (numTokens + 1) * D_P
@@ -222,44 +170,95 @@ contract StableMath {
         return (invariant, prevInvariant);
     }
 
-    function loopIt1(
-        uint256 invariant,
-        uint256 numTokens,
-        uint256 ampTimesTotal,
-        uint256 sum,
-        uint256[] memory balances
-    ) public pure returns(uint256) {
-        uint256 D_P = invariant;
 
-        D_P = Math.divDown(Math.mul(invariant, invariant), Math.mul(balances[0], numTokens));
-        D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[1], numTokens));
+
+    // Note on unchecked arithmetic:
+    // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
+    // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
+    // not make any unnecessary checks. We rely on a set of invariants to avoid having to use checked arithmetic (the
+    // Math library), including:
+    //  - the number of tokens is bounded by _MAX_STABLE_TOKENS
+    //  - the amplification parameter is bounded by _MAX_AMP * _AMP_PRECISION, which fits in 23 bits
+    //  - the token balances are bounded by 2^112 (guaranteed by the Vault) times 1e18 (the maximum scaling factor),
+    //    which fits in 172 bits
+    //
+    // This means e.g. we can safely multiply a balance by the amplification parameter without worrying about overflow.
+
+    // About swap fees on joins and exits:
+    // Any join or exit that is not perfectly balanced (e.g. all single token joins or exits) is mathematically
+    // equivalent to a perfectly balanced join or  exit followed by a series of swaps. Since these swaps would charge
+    // swap fees, it follows that (some) joins and exits should as well.
+    // On these operations, we split the token amounts in 'taxable' and 'non-taxable' portions, where the 'taxable' part
+    // is the one to which swap fees are applied.
+
+    // Computes the invariant given the current balances, using the Newton-Raphson approximation.
+    // The amplification parameter equals: A n^(n-1)
+    // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
+    // solhint-disable-previous-line max-line-length
+    function _calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
+        public
+        pure
+        returns (uint256)
+    {
+        return 10;
+        /**********************************************************************************************
+        // invariant                                                                                 //
+        // D = invariant                                                  D^(n+1)                    //
+        // A = amplification coefficient      A  n^n S + D = A D n^n + -----------                   //
+        // S = sum of balances                                             n^n P                     //
+        // P = product of balances                                                                   //
+        // n = number of tokens                                                                      //
+        **********************************************************************************************/
+
+        // Always round down, to match Vyper's arithmetic (which always truncates).
         /*
-        if (numTokens == 3) {
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[2], numTokens));
-            debug(balances[2]);
-        
-        } /* else if (numTokens == 4) {
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[2], numTokens));
-            debug(balances[2]);
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[3], numTokens));
-            debug(balances[3]);
-        } else if (numTokens == 5) {
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[2], numTokens));
-            debug(balances[2]);
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[3], numTokens));
-            debug(balances[3]);
-            D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[4], numTokens));
-            debug(balances[4]);
+        uint256 sum = 0; // S in the Curve version
+        uint256 numTokens = balances.length;
+        for (uint256 i = 0; i < numTokens; i++) {
+            sum = sum.add(balances[i]);
         }
-        */
-        ((ampTimesTotal * sum) * invariant / _AMP_PRECISION) + (D_P * numTokens)
-        uint256 top = Math.mul((Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))), invariant);
-        uint256 bottom = Math.divDown(Math.mul((ampTimesTotal - _AMP_PRECISION), invariant), _AMP_PRECISION).add(Math.mul((numTokens + 1), D_P));
-            
-        
-        invariant = top + bottom; // top / bottom; // top.divDown(bottom);
+        if (sum == 0) {
+            return 0;
+        }
 
-        return (invariant);
+        uint256 prevInvariant; // Dprev in the Curve version
+        uint256 invariant = sum; // D in the Curve version
+        uint256 ampTimesTotal = amplificationParameter * numTokens; // Ann in the Curve version
+
+        for (uint256 i = 0; i < 255; i++) {
+            uint256 D_P = invariant;
+            for (uint256 j = 0; j < numTokens; j++) {
+                // (D_P * invariant) / (balances[j] * numTokens)
+                D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[j], numTokens));
+            }
+
+            prevInvariant = invariant;
+
+            invariant = Math.divDown(
+                Math.mul(
+                    // (ampTimesTotal * sum) / AMP_PRECISION + D_P * numTokens
+                    (Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))),
+                    invariant
+                ),
+                // ((ampTimesTotal - _AMP_PRECISION) * invariant) / _AMP_PRECISION + (numTokens + 1) * D_P
+                (
+                    Math.divDown(Math.mul((ampTimesTotal - _AMP_PRECISION), invariant), _AMP_PRECISION).add(
+                        Math.mul((numTokens + 1), D_P)
+                    )
+                )
+            );
+
+            if (invariant > prevInvariant) {
+                if (invariant - prevInvariant <= 1) {
+                    return invariant;
+                }
+            } else if (prevInvariant - invariant <= 1) {
+                return invariant;
+            }
+        }
+
+        _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
+        */
     }
 
     // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.

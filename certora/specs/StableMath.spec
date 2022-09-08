@@ -32,13 +32,15 @@ methods {
     _AMP_PRECISION() returns(uint256) envfree
     _MAX_STABLE_TOKENS() returns(uint256) envfree
     loopIt(uint256,uint256,uint256,uint256,uint256[]) returns (uint256,uint256) envfree
-    loopIt1(uint256,uint256,uint256,uint256,uint256[]) returns (uint256) envfree
+    loopIt1(uint256,uint256,uint256,uint256,uint256,uint256) returns (uint256) envfree
 
     //// @dev helpers
     getIndex(uint256[],uint256) returns(uint256) envfree
     getLength(uint256[]) returns(uint256) envfree
     getFloor(uint256[]) returns(uint256) envfree
     getSum(uint256,uint256[]) returns(uint256) envfree
+    getFloor2(uint256,uint256) returns(uint256) envfree
+    getSum2(uint256,uint256) returns(uint256) envfree
     debug(uint256) returns(uint256) envfree
 }
 
@@ -78,16 +80,16 @@ rule invariantGteMinBalTimesNumTokens {
     // this is true if numer >= denom * min * n
     // not numer/denom < min*n
     // 
+// works with array of balances (length 2) and sum < 10;
 rule invariantGteMinBalTimesNumTokensPerLoopInit {
-    uint256 ampTimesTotal; uint256[] balances;
+    uint256 ampTimesTotal; uint256 val1; uint256 val2;
 
-    uint256 numTokens = getLength(balances);
-    uint256 sum = getSum(numTokens, balances);
-    uint256 floor = getFloor(balances);
+    uint256 numTokens = 2;
+    uint256 sum = getSum2(val1, val2);
+    require sum < 100;
+    uint256 floor = getFloor2(val1, val2);
 
-    require numTokens > 1 && numTokens <= 5;
-
-    uint256 D = loopIt1(sum, numTokens, ampTimesTotal, sum, balances); 
+    uint256 D = loopIt1(sum, numTokens, ampTimesTotal, sum, val1, val2); 
 
     assert D >= floor;
 }
@@ -102,7 +104,7 @@ rule invariantGteMinBalTimesNumTokensPerLoopPreserve {
     require invar >= floor;
     require numTokens > 1 && numTokens <= 5;
 
-    uint256 D = loopIt1(invar, numTokens, ampTimesTotal, sum, balances);
+    uint256 D;//= loopIt1(invar, numTokens, ampTimesTotal, sum, balances);
 
     assert D >= floor;
 }
