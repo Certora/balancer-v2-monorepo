@@ -40,13 +40,12 @@ methods {
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
-
-    //// @dev authorizor functions
-    getAuthorizor() returns address => DISPATCHER(true)
-    _getAuthorizor() returns address => DISPATCHER(true)
-    _canPerform(bytes32, address) returns (bool) => NONDET
-    canPerform(bytes32, address, address) returns (bool) => NONDET
-    //// @dev harness functions
+    // authorizor functions
+    getAuthorizor() returns address => NONDET
+    _getAuthorizor() returns address => NONDET
+    _canPerform(bytes32, address) returns (bool) => DISPATCHER(true)
+    canPerform(bytes32, address, address) returns (bool) => DISPATCHER(true)
+    // harness functions
     setRecoveryMode(bool)
     minAmp() returns (uint256) envfree
     maxAmp() returns (uint256) envfree
@@ -262,8 +261,12 @@ function getAmplificationFactor(env e) returns uint256 {
     return param;
 }
 
+/// @invariant: amplifcationFactorBounded
+/// @description: the amplificationFactor must stay between the minimum and maximum values hard coded as minAmp and maxAmp
+/// @notice: this fails on the instate because there are no checks on the initial value of the amplfication factor
+/// @notice: passes on the preserved 
 invariant amplificationFactorBounded(env e)
-    getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
+    getAmplificationFactor(e) <= maxAmp() * AMP_PRECISION() && getAmplificationFactor(e) >= minAmp() * AMP_PRECISION()
 { preserved {
     require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
@@ -277,16 +280,16 @@ invariant amplificationFactorBounded(env e)
 /// amplification factor must be less than value set
 /// @notice: passes
 rule amplificationFactorFollowsEndTime(method f) {
-    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    // require _MIN_UPDATE_TIME() == DAY();
-    // require AMP_PRECISION() == 1000;
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    require AMP_PRECISION() == 1000;
 
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
 
-    assert !inRecoveryMode();
+    require !inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
     f(e, args); // call some arbitrary function
 
@@ -311,7 +314,7 @@ rule amplificationFactorFollowsEndTime(method f) {
 rule amplificationFactorTwoDayWait(method f) {
     // require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     // require _MIN_UPDATE_TIME() == DAY();
-    require AMP_PRECISION() == 1000;
+    // require AMP_PRECISION() == 1000;
 
     env e; 
     uint256 endValue; uint256 endTime;
@@ -400,23 +403,12 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     require inRecoveryMode(); // needs to stay in recovery mode
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
 
-    setup();
+    setup(e);
     bytes32 poolId; address sender; address recipient; uint256[] balances;
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
-}
-
-
-/// @rule: recoveryModeGovernanceOnly
-/// @description: Only governance can bring the contract into recovery mode
-rule recoveryModeGovernanceOnly(method f) {
-    env e; calldataarg args;
-    bool recoveryMode_ = inRecoveryMode();
-    f(e, args);
-    bool _recoveryMode = inRecoveryMode();
-    assert e.msg.sender != getOwner(e) => recoveryMode_ == _recoveryMode, "non owner changed recovery mode with public function";
 }
 
  

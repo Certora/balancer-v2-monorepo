@@ -22,7 +22,7 @@ import "@balancer-labs/v2-solidity-utils/contracts/math/Math.sol";
 // derivations.
 // solhint-disable private-vars-leading-underscore, var-name-mixedcase
 
-library StableMath {
+contract StableMath {
     using FixedPoint for uint256;
 
     uint256 internal constant _MIN_AMP = 1;
@@ -31,13 +31,27 @@ library StableMath {
 
     uint256 internal constant _MAX_STABLE_TOKENS = 5;
 
+    bool internal _called;
+
+    constructor() {
+        _called = false;
+    }
+
+    function beenCalled() public view returns(bool) {
+        return _called;
+    }
+
+    function resetCalled() public {
+        _called = false;
+    }
+
 
     function _calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
         public
-        pure
         returns (uint256)
     {
         uint256 value;
+        _called = true;
         return value;
     }
 
@@ -48,7 +62,8 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountIn,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        _called = true;
         uint256 value;
         if (tokenAmountIn > 0) { require (value > 0);}
         else require (value == 0);
@@ -62,7 +77,8 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountOut,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        _called = true;
         uint256 value;
         if (tokenAmountOut > 0) { require (value > 0);}
         else require (value == 0);
@@ -75,7 +91,8 @@ library StableMath {
         uint256[] memory amountsIn,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        _called = true;
         uint256 value;
         uint256 input;
         for (uint256 i=0;i<amountsIn.length;++i) {
@@ -93,7 +110,8 @@ library StableMath {
         uint256 bptAmountOut,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {        
+        _called = true;
         uint256 value;
         if (bptAmountOut > 0) { require (value > 0);}
         else require (value == 0);
@@ -106,7 +124,8 @@ library StableMath {
         uint256[] memory amountsOut,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        _called = true;
         uint256 value;
         uint256 input;
         for (uint256 i=0;i<amountsOut.length;++i) {
@@ -124,7 +143,8 @@ library StableMath {
         uint256 bptAmountIn,
         uint256 bptTotalSupply,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        _called = true;
         uint256 value;
         if (bptAmountIn > 0) { require (value > 0);}
         else require (value == 0);
@@ -135,7 +155,8 @@ library StableMath {
         uint256[] memory balances,
         uint256 bptAmountIn,
         uint256 bptTotalSupply
-    ) public pure returns (uint256[] memory) {
+    ) public returns (uint256[] memory) {
+        _called = true;
         uint256[] memory values;
         uint256 output;
         for (uint256 i=0;i<balances.length;++i) {
@@ -152,8 +173,9 @@ library StableMath {
         uint256 lastInvariant,
         uint256 tokenIndex,
         uint256 protocolSwapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
         uint256 value;
+        _called = true;
         return value;
     }
 
@@ -162,8 +184,9 @@ library StableMath {
         uint256[] memory balances,
         uint256 invariant,
         uint256 tokenIndex
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
         uint256 value;
+        _called = true;
         return value;
     }
 
@@ -171,8 +194,9 @@ library StableMath {
         uint256[] memory balances,
         uint256 amp,
         uint256 supply
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
         uint256 value;
+        _called = true;
         return value;
     }
 }
