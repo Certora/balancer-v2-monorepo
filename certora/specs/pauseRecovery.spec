@@ -32,6 +32,8 @@ methods {
     _getProtocolPoolOwnershipPercentage(uint256[],uint256,uint256) returns (uint256,uint256)
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
+
+    getPoolId() returns(bytes32) envfree
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
@@ -54,7 +56,7 @@ methods {
     // getAuthorizor() returns address => DISPATCHER(true)
     // _getAuthorizor() returns address => DISPATCHER(true)
     // _canPerform(bytes32, address) returns (bool) => NONDET
-    // canPerform(bytes32, address, address) returns (bool) => NONDET
+    canPerform(bytes32, address, address) returns (bool) => NONDET
     // // harness functions
     disableRecoveryMode() envfree
     // setRecoveryMode(bool) envfree
@@ -545,7 +547,7 @@ rule prWithdrawNeverReverts(method f) {
 }
 
 // c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
-rule ZeroOwnerPercentageUnderRecovery() {
+rule ZeroOwnerPercentageInRecovery() {
     env e; 
     calldataarg args;
     require inRecoveryMode(); 
