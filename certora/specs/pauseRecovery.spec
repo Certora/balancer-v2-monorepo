@@ -11,7 +11,7 @@ import "../helpers/erc20.spec"
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
-    totalTokensBalance() returns (uint256) envfree
+    totalTokensBalance(address) returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
     _MIN_UPDATE_TIME() returns (uint256) envfree
     _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
@@ -23,12 +23,13 @@ methods {
     registerPool(uint8) returns (bytes32) => NONDET
     // 0xabd90846 => NONDET
     getProtocolFeesCollector() returns (address) => NONDET
-    getRate() returns (uint256) => NONDET
+    // getRate() returns (uint256) => NONDET
+    getRate() returns (uint256) envfree
+    getActualSupply() returns (uint256) envfree
     
     _DELEGATE_OWNER() returns (address) envfree
     getActionId(uint32 selector) returns (bytes32) envfree
-    _isOwnerOnlyAction(bytes32 actionId) returns (bool) envfree
-
+    _getProtocolPoolOwnershipPercentage(uint256[],uint256,uint256) returns (uint256,uint256)
 	// stable math
     _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
@@ -48,20 +49,22 @@ methods {
     // vault 
     // getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     // getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
-    getVault() returns address envfree;
+    getVault() returns (address) envfree
     // // authorizor functions
     // getAuthorizor() returns address => DISPATCHER(true)
     // _getAuthorizor() returns address => DISPATCHER(true)
     // _canPerform(bytes32, address) returns (bool) => NONDET
     // canPerform(bytes32, address, address) returns (bool) => NONDET
     // // harness functions
-    // setRecoveryMode(bool)
+    disableRecoveryMode() envfree
+    // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
-    initialized() returns(bool) envfree
     AMP_PRECISION() envfree
     mul(uint256, uint256) returns (uint256) => NONDET
 
+    balanceOf(uint256) returns (uint256) envfree
+    balanceOf(address,uint256) returns (uint256) envfree
     // _token0.balanceOf(address) returns(uint256) envfree
     // _token1.balanceOf(address) returns(uint256) envfree
     // _token2.balanceOf(address) returns(uint256) envfree
@@ -418,23 +421,23 @@ rule exitNonRevertingOnRecoveryMode(method f) {
 
 /// @rule: recoveryModeGovernanceOnly
 /// @description: Only governance can bring the contract into recovery mode
-rule recoveryModeGovernanceOnly(method f) {
-    env e; calldataarg args;
-    bool recoveryMode_ = inRecoveryMode();
-    f(e, args);
-    bool _recoveryMode = inRecoveryMode();
-    if (f.selector != enableRecoveryMode().selector) {
-        assert recoveryMode_ == _recoveryMode;
-    } else {
-        assert getOwner(e) != _DELEGATE_OWNER() && _isOwnerOnlyAction(getActionId(f.selector)) && e.msg.sender == getOwner(e) 
-        => _recoveryMode == true, "non owner changed recovery mode with public function";
-        if (_isOwnerOnlyAction(getActionId(f.selector))) {
-            assert false;
-        } else {
-            assert true;
-        }       
-    }
-}
+// rule recoveryModeGovernanceOnly(method f) {
+//     env e; calldataarg args;
+//     bool recoveryMode_ = inRecoveryMode();
+//     f(e, args);
+//     bool _recoveryMode = inRecoveryMode();
+//     if (f.selector != enableRecoveryMode().selector) {
+//         assert recoveryMode_ == _recoveryMode;
+//     } else {
+//         assert getOwner(e) != _DELEGATE_OWNER() && _isOwnerOnlyAction(getActionId(f.selector)) && e.msg.sender == getOwner(e) 
+//         => _recoveryMode == true, "non owner changed recovery mode with public function";
+//         if (_isOwnerOnlyAction(getActionId(f.selector))) {
+//             assert false;
+//         } else {
+//             assert true;
+//         }       
+//     }
+// }
 
  
 // Paused Mode:
@@ -502,7 +505,7 @@ rule prWithdrawNeverReverts(method f) {
     require e.msg.sender == getVault();
     // require inRecoveryMode(e);
     // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(); // needs to stay in recovery mode
+    
     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
@@ -510,6 +513,7 @@ rule prWithdrawNeverReverts(method f) {
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
 
+    require balances.length == 3;
     require balances.length == getTotalTokens(); // correct number of tokens
     uint256 i;
     require i < balances.length && balances[i] > 0; // at least one token must have a nonzero value
@@ -518,11 +522,65 @@ rule prWithdrawNeverReverts(method f) {
     // uint256[] amountsOut; uint256 maxBptIn;
     // amountsOut, maxBptIn = bptInForExactTokensOut(userData);
     // require tokenIndex < getTotalTokens();
+    
+    uint256 _balance0 = balanceOf(sender, 0);
+    uint256 _balance1 = balanceOf(sender, 0);
+    uint256 _balance2 = balanceOf(sender, 0);
+    
+    require totalSupply() == 0;
+    require sender == recipient;
+    onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onJoinPool
 
+    require inRecoveryMode(); // needs to stay in recovery mode
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
+    uint256 balance0_ = balanceOf(sender, 0);
+    uint256 balance1_ = balanceOf(sender, 0);
+    uint256 balance2_ = balanceOf(sender, 0);
+
     assert !lastReverted, "recovery mode must not fail";
+    assert _balance0 == balance0_;
+    assert _balance0 == balance1_;
+    assert _balance0 == balance2_;
 }
+
+// c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
+rule ZeroOwnerPercentageUnderRecovery() {
+    env e; 
+    calldataarg args;
+    require inRecoveryMode(); 
+    uint256 feePercentage;
+    uint256 totalGrowthInvariant;
+    feePercentage, totalGrowthInvariant = _getProtocolPoolOwnershipPercentage(e, args);
+    assert feePercentage==0;
+}
+
+// d) disabling recovery mode causes no change in the return value of getRate() or getActualSupply()
+rule DisablingRMDoesNotChangeRateAndActualSupply() {
+    uint _rate = getRate();
+    uint _actualSupply = getActualSupply();
+
+    disableRecoveryMode();
+
+    uint rate_ = getRate();
+    uint actualSupply_ = getActualSupply();
+
+    assert _rate == rate_;
+    assert _actualSupply == actualSupply_;
+}
+
+// e) _getProtocolPoolOwnershipPercentage should return 0 immediately after disabling recovery mode
+rule ZeroOwnerPercentageAfterDisablingRecovery() {
+    env e; 
+    calldataarg args;
+    require inRecoveryMode(); 
+    disableRecoveryMode();
+    uint256 feePercentage;
+    uint256 totalGrowthInvariant;
+    feePercentage, totalGrowthInvariant = _getProtocolPoolOwnershipPercentage(e, args);
+    assert feePercentage==0;
+}
+
 
 /// @title rule: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
@@ -543,3 +601,12 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 
     assert lastReverted, "function did not revert";
 }
+
+// rule noFeeForRecoveryMode() {
+//     env e;
+// 	calldataarg args;
+//     uint256 _counter = payProtocolFreeCounter();
+//     require inRecoveryMode();
+//     onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
+//     uint256 counter_ = payProtocolFreeCounter();
+// }

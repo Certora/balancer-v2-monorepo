@@ -15,9 +15,7 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     address _protocolFeesCollector;
     // bool public initialized;
 
-    constructor(
-        NewPoolParams memory params
-    ) ComposableStablePool(params) {
+    constructor(NewPoolParams memory params) ComposableStablePool(params) {
         require(params.tokens.length==2);
         require(params.rateProviders.length==2);
         require(params.tokenRateCacheDurations.length==2);
@@ -35,37 +33,37 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         _setRecoveryMode(enabled);
     }
 
-    // function onJoinPool(
-    //     bytes32 poolId,
-    //     address sender,
-    //     address recipient,
-    //     uint256[] memory balances,
-    //     uint256 lastChangeBlock,
-    //     uint256 protocolSwapFeePercentage,
-    //     bytes memory userData
-    // ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
-    //     require(_getTotalTokens() == balances.length, "length needs to be the same");
-    //     (amounts, fees) = super.onJoinPool(
-    //         poolId,
-    //         sender,
-    //         recipient,
-    //         balances,
-    //         lastChangeBlock,
-    //         protocolSwapFeePercentage,
-    //         userData
-    //     );
+    function onJoinPool(
+        bytes32 poolId,
+        address sender,
+        address recipient,
+        uint256[] memory balances,
+        uint256 lastChangeBlock,
+        uint256 protocolSwapFeePercentage,
+        bytes memory userData
+    ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
+        require(_getTotalTokens() == balances.length, "length needs to be the same");
+        (amounts, fees) = super.onJoinPool(
+            poolId,
+            sender,
+            recipient,
+            balances,
+            lastChangeBlock,
+            protocolSwapFeePercentage,
+            userData
+        );
 
-    //     _receiveAsset(_token0, sender, amounts[0], fees[0]);
-    //     _receiveAsset(_token1, sender, amounts[1], fees[1]);
-    //     if (balances.length>2)
-    //         _receiveAsset(_token2, sender, amounts[2], fees[2]);
-    //     else if (balances.length>3)
-    //         _receiveAsset(_token3, sender, amounts[3], fees[3]);
-    //     else if (balances.length>4)
-    //         _receiveAsset(_token4, sender, amounts[4], fees[4]);
-    //     else if (balances.length>5)
-    //         _receiveAsset(_token5, sender, amounts[5], fees[5]);
-    // }
+        _receiveAsset(_token0, sender, amounts[0], fees[0]);
+        _receiveAsset(_token1, sender, amounts[1], fees[1]);
+        if (balances.length>2)
+            _receiveAsset(_token2, sender, amounts[2], fees[2]);
+        // else if (balances.length>3)
+        //     _receiveAsset(_token3, sender, amounts[3], fees[3]);
+        // else if (balances.length>4)
+        //     _receiveAsset(_token4, sender, amounts[4], fees[4]);
+        // else if (balances.length>5)
+        //     _receiveAsset(_token5, sender, amounts[5], fees[5]);
+    }
 
 
     function _receiveAsset(IERC20 token, address sender, uint256 amount, uint256 fee) public {
@@ -82,8 +80,8 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         _token0.transferFrom(sender, address(this), amount);
         else if (num == 1) 
             _token1.transferFrom(sender, address(this), amount);
-        // else if (num == 2) 
-        //     _token2.transferFrom(sender, address(this), amount);
+        else if (num == 2) 
+            _token2.transferFrom(sender, address(this), amount);
         // else if (num == 3) 
         //     _token3.transferFrom(sender, address(this), amount);
         // else if (num == 4) 
@@ -92,42 +90,42 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         //     _token5.transferFrom(sender, address(this), amount);
     }
     
-    // function onExitPool(
-    //     bytes32 poolId,
-    //     address sender,
-    //     address recipient,
-    //     uint256[] memory balances,
-    //     uint256 lastChangeBlock,
-    //     uint256 protocolSwapFeePercentage,
-    //     bytes memory userData
-    // ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
-    //     require(_getTotalTokens() == balances.length, "length needs to be the same");
-    //     uint256 inputBalance;
-    //     for (uint256 i; i <balances.length; ++i) {
-    //         inputBalance += balances[i];
-    //     }
-    //     require(inputBalance > 0);
-    //     (amounts, fees) = super.onExitPool(
-    //             poolId,
-    //             sender,
-    //             recipient,
-    //             balances,
-    //             lastChangeBlock,
-    //             protocolSwapFeePercentage,
-    //             userData
-    //         );
+    function onExitPool(
+        bytes32 poolId,
+        address sender,
+        address recipient,
+        uint256[] memory balances,
+        uint256 lastChangeBlock,
+        uint256 protocolSwapFeePercentage,
+        bytes memory userData
+    ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
+        require(_getTotalTokens() == balances.length, "length needs to be the same");
+        uint256 inputBalance;
+        for (uint256 i; i <balances.length; ++i) {
+            inputBalance += balances[i];
+        }
+        require(inputBalance > 0);
+        (amounts, fees) = super.onExitPool(
+                poolId,
+                sender,
+                recipient,
+                balances,
+                lastChangeBlock,
+                protocolSwapFeePercentage,
+                userData
+            );
 
-    //     _sendAsset(_token0, recipient, amounts[0], fees[0]);
-    //     _sendAsset(_token1, recipient, amounts[1], fees[1]);
-    //     if (balances.length>2)
-    //         _sendAsset(_token2, recipient, amounts[2], fees[2]);
-    //     else if (balances.length>3)
-    //         _sendAsset(_token3, recipient, amounts[3], fees[3]);
-    //     else if (balances.length>4)
-    //         _sendAsset(_token4, recipient, amounts[4], fees[4]);
-    //     else if (balances.length>5)
-    //         _sendAsset(_token5, recipient, amounts[5], fees[5]);
-    // }
+        _sendAsset(_token0, recipient, amounts[0], fees[0]);
+        _sendAsset(_token1, recipient, amounts[1], fees[1]);
+        if (balances.length>2)
+            _sendAsset(_token2, recipient, amounts[2], fees[2]);
+        // else if (balances.length>3)
+        //     _sendAsset(_token3, recipient, amounts[3], fees[3]);
+        // else if (balances.length>4)
+        //     _sendAsset(_token4, recipient, amounts[4], fees[4]);
+        // else if (balances.length>5)
+        //     _sendAsset(_token5, recipient, amounts[5], fees[5]);
+    }
         
     function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee) public {
         require(token == _token0 || token == _token1 || token == _token2);
@@ -203,6 +201,21 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         //     return _token5.balanceOf(address(this));
     }
 
+
+    function balanceOf(address owner, uint256 num) public returns (uint256) {        
+        if (num==0)
+            return _token0.balanceOf(owner);
+        else if (num==1)
+            return _token1.balanceOf(owner);
+        else if (num==2)
+            return _token2.balanceOf(owner);
+        // else if (num==3)
+        //     return _token3.balanceOf(owner);
+        // else if (num==4)
+        //     return _token4.balanceOf(owner);
+        // else if (num==5)
+        //     return _token5.balanceOf(owner);
+    }
 
     function totalTokensBalance(address u) public returns (uint256 total) {        
         total = _token0.balanceOf(u);
