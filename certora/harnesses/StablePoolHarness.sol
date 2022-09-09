@@ -49,6 +49,8 @@ contract StablePoolHarness is StablePool {
     ) public override returns (uint256[] memory, uint256[] memory) {
         uint256[] memory amounts;
         uint256[] memory fees;
+        require(balances[0] > 0);
+        require(balances[1] > 0);
         require(_getTotalTokens() == balances.length, "length needs to be the same");
         (amounts, fees) = super.onJoinPool(
             poolId,

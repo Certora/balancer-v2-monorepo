@@ -1,14 +1,165 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-08-12 14:56:11.000000000 -0700
++++ .gitignore	2022-09-04 11:39:24.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
+diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
+--- interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-01 18:13:19.000000000 -0700
++++ interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-04 11:39:24.000000000 -0700
+@@ -28,6 +28,7 @@
+  * @dev Reverts with a revert reason containing `errorCode`. Only codes up to 999 are supported.
+  */
+ function _revert(uint256 errorCode) pure {
++    revert;/*
+     // We're going to dynamically create a revert string based on the error code, with the following format:
+     // 'BAL#{errorCode}'
+     // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).
+@@ -76,7 +77,7 @@
+ 
+         // Even if the string is only 7 bytes long, we need to return a full 32 byte slot containing it. The length of
+         // the encoded message is therefore 4 + 32 + 32 + 32 = 100.
+-        revert(0, 100)
++        revert(0, 100)*/
+     }
+ }
+ 
+diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
+--- pool-stable/contracts/StableMath.sol	2022-09-01 11:55:51.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-06 17:48:11.000000000 -0700
+@@ -30,7 +30,7 @@
+     uint256 internal constant _AMP_PRECISION = 1e3;
+ 
+     uint256 internal constant _MAX_STABLE_TOKENS = 5;
+-
++    
+     // Note on unchecked arithmetic:
+     // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
+     // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
+@@ -58,7 +58,11 @@
+         internal
+         pure
+         returns (uint256)
+-    {
++    {   
++        return balances[0] > balances[1] ? balances[1] * 2 : balances[0] * 2
++        //invar < balances[0] * balances[1];
++        //invar > balances[0] + balances[1];
++        //return balances[0] + balances[1];
+         /**********************************************************************************************
+         // invariant                                                                                 //
+         // D = invariant                                                  D^(n+1)                    //
+@@ -69,7 +73,7 @@
+         **********************************************************************************************/
+ 
+         // Always round down, to match Vyper's arithmetic (which always truncates).
+-
++        /*
+         uint256 sum = 0; // S in the Curve version
+         uint256 numTokens = balances.length;
+         for (uint256 i = 0; i < numTokens; i++) {
+@@ -117,6 +121,7 @@
+         }
+ 
+         _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
++        */
+     }
+ 
+     // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.
+@@ -264,7 +269,7 @@
+         uint256 bptAmountOut,
+         uint256 bptTotalSupply,
+         uint256 swapFeePercentage
+-    ) internal pure returns (uint256) {
++    ) internal pure returns (uint256 ret) {
+         // Token in, so we round up overall.
+ 
+         // Get the current invariant
+@@ -281,7 +286,7 @@
+             tokenIndex
+         );
+         uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
+-
++        //return amountInWithoutFee;
+         // First calculate the sum of all token balances, which will be used to calculate
+         // the current weight of each token
+         uint256 sumBalances = 0;
+@@ -297,7 +302,13 @@
+         uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount);
+ 
+         // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
+-        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
++        ret = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
++        return ret; // not asserting nonzero output.
++        if (ret > 0) {
++            return ret;
++        } else {
++            revert();
++        }
+     }
+ 
+     /*
+@@ -478,7 +489,7 @@
+         uint256 tokenIndex
+     ) internal pure returns (uint256) {
+         // Rounds result up overall
+-
++        return 10;
+         uint256 ampTimesTotal = amplificationParameter * balances.length;
+         uint256 sum = balances[0];
+         uint256 P_D = balances[0] * balances.length;
+@@ -502,7 +513,7 @@
+         // We multiply the first iteration outside the loop with the invariant to set the value of the
+         // initial approximation.
+         uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
+-
++        return tokenBalance;
+         for (uint256 i = 0; i < 255; i++) {
+             prevTokenBalance = tokenBalance;
+ 
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-06-20 21:05:13.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-08-12 15:10:08.000000000 -0700
-@@ -420,7 +420,7 @@
+--- pool-stable/contracts/StablePool.sol	2022-09-01 11:55:51.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-09-04 12:48:38.000000000 -0700
+@@ -302,7 +302,7 @@
+         uint256[] memory dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
+ 
+         // Update current balances by subtracting the protocol fee amounts
+-        _mutateAmounts(balances, dueProtocolFeeAmounts, FixedPoint.sub);
++        _mutateAmounts(balances, dueProtocolFeeAmounts, true);
+         (uint256 bptAmountOut, uint256[] memory amountsIn) = _doJoin(balances, scalingFactors, userData);
+ 
+         // Update the invariant with the balances the Pool will have after the join, in order to compute the
+@@ -317,15 +317,18 @@
+         uint256[] memory scalingFactors,
+         bytes memory userData
+     ) private view returns (uint256, uint256[] memory) {
++        return _joinTokenInForExactBPTOut(balances, userData);
++        /*
+         StablePoolUserData.JoinKind kind = userData.joinKind();
+ 
+         if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
++            revert();
+             return _joinExactTokensInForBPTOut(balances, scalingFactors, userData);
+         } else if (kind == StablePoolUserData.JoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT) {
+             return _joinTokenInForExactBPTOut(balances, userData);
+         } else {
+             _revert(Errors.UNHANDLED_JOIN_KIND);
+-        }
++        }*/
+     }
+ 
+     function _joinExactTokensInForBPTOut(
+@@ -403,7 +406,7 @@
+         dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
+ 
+         // Update current balances by subtracting the protocol fee amounts
+-        _mutateAmounts(balances, dueProtocolFeeAmounts, FixedPoint.sub);
++        _mutateAmounts(balances, dueProtocolFeeAmounts, true);
+ 
+         (bptAmountIn, amountsOut) = _doExit(balances, scalingFactors, userData);
+ 
+@@ -420,7 +423,7 @@
          uint256[] memory balances,
          uint256[] memory scalingFactors,
          bytes memory userData
@@ -17,7 +168,38 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          StablePoolUserData.ExitKind kind = userData.exitKind();
  
          if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
-@@ -682,7 +682,7 @@
+@@ -571,7 +574,7 @@
+      * in the future.
+      */
+     function _updateInvariantAfterJoin(uint256[] memory balances, uint256[] memory amountsIn) private {
+-        _mutateAmounts(balances, amountsIn, FixedPoint.add);
++        _mutateAmounts(balances, amountsIn, false);
+ 
+         (uint256 currentAmp, ) = _getAmplificationParameter();
+         // This invariant is used only to compute the final balance when calculating the protocol fees. These are
+@@ -584,7 +587,7 @@
+      * in the future.
+      */
+     function _updateInvariantAfterExit(uint256[] memory balances, uint256[] memory amountsOut) private {
+-        _mutateAmounts(balances, amountsOut, FixedPoint.sub);
++        _mutateAmounts(balances, amountsOut, true);
+ 
+         (uint256 currentAmp, ) = _getAmplificationParameter();
+         // This invariant is used only to compute the final balance when calculating the protocol fees. These are
+@@ -600,10 +603,10 @@
+     function _mutateAmounts(
+         uint256[] memory toMutate,
+         uint256[] memory arguments,
+-        function(uint256, uint256) pure returns (uint256) mutation
++        bool isSub
+     ) private view {
+         for (uint256 i = 0; i < _getTotalTokens(); ++i) {
+-            toMutate[i] = mutation(toMutate[i], arguments[i]);
++            toMutate[i] = isSub? FixedPoint.sub(toMutate[i], arguments[i]) : FixedPoint.add(toMutate[i], arguments[i]) ;
+         }
+     }
+ 
+@@ -682,7 +685,7 @@
          precision = StableMath._AMP_PRECISION;
      }
  
@@ -27,14 +209,142 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
 diff -ruN pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
---- pool-utils/contracts/BasePool.sol	2022-08-05 17:23:33.000000000 -0700
-+++ pool-utils/contracts/BasePool.sol	2022-08-12 14:56:11.000000000 -0700
-@@ -631,7 +631,7 @@
-      * @dev Same as `_downscaleUp`, but for an entire array. This function does not return anything, but instead
-      * *mutates* the `amounts` array.
-      */
--        function _downscaleUpArray(uint256[] memory amounts, uint256[] memory scalingFactors) internal view {
-+    function _downscaleUpArray(uint256[] memory amounts, uint256[] memory scalingFactors) internal view {
-         for (uint256 i = 0; i < _getTotalTokens(); ++i) {
-             amounts[i] = FixedPoint.divUp(amounts[i], scalingFactors[i]);
+--- pool-utils/contracts/BasePool.sol	2022-09-04 12:02:54.000000000 -0700
++++ pool-utils/contracts/BasePool.sol	2022-09-04 11:39:23.000000000 -0700
+@@ -371,7 +371,7 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptOut, uint256[] memory amountsIn) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+ 
+         _queryAction(
+             poolId,
+@@ -387,7 +387,7 @@
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        return (bptOut, amountsIn);*/
++        return (bptOut, amountsIn);
+     }
+ 
+     /**
+@@ -410,8 +410,8 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptIn, uint256[] memory amountsOut) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+-        
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++
+         _queryAction(
+             poolId,
+             sender,
+@@ -422,11 +422,11 @@
+             userData,
+             _onExitPool,
+             _downscaleDownArray
+-        );*/
++        );
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        //return (bptIn, amountsOut);
++        return (bptIn, amountsOut);
+     }
+ 
+     // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
+@@ -644,7 +644,7 @@
+         // Governance control.
+         return getVault().getAuthorizer();
+     }
+-    /*
++
+     function _queryAction(
+         bytes32 poolId,
+         address sender,
+@@ -766,5 +766,4 @@
+             }
          }
+     }
+-    */
+ }
+diff -ruN pool-utils/contracts/LegacyBasePool.sol pool-utils/contracts/LegacyBasePool.sol
+--- pool-utils/contracts/LegacyBasePool.sol	2022-09-04 12:08:58.000000000 -0700
++++ pool-utils/contracts/LegacyBasePool.sol	2022-09-04 11:39:23.000000000 -0700
+@@ -377,7 +377,7 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptOut, uint256[] memory amountsIn) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+ 
+         _queryAction(
+             poolId,
+@@ -393,7 +393,7 @@
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        return (bptOut, amountsIn);*/
++        return (bptOut, amountsIn);
+     }
+ 
+     /**
+@@ -416,7 +416,7 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptIn, uint256[] memory amountsOut) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+ 
+         _queryAction(
+             poolId,
+@@ -432,7 +432,7 @@
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        return (bptIn, amountsOut);*/
++        return (bptIn, amountsOut);
+     }
+ 
+     // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
+@@ -663,7 +663,7 @@
+         // Governance control.
+         return getVault().getAuthorizer();
+     }
+-    /*
++
+     function _queryAction(
+         bytes32 poolId,
+         address sender,
+@@ -784,5 +784,5 @@
+                 revert(start, add(size, 68))
+             }
+         }
+-    }*/
++    }
+ }
+diff -ruN solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/math/FixedPoint.sol
+--- solidity-utils/contracts/math/FixedPoint.sol	2022-06-20 13:18:36.000000000 -0700
++++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-04 11:39:24.000000000 -0700
+@@ -14,7 +14,7 @@
+ 
+ pragma solidity ^0.7.0;
+ 
+-import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
++import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
+ 
+ import "./LogExpMath.sol";
+ 
+diff -ruN solidity-utils/contracts/math/Math.sol solidity-utils/contracts/math/Math.sol
+--- solidity-utils/contracts/math/Math.sol	2022-09-01 18:13:11.000000000 -0700
++++ solidity-utils/contracts/math/Math.sol	2022-09-04 11:39:24.000000000 -0700
+@@ -2,7 +2,7 @@
+ 
+ pragma solidity ^0.7.0;
+ 
+-import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
++import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
+ 
+ /**
+  * @dev Wrappers over Solidity's arithmetic operations with added overflow checks.

@@ -1,3 +1,4 @@
+
 import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
@@ -16,26 +17,38 @@ methods {
     totalTokensBalanceUser(address) returns (uint256) envfree
     totalFees() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
+
+    _MIN_UPDATE_TIME() returns (uint256) envfree
+    _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
+
     //// @dev heavy but important function, want to fix timeout
     //_doExit(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
+    //_doJoin(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
 
+    // stable pool
+	_getAmplificationParameter() returns (uint256,bool)
 
-	//// @dev stable math
-    _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
+    //// @dev functions called by stable math functions to remove dynamic array from funtion signature
+    getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
+    calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => newCalcInvar(balance1,balance2)
+	
+    //// @dev stable math
+    _calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => NONDET
+    //_calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => ALWAYS(1)
     // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
     // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
+    //_getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
     //// @dev "view" functions that call internal function with function pointers as input
     queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
     queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
+    
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
@@ -67,32 +80,51 @@ methods {
 
 }
 
-/// Add the following assumptions:
-///  - addresses `currentContract`, `token0`, ..., `token4` are distinct and ordered
-///  - `e.msg.sender` is distinct from `currentContract` and `token0` ... `token4`
-///  - there are at least 2 tokens and at most 5
-function setup(env e) { 
+function setup() { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
-    require currentContract < _token0;
-    require e.msg.sender < currentContract;
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
 function joinExit(env e, method f, address user) {
     bytes32 poolId; address sender; address recipient; uint256[] balances; 
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    require recipient == user;
-    require sender == user;
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender != currentContract;
+        require sender != currentContract; // times out if I remove this 
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     }
 }
+
+// invariant must be greater than the sum of pool's token balances and less than the product 
+function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
+    uint256 invar;
+    require invar >= balance1 + balance2;
+    require invar <= balance1 * balance2;
+    require determineInvariant[balance1][balance2] == invar;
+    return invar;
+}
+
+// if invariant increases, the new balance should be greater than the previous balance.
+function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns uint256 {
+    uint256 newBalance;
+    uint256 oldInvariant = determineInvariant[balance1][balance2];
+    if (index == 0) {
+        require newInvariant > oldInvariant => newBalance > balance1;
+    } else {
+        require newInvariant > oldInvariant => newBalance > balance2;
+    }
+    return newBalance;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
+
+/// A ghost tracking values for an invariant given two token balances;
+///
+/// @dev we assume only 2 tokens in a pool and that a bounded arbitrary value for the invariant
+ghost mapping(uint256 => mapping(uint256 => uint256)) determineInvariant;
 
 /// A ghost tracking the sum of all BPT user balances in the pool
 ///
@@ -136,16 +168,16 @@ rule sanityRecovery(method f)
 	assert false;
 }
 
-rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered { 
-    f -> f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
-    || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector
-} {
+// balances == 0 && totalSupply == 0 => no mint
+// everything zero or all nonzero
+
+rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) {
     env e;
-    setup(e);
+    setup();
 	calldataarg args;
-    require totalSupply() > 0;
-    require e.msg.sender != currentContract;
-    require !inRecoveryMode();
+    //require totalSupply() > 0;
+    //require e.msg.sender != currentContract;
+    //require !inRecoveryMode();
 
     address u;
     uint256 _totalBpt = totalSupply();
@@ -159,15 +191,15 @@ rule BPTSupplyCorrelatedWithPoolTotalBalance(method f) filtered {
     uint256 totalFees_ = totalFees();
 
     // no free minting 
-    // last fail was due to all tokens being sent to fee collector
-    // last fail due to fees not being collected to address(this)
-    // last fail due to starting with 0 total Supply
+    // last fail was due to all tokens being sent to fee collector (fixed in our symbolic vault)
+    // last fail due to fees not being collected to address(this) (fixed in our symbolic vault)
+    // last fail due to starting with 0 total Supply (might be bug?)
     // pool joiner was pool
     // speculating its recovery mode
     assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in users' total tokens";
     // no unpaid burning
     // not sure why it fails, could be rounding since its always in favor of protocol
-    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens || totalFees_<_totalFees, "a decrease in total BPT must lead to a decrease in users' total tokens";
+    assert totalBpt_<_totalBpt => totalTokens_<_totalTokens;// || totalFees_<_totalFees, "a decrease in total BPT must lead to a decrease in users' total tokens";
 }
 
 rule BPTBalanceCorrelatedWithTokenBalance(method f) filtered { f ->
@@ -177,7 +209,7 @@ rule BPTBalanceCorrelatedWithTokenBalance(method f) filtered { f ->
     || f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector)
 } {
     env e;
-    setup(e);
+    setup();
 	calldataarg args;
 
     require totalSupply() > 0;

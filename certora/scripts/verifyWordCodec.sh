@@ -1,4 +1,9 @@
-make -C certora munged
+if [[ "$1" ]]
+then
+    RULE="--rule $1"
+fi
+
+# make -C certora munged
 
 certoraRun \
     certora/harnesses/WordCodecHarness.sol \
@@ -10,4 +15,5 @@ certoraRun \
     --send_only \
     --cloud \
     --settings -useBitVectorTheory \
-    --msg "WordCodec verification all rules"
+    $RULE \
+    --msg "WordCodec verification: $1" \
