@@ -97,7 +97,7 @@ rule doesNotRevertImproperly() {
 //// # Integrity ///////////////////////////////////////////////////////////////
 
 // All rules implemented
-// All passing
+// all except bool integrity passing
 // Redundant rules
 
 /// Returns integrity of each placing-decoding method pair.
