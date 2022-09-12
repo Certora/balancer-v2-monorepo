@@ -140,7 +140,7 @@ function placeDecodeValue(method f, bytes32 word, uint256 offset, uint256 bitLen
 }
 
 /// Placing and decoding a value must return the original value.
-// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
+/// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
 rule codecIntegrity() {
     method f; bytes32 word; uint256 offset; uint256 bitLength;
 
@@ -195,7 +195,7 @@ rule intEncodeDecodeIntegrity() {
 }
 
 /// Inserting and decoding a bool must return the original value.
-// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
+/// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
 rule boolInsertDecodeIntegrity() {
     bytes32 word; bool startingValue; uint256 offset;
     // require offset < 256;
