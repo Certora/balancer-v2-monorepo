@@ -46,11 +46,12 @@ methods {
     _canPerform(bytes32, address) returns (bool) => DISPATCHER(true)
     canPerform(bytes32, address, address) returns (bool) => DISPATCHER(true)
     // harness functions
-    setRecoveryMode(bool)
+    setRecoveryMode(bool) envfree
     minAmp() returns (uint256) envfree
     maxAmp() returns (uint256) envfree
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
+    beenCalled() returns (bool) envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -142,7 +143,7 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 /// @notice: When in recovery mode the following operation must not revert
 /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
 /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-rule exitNonRevertingOnRecoveryMode(method f) {
+rule exitNonRevertingOnRecoveryMode() {
     env e; calldataarg args;
     require e.msg.sender == getVault();
     storage init = lastStorage;
@@ -159,6 +160,22 @@ rule exitNonRevertingOnRecoveryMode(method f) {
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
     assert !lastReverted, "recovery mode must not fail";
+}
+
+rule joinThenRecoveryExit() {
+    env e;
+    require e.msg.sender == getVault();
+    bytes32 poolIdA; address senderA; address recipientA;
+    uint256[] balancesA; uint256 lastChangeBlockA; uint256 protocolSwapFeePercentageA; bytes userDataA;
+    onJoinPool(e, poolIdA, senderA, recipientA, balancesA, lastChangeBlockA, protocolSwapFeePercentageA, userDataA);
+
+    setRecoveryMode(true);
+
+    bytes32 poolId; address sender; address recipient; uint256[] balances;
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    
+    assert !lastReverted, "joined then couldn't do a recovery exit";
 }
 
 // Pause + recovery mode

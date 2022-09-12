@@ -16,7 +16,8 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "@balancer-labs/v2-interfaces/contracts/pool-stable/StablePoolUserData.sol";
-import "@balancer-labs/v2-interfaces/contracts/pool-utils/IRateProvider.sol";
+// import "@balancer-labs/v2-interfaces/contracts/pool-utils/IRateProvider.sol";
+import "../munged/interfaces/contracts/pool-utils/IRateprovider.sol"; // HARNESS
 
 import "@balancer-labs/v2-solidity-utils/contracts/math/FixedPoint.sol";
 import "@balancer-labs/v2-solidity-utils/contracts/helpers/InputHelpers.sol";
@@ -34,7 +35,7 @@ import "./StableMathHarness.sol";
  * popularized by Curve) which allows for significantly larger trades before encountering substantial price impact,
  * vastly increasing capital efficiency for like-kind swaps.
  */
-contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProvider, StableMath {
+contract StablePoolRS is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProvider, StableMath {
     using WordCodec for bytes32;
     using FixedPoint for uint256;
     using StablePoolUserData for bytes;
@@ -316,7 +317,7 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
         uint256[] memory balances,
         uint256[] memory scalingFactors,
         bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
+    ) private returns (uint256, uint256[] memory) {
         StablePoolUserData.JoinKind kind = userData.joinKind();
 
         if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
@@ -332,7 +333,7 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
         uint256[] memory balances,
         uint256[] memory scalingFactors,
         bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
+    ) private returns (uint256, uint256[] memory) {
         (uint256[] memory amountsIn, uint256 minBPTAmountOut) = userData.exactTokensInForBptOut();
         InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
 
@@ -354,7 +355,6 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
 
     function _joinTokenInForExactBPTOut(uint256[] memory balances, bytes memory userData)
         private
-        view
         returns (uint256, uint256[] memory)
     {
         (uint256 bptAmountOut, uint256 tokenIndex) = userData.tokenInForExactBptOut();
@@ -420,7 +420,7 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
         uint256[] memory balances,
         uint256[] memory scalingFactors,
         bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
+    ) private returns (uint256, uint256[] memory) {
         StablePoolUserData.ExitKind kind = userData.exitKind();
 
         if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
@@ -436,7 +436,6 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
 
     function _exitExactBPTInForTokenOut(uint256[] memory balances, bytes memory userData)
         private
-        view
         returns (uint256, uint256[] memory)
     {
         (uint256 bptAmountIn, uint256 tokenIndex) = userData.exactBptInForTokenOut();
@@ -463,7 +462,6 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
 
     function _exitExactBPTInForTokensOut(uint256[] memory balances, bytes memory userData)
         private
-        view
         returns (uint256, uint256[] memory)
     {
         uint256 bptAmountIn = userData.exactBptInForTokensOut();
@@ -477,7 +475,7 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
         uint256[] memory balances,
         uint256[] memory scalingFactors,
         bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
+    ) private returns (uint256, uint256[] memory) {
         (uint256[] memory amountsOut, uint256 maxBPTAmountIn) = userData.bptInForExactTokensOut();
         InputHelpers.ensureInputLengthMatch(amountsOut.length, _getTotalTokens());
         _upscaleArray(amountsOut, scalingFactors);
@@ -528,7 +526,6 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
      */
     function _getDueProtocolFeeAmounts(uint256[] memory balances, uint256 protocolSwapFeePercentage)
         private
-        view
         returns (uint256[] memory)
     {
         // Initialize with zeros
@@ -611,7 +608,7 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
      * @dev This function returns the appreciation of one BPT relative to the
      * underlying tokens. This starts at 1 when the pool is created and grows over time
      */
-    function getRate() public view virtual override returns (uint256) {
+    function getRate() public virtual override returns (uint256) {
         (, uint256[] memory balances, ) = getVault().getPoolTokens(getPoolId());
         _upscaleArray(balances, _scalingFactors());
 
@@ -664,8 +661,8 @@ contract StablePool is BaseGeneralPool, LegacyBaseMinimalSwapInfoPool, IRateProv
 
     function _isOwnerOnlyAction(bytes32 actionId) internal view virtual override returns (bool) {
         return
-            (actionId == getActionId(StablePool.startAmplificationParameterUpdate.selector)) ||
-            (actionId == getActionId(StablePool.stopAmplificationParameterUpdate.selector)) ||
+            (actionId == getActionId(StablePoolRS.startAmplificationParameterUpdate.selector)) ||
+            (actionId == getActionId(StablePoolRS.stopAmplificationParameterUpdate.selector)) ||
             super._isOwnerOnlyAction(actionId);
     }
 

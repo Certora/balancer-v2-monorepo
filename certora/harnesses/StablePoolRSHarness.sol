@@ -6,7 +6,7 @@ import "./StablePoolRS.sol";
 // This is the contract that is actually verified; it may contain some helper
 // methods for the spec to access internal state, or may override some of the
 // more complex methods in the original contract.
-contract StablePoolHarness is StablePool {
+contract StablePoolRSHarness is StablePoolRS {
     using SafeMath for uint256;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
@@ -26,7 +26,7 @@ contract StablePoolHarness is StablePool {
         uint256 pauseWindowDuration,
         uint256 bufferPeriodDuration,
         address owner
-    ) StablePool(vault, name, symbol, tokens, amplificationParameter, 
+    ) StablePoolRS(vault, name, symbol, tokens, amplificationParameter, 
     swapFeePercentage, pauseWindowDuration, bufferPeriodDuration, owner) {}
     
     // sets recovery mode on or off
