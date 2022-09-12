@@ -85,4 +85,22 @@ contract WordCodecHarness {
     ) public pure returns (bytes32) { // HARNESS: internal -> public
         return WordCodec.insertBool(word, value, offset);
     }
+
+    // Helpers
+
+    function validateEncodingParamsUint(
+        uint256 value,
+        uint256 offset,
+        uint256 bitLength
+    ) public pure {
+        return WordCodec._validateEncodingParams(value, offset, bitLength);
+    }
+
+    function validateEncodingParamsInt(
+        int256 value,
+        uint256 offset,
+        uint256 bitLength
+    ) public pure {
+        return WordCodec._validateEncodingParams(value, offset, bitLength);
+    }    
 }

@@ -17,3 +17,4 @@ certoraRun \
     --settings -useBitVectorTheory \
     $RULE \
     --msg "WordCodec verification: $1" \
+    # --rule_sanity
