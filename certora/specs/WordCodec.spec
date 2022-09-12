@@ -109,56 +109,6 @@ rule doesNotRevertImproperly() {
 
 //// # Integrity ///////////////////////////////////////////////////////////////
 
-/// Returns integrity of each placing-decoding method pair.
-function placeDecodeValue(method f, bytes32 word, uint256 offset, uint256 bitLength) returns bool {
-    if (f.selector == insertUint(bytes32,uint256,uint256,uint256).selector) {
-        uint256 uintValue;
-        bytes32 newWord = insertUint(word, uintValue, offset, bitLength);
-        uint256 decodedValue = decodeUint(newWord, offset, bitLength);
-        return uintValue == decodedValue;
-    }
-    else if (f.selector == insertInt(bytes32,int256,uint256,uint256).selector) {
-        int256 intValue;
-        bytes32 newWord = insertInt(word, intValue, offset, bitLength);
-        int256 decodedValue = decodeInt(newWord, offset, bitLength);
-        return intValue == decodedValue;
-    }
-    else if (f.selector == encodeUint(uint256,uint256,uint256).selector) {
-        uint256 uintValue;
-        bytes32 newWord = encodeUint(uintValue, offset, bitLength);
-        uint256 decodedValue = decodeUint(newWord, offset, bitLength);
-        return uintValue == decodedValue;
-    }
-    else if (f.selector == encodeInt(int256,uint256,uint256).selector) {
-        int256 intValue;
-        bytes32 newWord = encodeInt(intValue, offset, bitLength);
-        int256 decodedValue = decodeInt(newWord, offset, bitLength);
-        return intValue == decodedValue;
-    }
-    else if (f.selector == insertBool(bytes32,bool,uint256).selector) {
-        bool boolValue;
-        // require offset < 256;
-        bytes32 newWord = insertBool(word, boolValue, offset);
-        bool decodedValue = decodeBool(newWord, offset);
-        return boolValue == decodedValue;
-    }
-    else {
-        require false; // constrains search to only above methods
-        return true; // avoids compiler errors
-    }
-}
-
-/// Placing and decoding a value must return the original value.
-/// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
-rule codecIntegrity() {
-    method f; bytes32 word; uint256 offset; uint256 bitLength;
-
-    bool identity = placeDecodeValue(f, word, offset, bitLength);
-
-    assert identity, 
-        "placing and decoding a value must return the original value";
-}
-
 /// Inserting and decoding a uint must return the original value.
 rule uintInsertDecodeIntegrity() {
     bytes32 word; uint256 startingValue; uint256 offset; uint256 bitLength;
