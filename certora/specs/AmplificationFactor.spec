@@ -88,7 +88,7 @@ function getAmplificationFactor(env e) returns uint256 {
 /// @notice: this fails on the instate because there are no checks on the initial value of the amplfication factor
 /// @notice: passes on the preserved 
 invariant amplificationFactorBounded(env e)
-    getAmplificationFactor(e) <= maxAmp() * AMP_PRECISION() && getAmplificationFactor(e) >= minAmp() * AMP_PRECISION()
+    getAmplificationFactor(e) <= maxAmp() * AMP_PRECISION() && getAmplificationFactor(e) >= minAmp()
 { preserved {
     require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;

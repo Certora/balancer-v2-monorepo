@@ -21,7 +21,7 @@ methods {
 
 
 	//// @dev stable math
-    _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
+    // _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
     // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
@@ -30,7 +30,7 @@ methods {
     // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
 	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
+    // _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
     //// @dev "view" functions that call internal function with function pointers as input
@@ -235,10 +235,17 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 
 /// @rule: recoveryModeSimpleMath
 /// @description: none of the complex math functions will be called on recoveryMode
-rule recoveryModeSimpleMath(method f) {
+rule recoveryModeSimpleMath(method f) filtered {f -> ( 
+        f.selector == setSwapFeePercentage(uint256).selector ||
+        f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
+        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
+        f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
+        f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector ||
+        f.selector == getRate().selector) }
+{
     env e; calldataarg args;
     require inRecoveryMode();
     require !beenCalled();
-    f@withrevert(e, args);
-    assert beenCalled() => lastReverted, "math function didn't revert";
+    f(e, args);
+    assert !beenCalled(), "math function didn't revert";
 }
