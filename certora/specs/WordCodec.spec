@@ -38,7 +38,7 @@ rule insertBoolDoesNotRevert {
     
     insertBool@withrevert(word, value, offset);
 
-    assert !lastReverted, "insertBool must not revert";
+    assert !lastReverted, "calls to insertBool must not revert";
 }
 
 /// Calls each specified contract method with the appropriate args. Returns lastReverted.
@@ -97,7 +97,7 @@ function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLe
     }
 }
 
-/// wordCodec method calls must not revert unless the associated parameter validation reverts.
+/// Method calls must not revert unless the associated parameter validation reverts.
 rule doesNotRevertImproperly {
     method f; uint256 value; uint256 offset; uint256 bitLength;
     bool mainReverted = callWithArgs(f, value, offset, bitLength);
@@ -105,31 +105,35 @@ rule doesNotRevertImproperly {
     bool validateReverted = validateWithArgs(f, value, offset, bitLength);
 
     assert mainReverted => validateReverted, 
-        "wordCodec method calls must not revert unless the associated parameter validation reverts";
+        "method calls must not revert unless the associated parameter validation reverts";
 }
 
+// /// Calls to decodeUint must not revert.
 // rule decodeUintDoesNotRevertImproperly {    
 //     decodeUint@withrevert(_, _, _);
 
-//     assert !lastReverted, "decodeUint must not revert improperly";
+//     assert !lastReverted, "calls to decodeUint must not revert";
 // }
 
+// /// Calls to decodeInt must not revert.
 // rule decodeIntDoesNotRevertImproperly {    
 //     decodeInt@withrevert(_, _, _);
 
-//     assert !lastReverted, "decodeInt must not revert improperly";
+//     assert !lastReverted, "calls to decodeInt must not revert";
 // }
 
+// /// Calls to insertBits192 must not revert.
 // rule insertBits192DoesNotRevertImproperly {   
 //     insertBits192@withrevert(_, _, _);
 
-//     assert !lastReverted, "insertBits192 must not revert improperly";
+//     assert !lastReverted, "calls to insertBits192 must not revert";
 // }
 
+// /// Calls to decodeBool must not revert.
 // rule decodeBoolDoesNotRevertImproperly {    
 //     decodeBool@withrevert(_, _);
 
-//     assert !lastReverted, "decodeBool must not revert improperly";
+//     assert !lastReverted, "calls to decodeBool must not revert";
 // }
 
 //// # Integrity ///////////////////////////////////////////////////////////////
