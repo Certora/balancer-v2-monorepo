@@ -23,7 +23,6 @@ certoraRun \
     $RULE \
     --send_only \
     --msg "ComposableStablePool: $1 $2" \
-    --solc solc7.3 \
     --settings -enableEqualitySaturation=false,-divideNoRemainder=true \
     --settings -s=z3 \
     --packages @balancer-labs=node_modules/@balancer-labs \

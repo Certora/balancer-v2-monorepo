@@ -13,6 +13,7 @@
 
 methods {
     totalTokensBalance(address u) returns (uint256) envfree
+    totalTokensBalance() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
     _getTotalTokens() envfree
     requireOrder(address) envfree
@@ -219,8 +220,6 @@ rule cantBurnZerosBPT(method f) {
 // assumption 2: balances increase if invariant increased
 // assumption 3: _joinTokenInForExactBPTOut type join (only nontimeout, also makes sense)
 rule noFreeMinting(method f) {
-    
-    setup();
 
     uint256 _totalBpt = totalSupply();
     uint256 _totalTokens = totalTokensBalance();
@@ -242,14 +241,9 @@ function setup(env e) {
     // require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
     // require currentContract == getToken(getBptIndex());
     // require e.msg.sender < _token0;
-    // require getTotalTokens()>2 && getTotalTokens()<7;
+    //require getTotalTokens()>2 && getTotalTokens()<7;
     // require getBptIndex() < getTotalTokens();
-    requireOrder(e.msg.sender);
-}
-
-function setup() { 
-    require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
-    require getTotalTokens()>1 && getTotalTokens()<6;
+    //requireOrder(e.msg.sender);
 }
 
 function joinExit(env e, method f, address user) {
