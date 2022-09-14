@@ -8,6 +8,7 @@ import "./StablePoolRS.sol";
 // more complex methods in the original contract.
 contract StablePoolRSHarness is StablePoolRS {
     using SafeMath for uint256;
+    using BasePoolUserData for bytes;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
@@ -240,5 +241,9 @@ contract StablePoolRSHarness is StablePoolRS {
     }
     function getTotalTokens() public view returns (uint256) {
         return _getTotalTokens();
+    }
+
+    function userDataIsRecoveryModeExit(bytes memory userData) public pure returns (bool) {
+        return userData.isRecoveryModeExitKind();
     }
 }

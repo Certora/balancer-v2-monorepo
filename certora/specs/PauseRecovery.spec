@@ -52,6 +52,7 @@ methods {
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
     beenCalled() returns (bool) envfree
+    userDataIsRecoveryModeExit(bytes) returns (bool) envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -79,9 +80,6 @@ function setup(env e) {
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
-
-
- 
 // Paused Mode:
 
 /// @rule: basicOperationsRevertOnPause
@@ -146,6 +144,7 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 rule exitNonRevertingOnRecoveryMode() {
     env e; calldataarg args;
     require e.msg.sender == getVault();
+    setup(e);
     storage init = lastStorage;
     bytes32 poolId; address sender; address recipient; uint256[] balances;
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
@@ -164,7 +163,10 @@ rule exitNonRevertingOnRecoveryMode() {
 
 rule joinThenRecoveryExit() {
     env e;
+    setup(e);
     require e.msg.sender == getVault();
+    require totalSupply() != 0;
+
     bytes32 poolIdA; address senderA; address recipientA;
     uint256[] balancesA; uint256 lastChangeBlockA; uint256 protocolSwapFeePercentageA; bytes userDataA;
     onJoinPool(e, poolIdA, senderA, recipientA, balancesA, lastChangeBlockA, protocolSwapFeePercentageA, userDataA);
@@ -234,18 +236,63 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 }
 
 /// @rule: recoveryModeSimpleMath
-/// @description: none of the complex math functions will be called on recoveryMode
+/// @notice: none of the complex math functions will be called on recoveryMode
+/// @notice: passes for swap, setswapfee percentage, setAssetManagerPool
+/// @notice: fails for onJoin and getRate, seems to be valid failures
 rule recoveryModeSimpleMath(method f) filtered {f -> ( 
+        f.selector == setSwapFeePercentage(uint256).selector ||
+        f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
+        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
+        f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
+        f.selector == getRate().selector) }
+{
+    env e; calldataarg args;
+    setup(e);
+
+    require inRecoveryMode();
+    require !beenCalled();
+    f(e, args);
+    assert !beenCalled(), "math function didn't revert";
+}
+
+
+/// @rule: recoveryModeSimpleMathOnExitPool
+/// @notice: none of the complex math functions will be called during exit while in recovery mode 
+/// @notice: if the vault does not send a join type of recoveryMode exit then this rule will fail
+/// @notice: passes
+rule recoveryModeSimpleMathOnExitPool() {
+
+    require inRecoveryMode();
+    require !beenCalled();
+
+    env e;
+    setup(e);
+
+    bytes userData;
+    require userDataIsRecoveryModeExit(userData);
+
+    bytes32 poolId; address sender; address recipient; uint256[] balances;
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
+
+    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+
+    assert !beenCalled();
+}
+
+/// @rule noExternalCallRecovery
+/// @notice: Recovery mode must not call any external calls. Checks if any external calls havoc the storage state, this will catch any non-view external calls
+rule noExternalCallRecovery(method f) filtered {f -> ( 
         f.selector == setSwapFeePercentage(uint256).selector ||
         f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
         f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
         f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
         f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector ||
         f.selector == getRate().selector) }
-{
+    {
     env e; calldataarg args;
+    address a; uint256 b;
+    b = _token0.balanceOf(a);
     require inRecoveryMode();
-    require !beenCalled();
     f(e, args);
-    assert !beenCalled(), "math function didn't revert";
+    assert _token0.balanceOf(a) == b;
 }
