@@ -293,7 +293,8 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
     return newBalance;
 }
 
-
+//////********** AMPLIFICATION FACTOR AND RECOVERY/PAUSE RULES ***********//////////////
+// should be moved to seperate file or deleted if they are already in a new file
 
 // Amplification factor
 
