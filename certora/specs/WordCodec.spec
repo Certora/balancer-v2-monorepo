@@ -29,7 +29,7 @@ filtered {
     require e.msg.value == 0;
 
     f@withrevert(e, args);
-    assert !lastReverted, "Method calls not subject to parameter validation must not revert";
+    assert !lastReverted, "method calls not subject to parameter validation must not revert";
 }
 
 /// Calls to insertBool must not revert.
@@ -64,10 +64,6 @@ function callWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength
         return lastReverted;
     }
     else {
-        // env e; calldataarg args;
-        // f@withrevert(e, args);
-        // return lastReverted;
-        // assert false, "TODO other funcs not implemented";
         require false;
         return false;
     }
@@ -96,7 +92,6 @@ function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLe
         return lastReverted;
     }
     else {
-        // assert false, "TODO other funcs not implemented";
         require false;
         return false;
     }
