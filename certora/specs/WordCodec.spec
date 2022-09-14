@@ -40,28 +40,28 @@ rule insertBoolDoesNotRevert {
 }
 
 /// Calls to decodeUint must not revert.
-rule decodeUintDoesNotRevertImproperly {    
+rule decodeUintDoesNotRevert {    
     decodeUint@withrevert(_, _, _);
 
     assert !lastReverted, "calls to decodeUint must not revert";
 }
 
 /// Calls to decodeInt must not revert.
-rule decodeIntDoesNotRevertImproperly {    
+rule decodeIntDoesNotRevert {    
     decodeInt@withrevert(_, _, _);
 
     assert !lastReverted, "calls to decodeInt must not revert";
 }
 
 /// Calls to insertBits192 must not revert.
-rule insertBits192DoesNotRevertImproperly {   
+rule insertBits192DoesNotRevert {   
     insertBits192@withrevert(_, _, _);
 
     assert !lastReverted, "calls to insertBits192 must not revert";
 }
 
 /// Calls to decodeBool must not revert.
-rule decodeBoolDoesNotRevertImproperly {    
+rule decodeBoolDoesNotRevert {    
     decodeBool@withrevert(_, _);
 
     assert !lastReverted, "calls to decodeBool must not revert";
