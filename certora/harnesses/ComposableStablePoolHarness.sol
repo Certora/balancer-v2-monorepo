@@ -8,6 +8,7 @@ import "../munged/pool-stable/contracts/ComposableStablePool.sol";
 // more complex methods in the original contract.
 contract ComposableStablePoolHarness is ComposableStablePool {
     using SafeMath for uint256;
+    using StablePoolUserData for bytes;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
@@ -25,7 +26,14 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         // require(!initialized, "for rules");
         // initialized == true;
     }
+    // gets join kind
+    function getJoinKind(bytes memory userData) public view returns(StablePoolUserData.JoinKind) {
+        StablePoolUserData.JoinKind kind = userData.joinKind();
+        return kind;
+    }
     
+    
+    // gets action id by selector
     function getActionId(uint32 selector) view public returns (bytes32) {
         return getActionId(bytes4(selector));
     }

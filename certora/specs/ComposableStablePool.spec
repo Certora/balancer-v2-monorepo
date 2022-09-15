@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 methods {
+    // getters
     totalTokensBalance(address u) returns (uint256) envfree
     totalTokensBalance() returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree
@@ -19,6 +20,7 @@ methods {
     requireOrder(address) envfree
     totalSupply() envfree
     balanceOf(address) returns (uint256) envfree
+    getJoinKind(bytes) returns(uint8) envfree
 	// stable math
     // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
@@ -224,9 +226,19 @@ rule noFreeMinting(method f) {
     uint256 _totalBpt = totalSupply();
     uint256 _totalTokens = totalTokensBalance();
 
-    address u; env e;
-    joinExit(e, f, u);
+    env e;
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
 
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        require sender != currentContract; // times out if I remove this 
+        require getJoinKind(userData) == 2;
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+
+    }
     uint256 totalBpt_ = totalSupply();
     uint256 totalTokens_ = totalTokensBalance();
 
@@ -244,26 +256,6 @@ function setup(env e) {
     //require getTotalTokens()>2 && getTotalTokens()<7;
     // require getBptIndex() < getTotalTokens();
     //requireOrder(e.msg.sender);
-}
-
-function joinExit(env e, method f, address user) {
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-
-    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender != currentContract; // times out if I remove this 
-        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    } else if f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender == user;
-        require recipient == user;
-        require totalSupply() > 0;
-        require e.msg.sender != currentContract;
-        require !inRecoveryMode();
-        onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    } else {
-        calldataarg args;
-        f(e, args);
-    }
 }
 
 // invariant must be greater than the sum of pool's token balances and less than the product 
