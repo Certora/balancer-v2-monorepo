@@ -95,26 +95,6 @@ function setup() {
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
-function joinExit(env e, method f, address user) {
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-
-    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender != currentContract; // times out if I remove this 
-        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    } else if f.selector == onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        require sender == user;
-        require recipient == user;
-        require totalSupply() > 0;
-        require e.msg.sender != currentContract;
-        require !inRecoveryMode();
-        onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    } else {
-        calldataarg args;
-        f(e, args);
-    }
-}
-
 // invariant must be greater than the sum of pool's token balances and less than the product 
 function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
     uint256 invar;
@@ -200,7 +180,16 @@ rule noFreeMinting(method f) {
     uint256 _totalTokens = totalTokensBalance();
 
     address u; env e;
-    joinExit(e, f, u);
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        require sender != currentContract; // times out if I remove this 
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
 
     uint256 totalBpt_ = totalSupply();
     uint256 totalTokens_ = totalTokensBalance();
