@@ -12,21 +12,62 @@ methods {
     validateEncodingParamsInt(int256,uint256,uint256) envfree
 }
 
+//// # Reversion Behavior //////////////////////////////////////////////////////
 
-// needs reworking
-// TODO remove rule
-rule doesNotRevert() {
-    method f; env e; calldataarg args;
+/// Method calls not subject to parameter validation must not revert.
+rule doesNotRevert(method f) 
+filtered {
+    f -> f.selector != insertUint(bytes32,uint256,uint256,uint256).selector
+      && f.selector != insertInt(bytes32,int256,uint256,uint256).selector
+      && f.selector != encodeUint(uint256,uint256,uint256).selector
+      && f.selector != encodeInt(int256,uint256,uint256).selector
+      && f.selector != validateEncodingParamsUint(uint256,uint256,uint256).selector
+      && f.selector != validateEncodingParamsInt(int256,uint256,uint256).selector
+}
+{
+    env e; calldataarg args;
     require e.msg.value == 0;
 
     f@withrevert(e, args);
-    assert !lastReverted, "wordCodec method calls must not revert TODO remove rule";
+    assert !lastReverted, "method calls not subject to parameter validation must not revert";
 }
 
-// write insert bool rule
-// require in / require out different parts of counterexample to establish what is important
+/// Calls to insertBool must not revert.
+rule insertBoolDoesNotRevert {    
+    insertBool@withrevert(_, _, _);
 
-/// Calls each contract method with the appropriate args. Returns lastReverted.
+    assert !lastReverted, "calls to insertBool must not revert";
+}
+
+/// Calls to decodeUint must not revert.
+rule decodeUintDoesNotRevert {    
+    decodeUint@withrevert(_, _, _);
+
+    assert !lastReverted, "calls to decodeUint must not revert";
+}
+
+/// Calls to decodeInt must not revert.
+rule decodeIntDoesNotRevert {    
+    decodeInt@withrevert(_, _, _);
+
+    assert !lastReverted, "calls to decodeInt must not revert";
+}
+
+/// Calls to insertBits192 must not revert.
+rule insertBits192DoesNotRevert {   
+    insertBits192@withrevert(_, _, _);
+
+    assert !lastReverted, "calls to insertBits192 must not revert";
+}
+
+/// Calls to decodeBool must not revert.
+rule decodeBoolDoesNotRevert {    
+    decodeBool@withrevert(_, _);
+
+    assert !lastReverted, "calls to decodeBool must not revert";
+}
+
+/// Calls each specified contract method with the appropriate args. Returns lastReverted.
 function callWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength) returns bool {
     if (f.selector == insertUint(bytes32,uint256,uint256,uint256).selector) {
 
@@ -48,17 +89,11 @@ function callWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength
         encodeInt@withrevert(to_int256(value), offset, bitLength);
         return lastReverted;
     }
-    // TODO for all methods
     else {
-        // assert false, "TODO other funcs not implemented";
         require false;
         return false;
     }
 }
-
-// check if last bit is zero, return lastReverted
-// & 1 to create value
-// require bitLength == 1;
 
 /// Returns lastReverted for validation of appropriate contract methods. Returns false for other methods.
 function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength) returns bool {
@@ -82,35 +117,27 @@ function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLe
         validateEncodingParamsInt@withrevert(to_int256(value), offset, bitLength);
         return lastReverted;
     }
-    // TODO for all methods
     else {
-        // assert false, "TODO other funcs not implemented";
         require false;
         return false;
     }
 }
 
-// option 1 call uint validate with bitlength 1
-// option 2 figure out reasonable places to revert (e.g. offset > 255)
-// if so, return true
-// option 3 validate bool will never revert because it doesn't exist
-// option 4 make 105 iff
-
-/// wordCodec method calls must not revert improperly.
-rule doesNotRevertImproperly() {
+/// Method calls must not revert unless the associated parameter validation reverts.
+rule doesNotRevertImproperly {
     method f; uint256 value; uint256 offset; uint256 bitLength;
     bool mainReverted = callWithArgs(f, value, offset, bitLength);
 
     bool validateReverted = validateWithArgs(f, value, offset, bitLength);
 
     assert mainReverted => validateReverted, 
-        "wordCodec method calls must not revert improperly";
+        "method calls must not revert unless the associated parameter validation reverts";
 }
 
 //// # Integrity ///////////////////////////////////////////////////////////////
 
 /// Inserting and decoding a uint must return the original value.
-rule uintInsertDecodeIntegrity() {
+rule uintInsertDecodeIntegrity {
     bytes32 word; uint256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = insertUint(word, startingValue, offset, bitLength);
@@ -121,7 +148,7 @@ rule uintInsertDecodeIntegrity() {
 }
 
 /// Inserting and decoding an int must return the original value.
-rule intInsertDecodeIntegrity() {
+rule intInsertDecodeIntegrity {
     bytes32 word; int256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = insertInt(word, startingValue, offset, bitLength);
@@ -132,7 +159,7 @@ rule intInsertDecodeIntegrity() {
 }
 
 /// Encoding and decoding a uint must return the original value.
-rule uintEncodeDecodeIntegrity() {
+rule uintEncodeDecodeIntegrity {
     uint256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = encodeUint(startingValue, offset, bitLength);
@@ -143,7 +170,7 @@ rule uintEncodeDecodeIntegrity() {
 }
 
 /// Encoding and decoding an int must return the original value.
-rule intEncodeDecodeIntegrity() {
+rule intEncodeDecodeIntegrity {
     int256 startingValue; uint256 offset; uint256 bitLength;
 
     bytes32 newWord = encodeInt(startingValue, offset, bitLength);
@@ -154,8 +181,8 @@ rule intEncodeDecodeIntegrity() {
 }
 
 /// Inserting and decoding a bool must return the original value.
-/// @dev an offset greater than 255 breaks bool insert-decode integrity (always returns the original word for insertBool and always returns false for decodeBool)
-rule boolInsertDecodeIntegrity() {
+/// @dev an offset greater than 255 breaks bool insert-decode integrity (by always returning the original word for insertBool and always returning false for decodeBool)
+rule boolInsertDecodeIntegrity {
     bytes32 word; bool startingValue; uint256 offset;
     // require offset < 256;
     bytes32 newWord = insertBool(word, startingValue, offset);
@@ -165,10 +192,10 @@ rule boolInsertDecodeIntegrity() {
         "inserting and decoding a bool must return the original value";
 }
 
-//// # Bit Independence / Constraint ///////////////////////////////////////////
+//// # Bit Independence & Constraint ///////////////////////////////////////////
 
 /// If a bit changes value after inserting a uint, it must be within the correct range.
-rule uintInsertBitIndependence() {
+rule uintInsertBitIndependence {
     bytes32 word; uint256 bitOffset;
     bool _bitValue = decodeBool(word, bitOffset);
 
@@ -183,22 +210,8 @@ rule uintInsertBitIndependence() {
         "if a bit changes value after inserting a uint, it must be within the correct range";
 }
 
-/// If a bit is outside the correct range when encoding a uint, its value must be 0.
-rule uintEncodeBitConstraint() {
-    uint256 offset; uint256 bitLength;
-    bytes32 newWord = encodeUint(_, offset, bitLength);
-
-    uint256 bitOffset;
-    bool bitValue = decodeBool(newWord, bitOffset);
-
-    // bitOffsets are outside the encoding range when smaller than offset or 
-    // when at least as large as offset + bitLength
-    assert (bitOffset < offset || (offset + bitLength) <= bitOffset) => !bitValue, 
-        "if a bit is outside the correct range when encoding a uint, its value must be 0";
-}
-
 /// If a bit changes value after inserting an int, it must be within the correct range.
-rule intInsertBitIndependence() {
+rule intInsertBitIndependence {
     bytes32 word; uint256 bitOffset;
     bool _bitValue = decodeBool(word, bitOffset);
 
@@ -213,22 +226,8 @@ rule intInsertBitIndependence() {
         "if a bit changes value after inserting an int, it must be within the correct range";
 }
 
-/// If a bit is outside the correct range when encoding an int, its value must be 0.
-rule intEncodeBitConstraint() {
-    uint256 offset; uint256 bitLength;
-    bytes32 newWord = encodeInt(_, offset, bitLength);
-
-    uint256 bitOffset;
-    bool bitValue = decodeBool(newWord, bitOffset);
-
-    // bitOffsets are outside the encoding range when smaller than offset or 
-    // when at least as large as offset + bitLength
-    assert (bitOffset < offset || (offset + bitLength) <= bitOffset) => !bitValue, 
-        "if a bit is outside the correct range when encoding an int, its value must be 0";
-}
-
 /// If a bit changes value after inserting a bool, it must have the correct offset.
-rule boolInsertBitIndependence() {
+rule boolInsertBitIndependence {
     bytes32 word; uint256 bitOffset;
     bool _bitValue = decodeBool(word, bitOffset);
 
@@ -242,7 +241,7 @@ rule boolInsertBitIndependence() {
 }
 
 /// If a bit changes value after inserting with insertBits192, it must be within the correct range.
-rule insertBits192BitIndependence() {
+rule insertBits192BitIndependence {
     bytes32 word; uint256 bitOffset;
     bool _bitValue = decodeBool(word, bitOffset);
 
@@ -260,10 +259,38 @@ rule insertBits192BitIndependence() {
         "if a bit changes value after inserting with insertBits192, it must be within the correct range";
 }
 
+/// If a bit is outside the correct range when encoding a uint, its value must be 0.
+rule uintEncodeBitConstraint {
+    uint256 offset; uint256 bitLength;
+    bytes32 newWord = encodeUint(_, offset, bitLength);
+
+    uint256 bitOffset;
+    bool bitValue = decodeBool(newWord, bitOffset);
+
+    // bitOffsets are outside the encoding range when smaller than offset or 
+    // when at least as large as offset + bitLength
+    assert (bitOffset < offset || (offset + bitLength) <= bitOffset) => !bitValue, 
+        "if a bit is outside the correct range when encoding a uint, its value must be 0";
+}
+
+/// If a bit is outside the correct range when encoding an int, its value must be 0.
+rule intEncodeBitConstraint {
+    uint256 offset; uint256 bitLength;
+    bytes32 newWord = encodeInt(_, offset, bitLength);
+
+    uint256 bitOffset;
+    bool bitValue = decodeBool(newWord, bitOffset);
+
+    // bitOffsets are outside the encoding range when smaller than offset or 
+    // when at least as large as offset + bitLength
+    assert (bitOffset < offset || (offset + bitLength) <= bitOffset) => !bitValue, 
+        "if a bit is outside the correct range when encoding an int, its value must be 0";
+}
+
 //// # Method Equivalence //////////////////////////////////////////////////////
 
 /// Encoding a uint and moving the appropriate value into a given word must yield the same result as inserting the uint into that same word.
-rule uintInsertEncodeEquivalence() {
+rule uintInsertEncodeEquivalence {
     bytes32 slottedWord; uint256 value; uint256 offset; uint256 bitLength;
     // slottedWord has 0 in the appropriate range
     require decodeUint(slottedWord, offset, bitLength) == 0; 
@@ -282,7 +309,7 @@ rule uintInsertEncodeEquivalence() {
 }
 
 /// Inserting a uint into an empty word must yield the same result as encoding that uint.
-rule uintEncodeInsertZeroWordEquivalence() {
+rule uintEncodeInsertZeroWordEquivalence {
     uint256 value; uint256 offset; uint256 bitLength;
 
     bytes32 zeroWord = 0;
@@ -295,7 +322,7 @@ rule uintEncodeInsertZeroWordEquivalence() {
 }
 
 /// Encoding an int and moving the appropriate value into a given word must yield the same result as inserting the int into that same word.
-rule intInsertEncodeEquivalence() {
+rule intInsertEncodeEquivalence {
     bytes32 slottedWord; int256 value; uint256 offset; uint256 bitLength;
     // slottedWord has 0 in the appropriate range
     require decodeInt(slottedWord, offset, bitLength) == 0; 
@@ -314,7 +341,7 @@ rule intInsertEncodeEquivalence() {
 }
 
 /// Inserting an int into an empty word must yield the same result as encoding that int.
-rule intEncodeInsertZeroWordEquivalence() {
+rule intEncodeInsertZeroWordEquivalence {
     int256 value; uint256 offset; uint256 bitLength;
 
     bytes32 zeroWord = 0;
@@ -327,11 +354,10 @@ rule intEncodeInsertZeroWordEquivalence() {
 }
 
 /// Inserting a 192 bit value using insertUint must yield the same result as using insertBits192.
-rule uintInsertBits192InsertEquivalence() {
+rule uintInsertBits192InsertEquivalence {
     bytes32 word; bytes32 value; uint256 offset;
     // insertBits192 assumes `value` can be represented using 192 bits
     require value < 2^192;
-    //TODO maxuint
     bytes32 wordA = insertBits192(word, value, offset);
 
     bytes32 wordB = insertUint(word, to_uint256(value), offset, 192);
@@ -343,7 +369,7 @@ rule uintInsertBits192InsertEquivalence() {
 //// # Decoding from Zero //////////////////////////////////////////////////////
 
 /// Decoding a uint from a zero word must yield 0.
-rule uintDecodeFromZero() {
+rule uintDecodeFromZero {
     bytes32 zeroWord; uint256 offset; uint256 bitLength;
     require zeroWord == 0;
 
@@ -355,7 +381,7 @@ rule uintDecodeFromZero() {
 
 /// Decoding an int from a zero word must yield 0.
 /// @dev a bitLength of 0 yields a value of -1 instead of 0.
-rule intDecodeFromZero() {
+rule intDecodeFromZero {
     bytes32 zeroWord; uint256 offset; uint256 bitLength;
     require zeroWord == 0;
     // require bitLength > 0;
@@ -366,7 +392,7 @@ rule intDecodeFromZero() {
         "decoding an int from a zero word must yield 0";
 }
 /// Decoding a bool from a zero word must yield false.
-rule boolDecodeFromZero() {
+rule boolDecodeFromZero {
     bytes32 zeroWord; uint256 offset;
     require zeroWord == 0;
 
