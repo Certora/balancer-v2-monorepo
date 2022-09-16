@@ -1,4 +1,4 @@
-// import "../helpers/erc20.spec"
+// import "../helpers/errequireOrderc20.spec"
 
 // using DummyERC20A as _token0
 // using DummyERC20B as _token1
@@ -114,12 +114,12 @@ methods {
     getToken(uint256 num) returns(address) envfree
     getTotalTokens() returns (uint256) envfree
 
-    mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    div(uint256 x, uint256 y) => ghost_division(x, y);
-    divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
-    divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
+    // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // div(uint256 x, uint256 y) => ghost_division(x, y);
+    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
+    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
 
     insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
     insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;

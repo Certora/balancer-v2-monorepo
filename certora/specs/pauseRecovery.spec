@@ -16,6 +16,7 @@ methods {
     _MIN_UPDATE_TIME() returns (uint256) envfree
     _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
 
+    _scalingFactors() returns (uint256[]) => CONSTANT
     getFeeTypePercentage(uint256) returns (uint256) => NONDET
     // 0x1a7c3263 => NONDET
     registerTokens(bytes32, address[], address[]) => NONDET
@@ -29,9 +30,9 @@ methods {
     
     _DELEGATE_OWNER() returns (address) envfree
     getActionId(uint32 selector) returns (bytes32) envfree
-    _getProtocolPoolOwnershipPercentage(uint256[],uint256,uint256) returns (uint256,uint256)
+    getProtocolPoolOwnershipPercentage(uint256[]) returns (uint256,uint256)
 	// stable math
-    _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
+    // _calculateInvariant(uint256,uint256[]) returns (uint256) => NONDET
 
     getPoolId() returns(bytes32) envfree
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
@@ -46,10 +47,10 @@ methods {
     //_getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
 
 	// stable pool
-	_getAmplificationParameter() returns (uint256,bool) => NONDET
+	_getAmplificationParameter() returns (uint256,bool) => CONSTANT
 
     // vault 
-    // getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
+    // getPoolTokens(bytes32) returns (address[], uint256[], uint256) => NONDET
     // getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns (address) envfree
     // // authorizor functions
@@ -63,7 +64,7 @@ methods {
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
     AMP_PRECISION() envfree
-    mul(uint256, uint256) returns (uint256) => NONDET
+    // mul(uint256, uint256) returns (uint256) => NONDET
 
     balanceOf(uint256) returns (uint256) envfree
     balanceOf(address,uint256) returns (uint256) envfree
@@ -82,8 +83,67 @@ methods {
     onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256) returns (uint256)
 
     beenCalled() returns (bool) envfree // stableMath harness
+    mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    mulUp(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    mulDown(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    div(uint256 x, uint256 y) => ghost_division(x, y);
+    divUp(uint256 x, uint256 y) => ghost_division(x, y);
+    divDown(uint256 x, uint256 y) => ghost_division(x, y);
 }
 
+function ghost_multiplication(uint256 x, uint256 y) returns uint256 {
+    require (y<100);
+    return to_uint256(x*y);
+}
+
+function ghost_division(uint256 x, uint256 y) returns uint256 {
+    require (y<100);
+    return to_uint256(x/y);
+}
+
+// ghost ghost_multiplication(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y.       
+//       x1 > x2 => ghost_multiplication(x1, y) > ghost_multiplication(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 => ghost_multiplication(x, y1) > ghost_multiplication(x, y2);
+// }
+
+// ghost ghost_division(uint256,uint256) returns uint256 {
+//   axiom forall uint256 x1. forall uint256 x2. forall uint256 y. 
+//       x1 > x2 => ghost_division(x1, y) > ghost_division(x2, y);
+//   axiom forall uint256 x. forall uint256 y1. forall uint256 y2.
+//       y1 > y2 => ghost_division(x, y1) < ghost_division(x, y2);
+// }
+
+// ghost ghost_multiplication(uint256,uint256) returns uint256 {
+//     axiom forall uint256 y1. forall uint256 y2. forall uint256 x1. forall uint256 x2. 
+//         (x1 > x2 => ghost_multiplication(x1, y1) > ghost_multiplication(x2, y1)) &&
+//         (y1 > y2 => ghost_multiplication(x1, y1) > ghost_multiplication(x1, y2)) &&
+//         ((x1 == 0 || y1 == 0) => ghost_multiplication(x1,y1) == 0);
+// }
+
+// ghost ghost_multiplication_round(uint256,uint256) returns uint256 {
+//     axiom forall uint256 y1. forall uint256 y2. forall uint256 x1. forall uint256 x2. 
+//         (x1 > x2 => ghost_multiplication_round(x1, y1) >= ghost_multiplication_round(x2, y1)) &&
+//         (y1 > y2 => ghost_multiplication_round(x1, y1) >= ghost_multiplication_round(x1, y2)) &&
+//         ((x1 == 0 || y1 == 0) => ghost_multiplication_round(x1,y1) == 0);
+// }
+
+// ghost ghost_division(uint256,uint256) returns uint256 {
+//     axiom forall uint256 x1. forall uint256 x2. forall uint256 y1. forall uint256 y2.         
+//         (x1 == 0 => ghost_division(x1, y1) == 0 &&
+//         x1 > x2 => ghost_division(x1, y1) > ghost_division(x2, y1) &&
+//         y1 > y2 => ghost_division(x1, y1) < ghost_division(x1, y2)) ||
+//         y1 == 1 => ghost_division(x1, y1) == x1;
+// }
+
+// ghost ghost_division_round(uint256,uint256) returns uint256 {
+//     axiom forall uint256 x1. forall uint256 x2. forall uint256 y1. forall uint256 y2.         
+//         (x1 == 0 => ghost_division_round(x1, y1) == 0 &&
+//         x1 > x2 => ghost_division_round(x1, y1) >= ghost_division_round(x2, y1) &&
+//         y1 > y2 => ghost_division_round(x1, y1) <= ghost_division_round(x1, y2)) ||
+//         y1 == 1 => ghost_division_round(x1, y1) == x1;
+// }
 // function setup() { 
 //     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
 //     require getTotalTokens()>1 && getTotalTokens()<6;
@@ -548,6 +608,16 @@ rule prWithdrawNeverReverts(method f) {
     assert _balance0 == balance2_;
 }
 
+
+rule RMSanity(method f) {
+	env e;
+	calldataarg args;
+	require inRecoveryMode();
+	disableRecoveryMode();
+	assert false;
+}
+
+
 // c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
 rule ZeroOwnerPercentageInRecovery() {
     env e; 
@@ -581,10 +651,9 @@ rule ZeroOwnerPercentageAfterDisablingRecovery() {
     disableRecoveryMode();
     uint256 feePercentage;
     uint256 totalGrowthInvariant;
-    feePercentage, totalGrowthInvariant = _getProtocolPoolOwnershipPercentage(e, args);
+    feePercentage, totalGrowthInvariant = getProtocolPoolOwnershipPercentage(e, args);
     assert feePercentage==0;
 }
-
 
 /// @title rule: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
