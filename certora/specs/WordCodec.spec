@@ -68,25 +68,25 @@ rule decodeBoolDoesNotRevert {
 }
 
 /// Calls each specified contract method with the appropriate args. Returns lastReverted.
-function callWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength) returns bool {
+function callWithArgs(method f, uint256 uintValue, int256 intValue, uint256 offset, uint256 bitLength) returns bool {
     if (f.selector == insertUint(bytes32,uint256,uint256,uint256).selector) {
 
-        insertUint@withrevert(_, value, offset, bitLength);
+        insertUint@withrevert(_, uintValue, offset, bitLength);
         return lastReverted;
     }    
     if (f.selector == insertInt(bytes32,int256,uint256,uint256).selector) {
 
-        insertInt@withrevert(_, to_int256(value), offset, bitLength);
+        insertInt@withrevert(_, intValue, offset, bitLength);
         return lastReverted;
     }
     if (f.selector == encodeUint(uint256,uint256,uint256).selector) {
 
-        encodeUint@withrevert(value, offset, bitLength);
+        encodeUint@withrevert(uintValue, offset, bitLength);
         return lastReverted;
     }
     if (f.selector == encodeInt(int256,uint256,uint256).selector) {
 
-        encodeInt@withrevert(to_int256(value), offset, bitLength);
+        encodeInt@withrevert(intValue, offset, bitLength);
         return lastReverted;
     }
     else {
@@ -96,25 +96,25 @@ function callWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength
 }
 
 /// Returns lastReverted for validation of appropriate contract methods. Returns false for other methods.
-function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLength) returns bool {
+function validateWithArgs(method f, uint256 uintValue, int256 intValue, uint256 offset, uint256 bitLength) returns bool {
     if (f.selector == insertUint(bytes32,uint256,uint256,uint256).selector) {
 
-        validateEncodingParamsUint@withrevert(value, offset, bitLength);
+        validateEncodingParamsUint@withrevert(uintValue, offset, bitLength);
         return lastReverted;
     }
     if (f.selector == insertInt(bytes32,int256,uint256,uint256).selector) {
 
-        validateEncodingParamsInt@withrevert(to_int256(value), offset, bitLength);
+        validateEncodingParamsInt@withrevert(intValue, offset, bitLength);
         return lastReverted;
     }
     if (f.selector == encodeUint(uint256,uint256,uint256).selector) {
 
-        validateEncodingParamsUint@withrevert(value, offset, bitLength);
+        validateEncodingParamsUint@withrevert(uintValue, offset, bitLength);
         return lastReverted;
     }
     if (f.selector == encodeInt(int256,uint256,uint256).selector) {
 
-        validateEncodingParamsInt@withrevert(to_int256(value), offset, bitLength);
+        validateEncodingParamsInt@withrevert(intValue, offset, bitLength);
         return lastReverted;
     }
     else {
@@ -125,10 +125,10 @@ function validateWithArgs(method f, uint256 value, uint256 offset, uint256 bitLe
 
 /// Method calls must not revert unless the associated parameter validation reverts.
 rule doesNotRevertImproperly {
-    method f; uint256 value; uint256 offset; uint256 bitLength;
-    bool mainReverted = callWithArgs(f, value, offset, bitLength);
+    method f; uint256 uintValue; int256 intValue; uint256 offset; uint256 bitLength;
+    bool mainReverted = callWithArgs(f, uintValue, intValue, offset, bitLength);
 
-    bool validateReverted = validateWithArgs(f, value, offset, bitLength);
+    bool validateReverted = validateWithArgs(f, uintValue, intValue, offset, bitLength);
 
     assert mainReverted => validateReverted, 
         "method calls must not revert unless the associated parameter validation reverts";
