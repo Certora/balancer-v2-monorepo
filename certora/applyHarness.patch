@@ -1,13 +1,13 @@
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-09-14 21:05:00.000000000 -0700
++++ .gitignore	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts distributors/contracts/MerkleOrchard.sol distributors/contracts/MerkleOrchard.sol
---- distributors/contracts/MerkleOrchard.sol	2022-06-20 13:18:36.000000000 -0700
-+++ distributors/contracts/MerkleOrchard.sol	2022-09-14 21:05:00.000000000 -0700
+--- distributors/contracts/MerkleOrchard.sol	2022-06-22 10:15:28.000000000 -0700
++++ distributors/contracts/MerkleOrchard.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,13 +14,13 @@
  
  pragma experimental ABIEncoderV2;
@@ -29,8 +29,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  pragma solidity ^0.7.0;
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts distributors/contracts/MerkleRedeem.sol distributors/contracts/MerkleRedeem.sol
---- distributors/contracts/MerkleRedeem.sol	2022-06-20 13:18:36.000000000 -0700
-+++ distributors/contracts/MerkleRedeem.sol	2022-09-14 21:05:00.000000000 -0700
+--- distributors/contracts/MerkleRedeem.sol	2022-06-22 10:15:28.000000000 -0700
++++ distributors/contracts/MerkleRedeem.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,15 +14,15 @@
  
  pragma experimental ABIEncoderV2;
@@ -57,8 +57,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  pragma solidity ^0.7.0;
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts distributors/contracts/test/MockRewardCallback.sol distributors/contracts/test/MockRewardCallback.sol
---- distributors/contracts/test/MockRewardCallback.sol	2022-06-20 13:18:36.000000000 -0700
-+++ distributors/contracts/test/MockRewardCallback.sol	2022-09-14 21:05:00.000000000 -0700
+--- distributors/contracts/test/MockRewardCallback.sol	2022-06-22 10:15:28.000000000 -0700
++++ distributors/contracts/test/MockRewardCallback.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -69,7 +69,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockRewardCallback is IDistributorCallback {
      event CallbackReceived();
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/IBaseGaugeFactory.sol interfaces/contracts/liquidity-mining/IBaseGaugeFactory.sol
---- interfaces/contracts/liquidity-mining/IBaseGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
+--- interfaces/contracts/liquidity-mining/IBaseGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
 +++ interfaces/contracts/liquidity-mining/IBaseGaugeFactory.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,28 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -102,7 +102,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/IBaseRootGaugeFactory.sol interfaces/contracts/liquidity-mining/IBaseRootGaugeFactory.sol
 --- interfaces/contracts/liquidity-mining/IBaseRootGaugeFactory.sol	1969-12-31 16:00:00.000000000 -0800
-+++ interfaces/contracts/liquidity-mining/IBaseRootGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
++++ interfaces/contracts/liquidity-mining/IBaseRootGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,28 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -133,8 +133,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    function create(address recipient, uint256 relativeWeightCap) external returns (address);
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/ILiquidityGauge.sol interfaces/contracts/liquidity-mining/ILiquidityGauge.sol
---- interfaces/contracts/liquidity-mining/ILiquidityGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ interfaces/contracts/liquidity-mining/ILiquidityGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- interfaces/contracts/liquidity-mining/ILiquidityGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ interfaces/contracts/liquidity-mining/ILiquidityGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -69,4 +69,9 @@
       * @param time Timestamp in the past or present.
       */
@@ -147,7 +147,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/ISingleRecipientGauge.sol interfaces/contracts/liquidity-mining/ISingleRecipientGauge.sol
 --- interfaces/contracts/liquidity-mining/ISingleRecipientGauge.sol	1969-12-31 16:00:00.000000000 -0800
-+++ interfaces/contracts/liquidity-mining/ISingleRecipientGauge.sol	2022-09-14 21:05:00.000000000 -0700
++++ interfaces/contracts/liquidity-mining/ISingleRecipientGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,23 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -174,7 +174,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/ISingleRecipientGaugeFactory.sol interfaces/contracts/liquidity-mining/ISingleRecipientGaugeFactory.sol
 --- interfaces/contracts/liquidity-mining/ISingleRecipientGaugeFactory.sol	1969-12-31 16:00:00.000000000 -0800
-+++ interfaces/contracts/liquidity-mining/ISingleRecipientGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
++++ interfaces/contracts/liquidity-mining/ISingleRecipientGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,30 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -207,8 +207,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    function getGaugeRecipient(address gauge) external view returns (address);
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/liquidity-mining/IStakelessGauge.sol interfaces/contracts/liquidity-mining/IStakelessGauge.sol
---- interfaces/contracts/liquidity-mining/IStakelessGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ interfaces/contracts/liquidity-mining/IStakelessGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- interfaces/contracts/liquidity-mining/IStakelessGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ interfaces/contracts/liquidity-mining/IStakelessGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -18,6 +18,4 @@
  
  interface IStakelessGauge is ILiquidityGauge {
@@ -217,8 +217,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    function getRecipient() external view returns (address);
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/pool-utils/IControlledManagedPool.sol interfaces/contracts/pool-utils/IControlledManagedPool.sol
---- interfaces/contracts/pool-utils/IControlledManagedPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ interfaces/contracts/pool-utils/IControlledManagedPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- interfaces/contracts/pool-utils/IControlledManagedPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ interfaces/contracts/pool-utils/IControlledManagedPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -31,9 +31,9 @@
  
      function setMustAllowlistLPs(bool mustAllowlistLPs) external;
@@ -232,8 +232,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    function setManagementAumFeePercentage(uint256 managementAumFeePercentage) external;
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol
---- interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ interfaces/contracts/pool-utils/ILastCreatedPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -246,9 +246,19 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      /**
       * @dev Returns the address of the last Pool created by this factory.
       *
+diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts interfaces/contracts/pool-utils/IRateProvider.sol interfaces/contracts/pool-utils/IRateProvider.sol
+--- interfaces/contracts/pool-utils/IRateProvider.sol	2022-06-22 10:15:28.000000000 -0700
++++ interfaces/contracts/pool-utils/IRateProvider.sol	2022-09-16 02:52:23.000000000 -0700
+@@ -19,5 +19,5 @@
+      * @dev Returns an 18 decimal fixed point number that is the exchange rate of the token to some other underlying
+      * token. The meaning of this rate depends on the context.
+      */
+-    function getRate() external view returns (uint256);
++    function getRate() external returns (uint256);
+ }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/BalancerMinter.sol liquidity-mining/contracts/BalancerMinter.sol
---- liquidity-mining/contracts/BalancerMinter.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/BalancerMinter.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/BalancerMinter.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/BalancerMinter.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,15 +14,15 @@
  
  pragma solidity ^0.7.0;
@@ -275,8 +285,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract BalancerMinter is IBalancerMinter, ReentrancyGuard, EOASignaturesValidator {
      using SafeMath for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/BalancerTokenAdmin.sol liquidity-mining/contracts/BalancerTokenAdmin.sol
---- liquidity-mining/contracts/BalancerTokenAdmin.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/BalancerTokenAdmin.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/BalancerTokenAdmin.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/BalancerTokenAdmin.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
@@ -296,8 +306,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // solhint-disable not-rely-on-time
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/SmartWalletChecker.sol liquidity-mining/contracts/SmartWalletChecker.sol
---- liquidity-mining/contracts/SmartWalletChecker.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/SmartWalletChecker.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/SmartWalletChecker.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/SmartWalletChecker.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,11 @@
  
  pragma solidity ^0.7.0;
@@ -315,8 +325,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract SmartWalletChecker is ISmartWalletChecker, SingletonAuthentication {
      using EnumerableSet for EnumerableSet.AddressSet;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/VotingEscrowDelegationProxy.sol liquidity-mining/contracts/VotingEscrowDelegationProxy.sol
---- liquidity-mining/contracts/VotingEscrowDelegationProxy.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/VotingEscrowDelegationProxy.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/VotingEscrowDelegationProxy.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/VotingEscrowDelegationProxy.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,10 +14,10 @@
  
  pragma solidity ^0.7.0;
@@ -332,8 +342,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract VotingEscrowDelegationProxy is SingletonAuthentication {
      IERC20 private immutable _votingEscrow;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/admin/AuthorizerAdaptor.sol liquidity-mining/contracts/admin/AuthorizerAdaptor.sol
---- liquidity-mining/contracts/admin/AuthorizerAdaptor.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/admin/AuthorizerAdaptor.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/admin/AuthorizerAdaptor.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/admin/AuthorizerAdaptor.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
@@ -353,8 +363,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @title Authorizer Adaptor
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol
---- liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/admin/ChildChainGaugeTokenAdder.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -370,8 +380,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @title ChildChainGaugeTokenAdder
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/admin/DistributionScheduler.sol liquidity-mining/contracts/admin/DistributionScheduler.sol
---- liquidity-mining/contracts/admin/DistributionScheduler.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/admin/DistributionScheduler.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/admin/DistributionScheduler.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/admin/DistributionScheduler.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -385,8 +395,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // solhint-disable not-rely-on-time
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/admin/GaugeAdder.sol liquidity-mining/contracts/admin/GaugeAdder.sol
---- liquidity-mining/contracts/admin/GaugeAdder.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/admin/GaugeAdder.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/admin/GaugeAdder.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/admin/GaugeAdder.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,14 +14,14 @@
  
  pragma solidity ^0.7.0;
@@ -411,8 +421,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract GaugeAdder is IGaugeAdder, SingletonAuthentication, ReentrancyGuard {
      using EnumerableSet for EnumerableSet.AddressSet;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/fee-distribution/FeeDistributor.sol liquidity-mining/contracts/fee-distribution/FeeDistributor.sol
---- liquidity-mining/contracts/fee-distribution/FeeDistributor.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/fee-distribution/FeeDistributor.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/fee-distribution/FeeDistributor.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/fee-distribution/FeeDistributor.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,16 +15,16 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -441,7 +451,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // solhint-disable not-rely-on-time
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/BaseGaugeFactory.sol liquidity-mining/contracts/gauges/BaseGaugeFactory.sol
---- liquidity-mining/contracts/gauges/BaseGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
+--- liquidity-mining/contracts/gauges/BaseGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
 +++ liquidity-mining/contracts/gauges/BaseGaugeFactory.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,60 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -505,8 +515,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol
---- liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/gauges/ChildChainGaugeRewardHelper.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -519,8 +529,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @title ChildChainGaugeRewardHelper
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol
---- liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,11 +15,11 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -539,7 +549,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      // RewardsOnlyGauge expects the claim function selector to be left padded with zeros.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol.orig liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol.orig
 --- liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol.orig	1969-12-31 16:00:00.000000000 -0800
-+++ liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol.orig	2022-09-14 21:05:00.000000000 -0700
++++ liquidity-mining/contracts/gauges/ChildChainLiquidityGaugeFactory.sol.orig	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,126 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -668,8 +678,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/StakelessGauge.sol liquidity-mining/contracts/gauges/StakelessGauge.sol
---- liquidity-mining/contracts/gauges/StakelessGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/StakelessGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/StakelessGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/StakelessGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,18 +14,15 @@
  
  pragma solidity ^0.7.0;
@@ -705,8 +715,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol
---- liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,12 +14,13 @@
  
  pragma solidity ^0.7.0;
@@ -733,8 +743,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          __StakelessGauge_init(relativeWeightCap);
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol
---- liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/arbitrum/ArbitrumRootGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,19 +15,25 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -839,8 +849,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol
---- liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/gauges/arbitrum/IGatewayRouter.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -851,8 +861,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  interface IGatewayRouter {
      function outboundTransfer(
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol
---- liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,16 +15,42 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -929,8 +939,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy
---- liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/ethereum/LiquidityGaugeV5.vy	2022-09-16 02:18:01.000000000 -0700
 @@ -873,6 +873,14 @@
      self.inflation_params = shift(TokenAdmin(BAL_TOKEN_ADMIN).future_epoch_time_write(), 216) + TokenAdmin(BAL_TOKEN_ADMIN).rate()
      self._setRelativeWeightCap(relative_weight_cap)
@@ -962,8 +972,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  def getMaxRelativeWeightCap() -> uint256:
      """
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol
---- liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/ethereum/SingleRecipientGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,13 @@
  
  pragma solidity ^0.7.0;
@@ -990,8 +1000,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          __StakelessGauge_init(relativeWeightCap);
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol
---- liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/ethereum/SingleRecipientGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,16 +15,50 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1069,8 +1079,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol
---- liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/optimism/OptimismRootGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -1100,8 +1110,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          __StakelessGauge_init(relativeWeightCap);
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol
---- liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/optimism/OptimismRootGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,15 +15,22 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1194,8 +1204,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol
---- liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/polygon/PolygonRootGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,6 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -1224,8 +1234,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          __StakelessGauge_init(relativeWeightCap);
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol
---- liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/gauges/polygon/PolygonRootGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,18 +15,54 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1306,8 +1316,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/MockGaugeController.sol liquidity-mining/contracts/test/MockGaugeController.sol
---- liquidity-mining/contracts/test/MockGaugeController.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/test/MockGaugeController.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/MockGaugeController.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/test/MockGaugeController.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -1318,8 +1328,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // For compatibility, we're keeping the same function names as in the original Curve code, including the mixed-case
  // naming convention.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/MockLiquidityGauge.sol liquidity-mining/contracts/test/MockLiquidityGauge.sol
---- liquidity-mining/contracts/test/MockLiquidityGauge.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/test/MockLiquidityGauge.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/MockLiquidityGauge.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/test/MockLiquidityGauge.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -12,56 +12,14 @@
  // You should have received a copy of the GNU General Public License
  // along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -1380,8 +1390,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol
---- liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/contracts/test/MockLiquidityGaugeFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,20 +15,42 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1434,8 +1444,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          return gauge;
      }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/MockRewardTokenDistributor.sol liquidity-mining/contracts/test/MockRewardTokenDistributor.sol
---- liquidity-mining/contracts/test/MockRewardTokenDistributor.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/test/MockRewardTokenDistributor.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/MockRewardTokenDistributor.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/test/MockRewardTokenDistributor.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1448,8 +1458,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // solhint-disable func-name-mixedcase, var-name-mixedcase, not-rely-on-time
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/TestAccessControl.sol liquidity-mining/contracts/test/TestAccessControl.sol
---- liquidity-mining/contracts/test/TestAccessControl.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/test/TestAccessControl.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/TestAccessControl.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/test/TestAccessControl.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,8 +2,8 @@
  
  pragma solidity ^0.7.0;
@@ -1462,8 +1472,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // This contract maintains the old AccessControl behaviour which is used by BalancerGovernanceToken in production
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/contracts/test/TestBalancerToken.sol liquidity-mining/contracts/test/TestBalancerToken.sol
---- liquidity-mining/contracts/test/TestBalancerToken.sol	2022-06-20 13:18:36.000000000 -0700
-+++ liquidity-mining/contracts/test/TestBalancerToken.sol	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/contracts/test/TestBalancerToken.sol	2022-06-22 10:15:28.000000000 -0700
++++ liquidity-mining/contracts/test/TestBalancerToken.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -1478,7 +1488,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./TestAccessControl.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/test/BaseGaugeFactory.test.ts liquidity-mining/test/BaseGaugeFactory.test.ts
---- liquidity-mining/test/BaseGaugeFactory.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- liquidity-mining/test/BaseGaugeFactory.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ liquidity-mining/test/BaseGaugeFactory.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,52 +0,0 @@
 -import { Contract } from 'ethers';
@@ -1534,8 +1544,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/test/GaugeAdder.test.ts liquidity-mining/test/GaugeAdder.test.ts
---- liquidity-mining/test/GaugeAdder.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/test/GaugeAdder.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/test/GaugeAdder.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/test/GaugeAdder.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -8,7 +8,6 @@
  import { expect } from 'chai';
  import { actionId } from '@balancer-labs/v2-helpers/src/models/misc/actions';
@@ -1592,8 +1602,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
            });
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts liquidity-mining/test/GaugeRelativeWeightCap.test.ts liquidity-mining/test/GaugeRelativeWeightCap.test.ts
---- liquidity-mining/test/GaugeRelativeWeightCap.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ liquidity-mining/test/GaugeRelativeWeightCap.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- liquidity-mining/test/GaugeRelativeWeightCap.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ liquidity-mining/test/GaugeRelativeWeightCap.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -72,17 +72,17 @@
      beforeEach('use liquidity gauge factory', () => {
        factory = liquidityGaugeFactory;
@@ -1659,8 +1669,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      return event.args.gauge;
    }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/LinearMath.sol pool-linear/contracts/LinearMath.sol
---- pool-linear/contracts/LinearMath.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-linear/contracts/LinearMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/LinearMath.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-linear/contracts/LinearMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -1673,8 +1683,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // These functions start with an underscore, as if they were part of a contract and not a library. At some point this
  // should be fixed.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/LinearPool.sol pool-linear/contracts/LinearPool.sol
---- pool-linear/contracts/LinearPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/LinearPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/LinearPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/LinearPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,17 +15,18 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1705,8 +1715,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./LinearMath.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/LinearPoolRebalancer.sol pool-linear/contracts/LinearPoolRebalancer.sol
---- pool-linear/contracts/LinearPoolRebalancer.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/LinearPoolRebalancer.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/LinearPoolRebalancer.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/LinearPoolRebalancer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,14 +15,14 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1729,8 +1739,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  abstract contract LinearPoolRebalancer {
      using SafeERC20 for IERC20;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/aave/AaveLinearPool.sol pool-linear/contracts/aave/AaveLinearPool.sol
---- pool-linear/contracts/aave/AaveLinearPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/aave/AaveLinearPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/aave/AaveLinearPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/aave/AaveLinearPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1741,8 +1751,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../LinearPool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/aave/AaveLinearPoolFactory.sol pool-linear/contracts/aave/AaveLinearPoolFactory.sol
---- pool-linear/contracts/aave/AaveLinearPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/aave/AaveLinearPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/aave/AaveLinearPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/aave/AaveLinearPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,20 +15,25 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1778,8 +1788,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      uint256 private _nextRebalancerSalt;
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol
---- pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/aave/AaveLinearPoolRebalancer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1792,8 +1802,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../LinearPoolRebalancer.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol
---- pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/button-wood/UnbuttonAaveLinearPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1806,8 +1816,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../LinearPool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol
---- pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/button-wood/UnbuttonAaveLinearPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,17 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1832,8 +1842,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/erc4626/ERC4626LinearPool.sol pool-linear/contracts/erc4626/ERC4626LinearPool.sol
---- pool-linear/contracts/erc4626/ERC4626LinearPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/erc4626/ERC4626LinearPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/erc4626/ERC4626LinearPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/erc4626/ERC4626LinearPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1849,8 +1859,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../LinearPool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol
---- pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/erc4626/ERC4626LinearPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,17 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1875,8 +1885,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/test/MockAaveAMPLToken.sol pool-linear/contracts/test/MockAaveAMPLToken.sol
---- pool-linear/contracts/test/MockAaveAMPLToken.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-linear/contracts/test/MockAaveAMPLToken.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/test/MockAaveAMPLToken.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-linear/contracts/test/MockAaveAMPLToken.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,7 +16,7 @@
  
  pragma solidity ^0.7.0;
@@ -1887,8 +1897,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./MockUnbuttonERC20.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/test/MockERC4626Token.sol pool-linear/contracts/test/MockERC4626Token.sol
---- pool-linear/contracts/test/MockERC4626Token.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-linear/contracts/test/MockERC4626Token.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/test/MockERC4626Token.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-linear/contracts/test/MockERC4626Token.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,11 @@
  
  pragma solidity ^0.7.0;
@@ -1906,8 +1916,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockERC4626Token is TestToken, IERC4626 {
      using FixedPoint for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/test/MockLinearPool.sol pool-linear/contracts/test/MockLinearPool.sol
---- pool-linear/contracts/test/MockLinearPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/test/MockLinearPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/test/MockLinearPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/test/MockLinearPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -51,10 +51,6 @@
          // solhint-disable-previous-line no-empty-blocks
      }
@@ -1920,8 +1930,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          return _scalingFactor(token);
      }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/test/MockStaticAToken.sol pool-linear/contracts/test/MockStaticAToken.sol
---- pool-linear/contracts/test/MockStaticAToken.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-linear/contracts/test/MockStaticAToken.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/test/MockStaticAToken.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-linear/contracts/test/MockStaticAToken.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -1935,8 +1945,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockStaticAToken is TestToken, IStaticAToken, ILendingPool {
      uint256 private _rate = 1e27;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-linear/contracts/test/MockUnbuttonERC20.sol pool-linear/contracts/test/MockUnbuttonERC20.sol
---- pool-linear/contracts/test/MockUnbuttonERC20.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-linear/contracts/test/MockUnbuttonERC20.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-linear/contracts/test/MockUnbuttonERC20.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-linear/contracts/test/MockUnbuttonERC20.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,10 +16,10 @@
  
  pragma solidity ^0.7.0;
@@ -1952,8 +1962,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockUnbuttonERC20 is ERC20, IButtonWrapper {
      using SafeERC20 for IERC20;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/ComposableStablePool.sol pool-stable/contracts/ComposableStablePool.sol
---- pool-stable/contracts/ComposableStablePool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/ComposableStablePool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/ComposableStablePool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/ComposableStablePool.sol	2022-09-16 02:51:51.000000000 -0700
 @@ -15,26 +15,25 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -1995,6 +2005,15 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
  /**
   * @dev StablePool with preminted BPT and rate providers for each token, allowing for e.g. wrapped tokens with a known
+@@ -273,7 +272,7 @@
+         uint256[] memory registeredBalances,
+         uint256 registeredIndexIn,
+         uint256 registeredIndexOut
+-    ) private view returns (uint256) {
++    ) private returns (uint256) {
+         // Adjust indices and balances for BPT token
+         uint256[] memory balances = _dropBptItem(registeredBalances);
+         uint256 indexIn = _skipBptIndex(registeredIndexIn);
 @@ -308,17 +307,21 @@
          bool isGivenIn = swapRequest.kind == IVault.SwapKind.GIVEN_IN;
  
@@ -2027,15 +2046,18 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          // These calls mutate `balances` so that it holds the post join-exit balances.
          (uint256 amountCalculated, uint256 postJoinExitSupply) = registeredIndexOut == getBptIndex()
-@@ -365,7 +368,7 @@
+@@ -365,9 +368,9 @@
          uint256[] memory balances,
          uint256 indexIn,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          return
+             isGivenIn
+                 ? _joinSwapExactTokenInForBptOut(
 @@ -375,7 +378,7 @@
                      balances,
                      indexIn,
@@ -2054,15 +2076,18 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
                      preJoinExitInvariant
                  );
      }
-@@ -398,7 +401,7 @@
+@@ -398,9 +401,9 @@
          uint256[] memory balances,
          uint256 indexIn,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          // The StableMath function was created with joins in mind, so it expects a full amounts array. We create an
+         // empty one and only set the amount for the token involved.
+         uint256[] memory amountsIn = new uint256[](balances.length);
 @@ -410,13 +413,13 @@
              currentAmp,
              balances,
@@ -2079,16 +2104,17 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          return (bptOut, postJoinExitSupply);
      }
-@@ -431,7 +434,7 @@
+@@ -431,21 +434,21 @@
          uint256[] memory balances,
          uint256 indexIn,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          uint256 amountIn = StableMath._calcTokenInGivenExactBptOut(
-@@ -439,13 +442,13 @@
+             currentAmp,
              balances,
              indexIn,
              bptOut,
@@ -2104,15 +2130,18 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          return (amountIn, postJoinExitSupply);
      }
-@@ -460,7 +463,7 @@
+@@ -460,9 +463,9 @@
          uint256[] memory balances,
          uint256 indexOut,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          return
+             isGivenIn
+                 ? _exitSwapExactBptInForTokenOut(
 @@ -470,7 +473,7 @@
                      balances,
                      indexOut,
@@ -2131,16 +2160,17 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
                      preJoinExitInvariant
                  );
      }
-@@ -493,7 +496,7 @@
+@@ -493,21 +496,21 @@
          uint256[] memory balances,
          uint256 indexOut,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          uint256 amountOut = StableMath._calcTokenOutGivenExactBptIn(
-@@ -501,13 +504,13 @@
+             currentAmp,
              balances,
              indexOut,
              bptAmount,
@@ -2156,15 +2186,18 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          return (amountOut, postJoinExitSupply);
      }
-@@ -522,7 +525,7 @@
+@@ -522,9 +525,9 @@
          uint256[] memory balances,
          uint256 indexOut,
          uint256 currentAmp,
 -        uint256 actualSupply,
 +        uint256 virtualSupply,
          uint256 preJoinExitInvariant
-     ) internal view returns (uint256, uint256) {
+-    ) internal view returns (uint256, uint256) {
++    ) internal returns (uint256, uint256) {
          // The StableMath function was created with exits in mind, so it expects a full amounts array. We create an
+         // empty one and only set the amount for the token involved.
+         uint256[] memory amountsOut = new uint256[](balances.length);
 @@ -534,13 +537,13 @@
              currentAmp,
              balances,
@@ -2192,15 +2225,15 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -            uint256 preJoinExitInvariant
 -        ) = _beforeJoinExit(registeredBalances);
 -
-+        (uint256 preJoinExitSupply, uint256[] memory balances) = _payProtocolFeesBeforeJoinExit(registeredBalances);
-+        (uint256 currentAmp, ) = _getAmplificationParameter();
- 
+-
 -            function(uint256[] memory, uint256, uint256, uint256, uint256[] memory, bytes memory)
 -                internal
 -                view
 -                returns (uint256, uint256[] memory) _doJoinOrExit
 -         = (isJoin ? _doJoin : _doExit);
--
++        (uint256 preJoinExitSupply, uint256[] memory balances) = _payProtocolFeesBeforeJoinExit(registeredBalances);
++        (uint256 currentAmp, ) = _getAmplificationParameter();
+ 
 -        (uint256 bptAmount, uint256[] memory amountsDelta) = _doJoinOrExit(
 -            balances,
 -            currentAmp,
@@ -2283,7 +2316,16 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
       * @dev Support single- and multi-token joins, but not explicit proportional joins.
       */
      function _doJoin(
-@@ -744,7 +725,7 @@
+@@ -721,7 +702,7 @@
+         uint256 preJoinExitInvariant,
+         uint256[] memory scalingFactors,
+         bytes memory userData
+-    ) internal view returns (uint256, uint256[] memory) {
++    ) internal returns (uint256, uint256[] memory) {
+         StablePoolUserData.JoinKind kind = userData.joinKind();
+         if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
+             return
+@@ -744,13 +725,13 @@
       * @dev Multi-token join. Joins with proportional amounts will pay no protocol fees.
       */
      function _joinExactTokensInForBPTOut(
@@ -2292,6 +2334,13 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256 preJoinExitInvariant,
          uint256 currentAmp,
          uint256[] memory balances,
+         uint256[] memory scalingFactors,
+         bytes memory userData
+-    ) private view returns (uint256, uint256[] memory) {
++    ) private returns (uint256, uint256[] memory) {
+         (uint256[] memory amountsIn, uint256 minBPTAmountOut) = userData.exactTokensInForBptOut();
+         InputHelpers.ensureInputLengthMatch(balances.length, amountsIn.length);
+ 
 @@ -761,7 +742,7 @@
              currentAmp,
              balances,
@@ -2301,7 +2350,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
              preJoinExitInvariant,
              getSwapFeePercentage()
          );
-@@ -775,7 +756,7 @@
+@@ -775,12 +756,12 @@
       * @dev Single-token join, equivalent to swapping a pool token for BPT.
       */
      function _joinTokenInForExactBPTOut(
@@ -2310,6 +2359,12 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256 preJoinExitInvariant,
          uint256 currentAmp,
          uint256[] memory balances,
+         bytes memory userData
+-    ) private view returns (uint256, uint256[] memory) {
++    ) private returns (uint256, uint256[] memory) {
+         // Since this index is sent in from the user, we interpret it as NOT including the BPT token.
+         (uint256 bptAmountOut, uint256 tokenIndex) = userData.tokenInForExactBptOut();
+         // Note that there is no maximum amountIn parameter: this is handled by `IVault.joinPool`.
 @@ -797,7 +778,7 @@
              balances,
              tokenIndex,
@@ -2319,7 +2374,16 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
              preJoinExitInvariant,
              getSwapFeePercentage()
          );
-@@ -841,7 +822,7 @@
+@@ -818,7 +799,7 @@
+         uint256 preJoinExitInvariant,
+         uint256[] memory scalingFactors,
+         bytes memory userData
+-    ) internal view returns (uint256, uint256[] memory) {
++    ) internal returns (uint256, uint256[] memory) {
+         StablePoolUserData.ExitKind kind = userData.exitKind();
+         if (kind == StablePoolUserData.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT) {
+             return
+@@ -841,13 +822,13 @@
       * @dev Multi-token exit. Proportional exits will pay no protocol fees.
       */
      function _exitBPTInForExactTokensOut(
@@ -2328,6 +2392,13 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256 preJoinExitInvariant,
          uint256 currentAmp,
          uint256[] memory balances,
+         uint256[] memory scalingFactors,
+         bytes memory userData
+-    ) private view returns (uint256, uint256[] memory) {
++    ) private returns (uint256, uint256[] memory) {
+         (uint256[] memory amountsOut, uint256 maxBPTAmountIn) = userData.bptInForExactTokensOut();
+         InputHelpers.ensureInputLengthMatch(amountsOut.length, balances.length);
+ 
 @@ -858,7 +839,7 @@
              currentAmp,
              balances,
@@ -2337,7 +2408,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
              preJoinExitInvariant,
              getSwapFeePercentage()
          );
-@@ -871,7 +852,7 @@
+@@ -871,12 +852,12 @@
       * @dev Single-token exit, equivalent to swapping BPT for a pool token.
       */
      function _exitExactBPTInForTokenOut(
@@ -2346,6 +2417,12 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256 preJoinExitInvariant,
          uint256 currentAmp,
          uint256[] memory balances,
+         bytes memory userData
+-    ) private view returns (uint256, uint256[] memory) {
++    ) private returns (uint256, uint256[] memory) {
+         // Since this index is sent in from the user, we interpret it as NOT including the BPT token
+         (uint256 bptAmountIn, uint256 tokenIndex) = userData.exactBptInForTokenOut();
+         // Note that there is no minimum amountOut parameter: this is handled by `IVault.exitPool`.
 @@ -892,7 +873,7 @@
              balances,
              tokenIndex,
@@ -2453,14 +2530,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -        // All that's missing now is the invariant. We have the balances required to calculate it already, but still
 -        // need the current amplification factor.
 -        (uint256 currentAmp, ) = _getAmplificationParameter();
-+     * @dev This function returns the appreciation of one BPT relative to the
-+     * underlying tokens. This starts at 1 when the pool is created and grows over time.
-+     * Because of preminted BPT, it uses `getVirtualSupply` instead of `totalSupply`.
-+     */
-+    function getRate() public view virtual override returns (uint256) {
-+        (, uint256[] memory balancesIncludingBpt, ) = getVault().getPoolTokens(getPoolId());
-+        _upscaleArray(balancesIncludingBpt, _scalingFactors());
- 
+-
 -        // It turns out that the process for due protocol fee calculation involves computing the current invariant,
 -        // except using the amplification factor at the last join or exit. This would typically not be terribly useful,
 -        // but since the amplification factor only changes rarely there is high probability of its current value being
@@ -2520,7 +2590,14 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -        // With the fees paid, we now need to calculate the current invariant so we can store it alongside the current
 -        // amplification factor, marking the Pool as free of protocol debt.
 -        (uint256 currentAmp, ) = _getAmplificationParameter();
--
++     * @dev This function returns the appreciation of one BPT relative to the
++     * underlying tokens. This starts at 1 when the pool is created and grows over time.
++     * Because of preminted BPT, it uses `getVirtualSupply` instead of `totalSupply`.
++     */
++    function getRate() public virtual override returns (uint256) {
++        (, uint256[] memory balancesIncludingBpt, ) = getVault().getPoolTokens(getPoolId());
++        _upscaleArray(balancesIncludingBpt, _scalingFactors());
+ 
 -        // It turns out that the process for due protocol fee calculation involves computing the current invariant,
 -        // except using the amplification factor at the last join or exit. This would typically not be terribly useful,
 -        // but since the amplification factor only changes rarely there is high probability of its current value being
@@ -2574,8 +2651,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/ComposableStablePoolFactory.sol pool-stable/contracts/ComposableStablePoolFactory.sol
---- pool-stable/contracts/ComposableStablePoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/ComposableStablePoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/ComposableStablePoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/ComposableStablePoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,18 +15,21 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -2614,8 +2691,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
                              symbol: symbol,
                              tokens: tokens,
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/ComposableStablePoolProtocolFees.sol pool-stable/contracts/ComposableStablePoolProtocolFees.sol
---- pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-16 02:48:11.000000000 -0700
 @@ -15,14 +15,13 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -2708,7 +2785,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -        uint256 lastJoinExitAmp,
 -        uint256 lastPostJoinExitInvariant
 -    ) internal view returns (uint256, uint256) {
-+    function _getProtocolPoolOwnershipPercentage(uint256[] memory balances) internal view returns (uint256) {
++    function _getProtocolPoolOwnershipPercentage(uint256[] memory balances) internal returns (uint256) {
          // We compute three invariants, adjusting the balances of tokens that have rate providers by undoing the current
          // rate adjustment and then applying the old rate. This is equivalent to multiplying by old rate / current rate.
          //
@@ -2737,7 +2814,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256 swapFeeGrowthInvariantDelta = (swapFeeGrowthInvariant > lastPostJoinExitInvariant)
              ? swapFeeGrowthInvariant - lastPostJoinExitInvariant
              : 0;
-@@ -184,8 +162,7 @@
+@@ -184,13 +162,11 @@
          );
  
          // These percentages can then be simply added to compute the total protocol Pool ownership percentage.
@@ -2747,7 +2824,12 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
      function _getGrowthInvariants(uint256[] memory balances, uint256 lastJoinExitAmp)
-@@ -234,12 +211,8 @@
+         internal
+-        view
+         returns (
+             uint256 swapFeeGrowthInvariant,
+             uint256 totalNonExemptGrowthInvariant,
+@@ -234,12 +210,8 @@
          }
      }
  
@@ -2762,7 +2844,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      function _updateInvariantAfterJoinExit(
          uint256 currentAmp,
          uint256[] memory balances,
-@@ -247,36 +220,50 @@
+@@ -247,36 +219,50 @@
          uint256 preJoinExitSupply,
          uint256 postJoinExitSupply
      ) internal {
@@ -2831,7 +2913,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      function _updatePostJoinExit(uint256 currentAmp, uint256 postJoinExitInvariant) internal {
          _lastJoinExitData =
              WordCodec.encodeUint(currentAmp, _LAST_JOIN_EXIT_AMPLIFICATION_OFFSET, _LAST_JOIN_EXIT_AMPLIFICATION_SIZE) |
-@@ -289,25 +276,20 @@
+@@ -289,25 +275,20 @@
          _updateOldRates();
      }
  
@@ -2863,8 +2945,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
      /**
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/ComposableStablePoolRates.sol pool-stable/contracts/ComposableStablePoolRates.sol
---- pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
@@ -2952,8 +3034,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          return scalingFactors;
      }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/ComposableStablePoolStorage.sol pool-stable/contracts/ComposableStablePoolStorage.sol
---- pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-16 02:44:00.000000000 -0700
 @@ -14,13 +14,14 @@
  
  pragma solidity ^0.7.0;
@@ -2970,7 +3052,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +import "../../pool-utils/contracts/BasePool.sol";
  
 -import "./StableMath.sol";
-+import "../../../harnesses/StableMathHarness.sol";
++// import "../../../harnesses/StableMathHarness.sol";
  
  abstract contract ComposableStablePoolStorage is BasePool {
      using FixedPoint for uint256;
@@ -3184,8 +3266,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
---- pool-stable/contracts/StableMath.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/StableMath.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -3214,9 +3296,9 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/StablePoolAmplification.sol pool-stable/contracts/StablePoolAmplification.sol
---- pool-stable/contracts/StablePoolAmplification.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/StablePoolAmplification.sol	2022-09-14 21:05:00.000000000 -0700
-@@ -14,10 +14,10 @@
+--- pool-stable/contracts/StablePoolAmplification.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/StablePoolAmplification.sol	2022-09-16 02:45:49.000000000 -0700
+@@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
  
@@ -3228,8 +3310,11 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -import "./StableMath.sol";
 +import "../../../harnesses/StableMathHarness.sol";
  
- abstract contract StablePoolAmplification is BasePoolAuthorization {
+-abstract contract StablePoolAmplification is BasePoolAuthorization {
++abstract contract StablePoolAmplification is BasePoolAuthorization, StableMath {
      using WordCodec for bytes32;
+ 
+     // This contract uses timestamps to slowly update its Amplification parameter over time. These changes must occur
 @@ -193,7 +193,6 @@
      function _isOwnerOnlyAction(bytes32 actionId) internal view virtual override returns (bool) {
          return
@@ -3240,8 +3325,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockComposableStablePool.sol pool-stable/contracts/test/MockComposableStablePool.sol
---- pool-stable/contracts/test/MockComposableStablePool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockComposableStablePool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockComposableStablePool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockComposableStablePool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3293,8 +3378,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol
---- pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockComposableStablePoolProtocolFees.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3362,8 +3447,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
      // Stubbed functions
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockComposableStablePoolRates.sol pool-stable/contracts/test/MockComposableStablePoolRates.sol
---- pool-stable/contracts/test/MockComposableStablePoolRates.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockComposableStablePoolRates.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockComposableStablePoolRates.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockComposableStablePoolRates.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -3374,8 +3459,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../ComposableStablePoolRates.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockComposableStablePoolStorage.sol pool-stable/contracts/test/MockComposableStablePoolStorage.sol
---- pool-stable/contracts/test/MockComposableStablePoolStorage.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockComposableStablePoolStorage.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockComposableStablePoolStorage.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockComposableStablePoolStorage.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3450,8 +3535,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
      function getRateProvider(uint256 index) external view returns (IRateProvider) {
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockStableMath.sol pool-stable/contracts/test/MockStableMath.sol
---- pool-stable/contracts/test/MockStableMath.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockStableMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockStableMath.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockStableMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -151,4 +151,12 @@
                  tokenIndex
              );
@@ -3466,8 +3551,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/contracts/test/MockStablePoolAmplification.sol pool-stable/contracts/test/MockStablePoolAmplification.sol
---- pool-stable/contracts/test/MockStablePoolAmplification.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/contracts/test/MockStablePoolAmplification.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/contracts/test/MockStablePoolAmplification.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/contracts/test/MockStablePoolAmplification.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3478,8 +3563,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../StablePoolAmplification.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/test/ComposableStablePool.test.ts pool-stable/test/ComposableStablePool.test.ts
---- pool-stable/test/ComposableStablePool.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/test/ComposableStablePool.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/test/ComposableStablePool.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/test/ComposableStablePool.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -3,22 +3,11 @@
  import { BigNumber, Contract } from 'ethers';
  import { random, range } from 'lodash';
@@ -3899,7 +3984,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
    }
  });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/test/ComposableStablePoolIntegration.test.ts pool-stable/test/ComposableStablePoolIntegration.test.ts
---- pool-stable/test/ComposableStablePoolIntegration.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-stable/test/ComposableStablePoolIntegration.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-stable/test/ComposableStablePoolIntegration.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,182 +0,0 @@
 -import { expect } from 'chai';
@@ -4085,8 +4170,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  }
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/test/ComposableStablePoolProtocolFees.test.ts pool-stable/test/ComposableStablePoolProtocolFees.test.ts
---- pool-stable/test/ComposableStablePoolProtocolFees.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/test/ComposableStablePoolProtocolFees.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/test/ComposableStablePoolProtocolFees.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/test/ComposableStablePoolProtocolFees.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -8,14 +8,13 @@
  import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
  import {
@@ -4227,8 +4312,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
            }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/test/ComposableStablePoolRates.test.ts pool-stable/test/ComposableStablePoolRates.test.ts
---- pool-stable/test/ComposableStablePoolRates.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/test/ComposableStablePoolRates.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/test/ComposableStablePoolRates.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/test/ComposableStablePoolRates.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -5,7 +5,7 @@
  import { deploy, deployedAt } from '@balancer-labs/v2-helpers/src/contract';
  import { sharedBeforeEach } from '@balancer-labs/v2-common/sharedBeforeEach';
@@ -4257,8 +4342,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
              expect(await pool.getAdjustedBalances(inputArray, false)).to.be.deep.eq(expectedOutputArray);
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-stable/test/StableMath.test.ts pool-stable/test/StableMath.test.ts
---- pool-stable/test/StableMath.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-stable/test/StableMath.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-stable/test/StableMath.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-stable/test/StableMath.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -1,6 +1,6 @@
  import { Contract } from 'ethers';
  import { deploy } from '@balancer-labs/v2-helpers/src/contract';
@@ -4299,8 +4384,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +  });
  });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/BalancerPoolToken.sol pool-utils/contracts/BalancerPoolToken.sol
---- pool-utils/contracts/BalancerPoolToken.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-utils/contracts/BalancerPoolToken.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/BalancerPoolToken.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-utils/contracts/BalancerPoolToken.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -4323,8 +4408,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      constructor(
          string memory tokenName,
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/BaseGeneralPool.sol pool-utils/contracts/BaseGeneralPool.sol
---- pool-utils/contracts/BaseGeneralPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/BaseGeneralPool.sol	2022-09-14 21:15:19.000000000 -0700
+--- pool-utils/contracts/BaseGeneralPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/BaseGeneralPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -4344,8 +4429,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          _validateIndexes(indexIn, indexOut, _getTotalTokens());
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/BaseMinimalSwapInfoPool.sol pool-utils/contracts/BaseMinimalSwapInfoPool.sol
---- pool-utils/contracts/BaseMinimalSwapInfoPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/BaseMinimalSwapInfoPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/BaseMinimalSwapInfoPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/BaseMinimalSwapInfoPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -4356,9 +4441,9 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BasePool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/BasePool.sol pool-utils/contracts/BasePool.sol
---- pool-utils/contracts/BasePool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/BasePool.sol	2022-09-14 21:14:43.000000000 -0700
-@@ -15,17 +15,16 @@
+--- pool-utils/contracts/BasePool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/BasePool.sol	2022-09-16 02:43:39.000000000 -0700
+@@ -15,21 +15,21 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
  
@@ -4386,7 +4471,12 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
  import "./BalancerPoolToken.sol";
  import "./BasePoolAuthorization.sol";
-@@ -52,14 +51,7 @@
+ import "./RecoveryMode.sol";
++import "../../../harnesses/StableMathHarness.sol";
+ 
+ // solhint-disable max-states-count
+ 
+@@ -52,14 +52,7 @@
   * BaseGeneralPool or BaseMinimalSwapInfoPool. Otherwise, subclasses must inherit from the corresponding interfaces
   * and implement the swap callbacks themselves.
   */
@@ -4398,11 +4488,11 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    TemporarilyPausable,
 -    RecoveryMode
 -{
-+abstract contract BasePool is IBasePool, BasePoolAuthorization, BalancerPoolToken, TemporarilyPausable, RecoveryMode {
++abstract contract BasePool is IBasePool, BasePoolAuthorization, BalancerPoolToken, TemporarilyPausable, RecoveryMode, StableMath {
      using WordCodec for bytes32;
      using FixedPoint for uint256;
      using BasePoolUserData for bytes;
-@@ -187,7 +179,7 @@
+@@ -187,7 +180,7 @@
       * @dev This is a permissioned function, and disabled if the pool is paused. The swap fee must be within the
       * bounds set by MIN_SWAP_FEE_PERCENTAGE/MAX_SWAP_FEE_PERCENTAGE. Emits the SwapFeePercentageChanged event.
       */
@@ -4411,7 +4501,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          _setSwapFeePercentage(swapFeePercentage);
      }
  
-@@ -226,19 +218,9 @@
+@@ -226,19 +219,9 @@
          _miscData = _miscData.insertBool(enabled, _RECOVERY_MODE_BIT_OFFSET);
  
          emit RecoveryModeStateChanged(enabled);
@@ -4431,7 +4521,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
       * @notice Set the asset manager parameters for the given token.
       * @dev This is a permissioned function, unavailable when the pool is paused.
       * The details of the configuration data are set by each Asset Manager. (For an example, see
-@@ -247,7 +229,6 @@
+@@ -247,7 +230,6 @@
      function setAssetManagerPoolConfig(IERC20 token, bytes memory poolConfig)
          public
          virtual
@@ -4439,7 +4529,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          authenticate
          whenNotPaused
      {
-@@ -283,8 +264,7 @@
+@@ -283,8 +265,7 @@
      function _isOwnerOnlyAction(bytes32 actionId) internal view virtual override returns (bool) {
          return
              (actionId == getActionId(this.setSwapFeePercentage.selector)) ||
@@ -4449,7 +4539,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
      function _getMiscData() internal view returns (bytes32) {
-@@ -319,7 +299,7 @@
+@@ -319,7 +300,7 @@
          uint256 lastChangeBlock,
          uint256 protocolSwapFeePercentage,
          bytes memory userData
@@ -4458,7 +4548,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          _beforeSwapJoinExit();
  
          uint256[] memory scalingFactors = _scalingFactors();
-@@ -381,7 +361,7 @@
+@@ -381,7 +362,7 @@
          uint256 lastChangeBlock,
          uint256 protocolSwapFeePercentage,
          bytes memory userData
@@ -4467,7 +4557,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          uint256[] memory amountsOut;
          uint256 bptAmountIn;
  
-@@ -448,6 +428,7 @@
+@@ -448,6 +429,7 @@
          uint256 protocolSwapFeePercentage,
          bytes memory userData
      ) external override returns (uint256 bptOut, uint256[] memory amountsIn) {
@@ -4475,7 +4565,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
  
          _queryAction(
-@@ -458,13 +439,13 @@
+@@ -458,13 +440,13 @@
              lastChangeBlock,
              protocolSwapFeePercentage,
              userData,
@@ -4492,7 +4582,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
      /**
-@@ -487,6 +468,7 @@
+@@ -487,6 +469,7 @@
          uint256 protocolSwapFeePercentage,
          bytes memory userData
      ) external override returns (uint256 bptIn, uint256[] memory amountsOut) {
@@ -4500,7 +4590,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
  
          _queryAction(
-@@ -497,13 +479,13 @@
+@@ -497,13 +480,13 @@
              lastChangeBlock,
              protocolSwapFeePercentage,
              userData,
@@ -4517,7 +4607,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
      // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
-@@ -747,7 +729,7 @@
+@@ -747,7 +730,7 @@
          // Governance control.
          return getVault().getAuthorizer();
      }
@@ -4526,7 +4616,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      function _queryAction(
          bytes32 poolId,
          address sender,
-@@ -756,10 +738,12 @@
+@@ -756,10 +739,12 @@
          uint256 lastChangeBlock,
          uint256 protocolSwapFeePercentage,
          bytes memory userData,
@@ -4543,7 +4633,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      ) private {
          // This uses the same technique used by the Vault in queryBatchSwap. Refer to that function for a detailed
          // explanation.
-@@ -837,18 +821,35 @@
+@@ -837,18 +822,35 @@
              uint256[] memory scalingFactors = _scalingFactors();
              _upscaleArray(balances, scalingFactors);
  
@@ -4591,15 +4681,15 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
              // solhint-disable-next-line no-inline-assembly
              assembly {
-@@ -874,4 +875,5 @@
+@@ -874,4 +876,5 @@
              }
          }
      }
 +    */
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/BasePoolAuthorization.sol pool-utils/contracts/BasePoolAuthorization.sol
---- pool-utils/contracts/BasePoolAuthorization.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/BasePoolAuthorization.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/BasePoolAuthorization.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/BasePoolAuthorization.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -4625,7 +4715,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/ProtocolFeeCache.sol pool-utils/contracts/ProtocolFeeCache.sol
 --- pool-utils/contracts/ProtocolFeeCache.sol	1969-12-31 16:00:00.000000000 -0800
-+++ pool-utils/contracts/ProtocolFeeCache.sol	2022-09-14 21:05:00.000000000 -0700
++++ pool-utils/contracts/ProtocolFeeCache.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,151 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -4779,8 +4869,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/RecoveryMode.sol pool-utils/contracts/RecoveryMode.sol
---- pool-utils/contracts/RecoveryMode.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/RecoveryMode.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/RecoveryMode.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/RecoveryMode.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,11 @@
  
  pragma solidity ^0.7.0;
@@ -4807,8 +4897,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      function enableRecoveryMode() external override authenticate {
          _setRecoveryMode(true);
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/controllers/BasePoolController.sol pool-utils/contracts/controllers/BasePoolController.sol
---- pool-utils/contracts/controllers/BasePoolController.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-utils/contracts/controllers/BasePoolController.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/controllers/BasePoolController.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-utils/contracts/controllers/BasePoolController.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -4822,8 +4912,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../BasePoolAuthorization.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/controllers/ManagedPoolController.sol pool-utils/contracts/controllers/ManagedPoolController.sol
---- pool-utils/contracts/controllers/ManagedPoolController.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/controllers/ManagedPoolController.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/controllers/ManagedPoolController.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/controllers/ManagedPoolController.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -4919,7 +5009,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/protocol-fees/InvariantGrowthProtocolSwapFees.sol pool-utils/contracts/protocol-fees/InvariantGrowthProtocolSwapFees.sol
---- pool-utils/contracts/protocol-fees/InvariantGrowthProtocolSwapFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/contracts/protocol-fees/InvariantGrowthProtocolSwapFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/contracts/protocol-fees/InvariantGrowthProtocolSwapFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,100 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -5023,7 +5113,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/protocol-fees/ProtocolFeeCache.sol pool-utils/contracts/protocol-fees/ProtocolFeeCache.sol
---- pool-utils/contracts/protocol-fees/ProtocolFeeCache.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/contracts/protocol-fees/ProtocolFeeCache.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/contracts/protocol-fees/ProtocolFeeCache.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,160 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -5187,7 +5277,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/protocol-fees/ProtocolFees.sol pool-utils/contracts/protocol-fees/ProtocolFees.sol
---- pool-utils/contracts/protocol-fees/ProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/contracts/protocol-fees/ProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/contracts/protocol-fees/ProtocolFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,41 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -5232,8 +5322,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/rates/PriceRateCache.sol pool-utils/contracts/rates/PriceRateCache.sol
---- pool-utils/contracts/rates/PriceRateCache.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/rates/PriceRateCache.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/rates/PriceRateCache.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/rates/PriceRateCache.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -5247,8 +5337,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * Price rate caches are used to avoid querying the price rate for a token every time we need to work with it. It is
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockAssetManager.sol pool-utils/contracts/test/MockAssetManager.sol
---- pool-utils/contracts/test/MockAssetManager.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/test/MockAssetManager.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockAssetManager.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/test/MockAssetManager.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -5261,8 +5351,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockAssetManager is IAssetManager {
      event Rebalanced(address assetManager, bytes32 poolId, IERC20 token, bool force);
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockBalancerPoolToken.sol pool-utils/contracts/test/MockBalancerPoolToken.sol
---- pool-utils/contracts/test/MockBalancerPoolToken.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-utils/contracts/test/MockBalancerPoolToken.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockBalancerPoolToken.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-utils/contracts/test/MockBalancerPoolToken.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -5273,8 +5363,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../BalancerPoolToken.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockBasePool.sol pool-utils/contracts/test/MockBasePool.sol
---- pool-utils/contracts/test/MockBasePool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/test/MockBasePool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockBasePool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/test/MockBasePool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -5285,8 +5375,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../BasePool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockFailureModes.sol pool-utils/contracts/test/MockFailureModes.sol
---- pool-utils/contracts/test/MockFailureModes.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-utils/contracts/test/MockFailureModes.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockFailureModes.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-utils/contracts/test/MockFailureModes.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -5297,7 +5387,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  abstract contract MockFailureModes {
      enum FailureMode { INVARIANT, PRICE_RATE }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockInvariantGrowthProtocolSwapFees.sol pool-utils/contracts/test/MockInvariantGrowthProtocolSwapFees.sol
---- pool-utils/contracts/test/MockInvariantGrowthProtocolSwapFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/contracts/test/MockInvariantGrowthProtocolSwapFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/contracts/test/MockInvariantGrowthProtocolSwapFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,34 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -5335,8 +5425,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockProtocolFeeCache.sol pool-utils/contracts/test/MockProtocolFeeCache.sol
---- pool-utils/contracts/test/MockProtocolFeeCache.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/test/MockProtocolFeeCache.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockProtocolFeeCache.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/test/MockProtocolFeeCache.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -5364,7 +5454,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          return true;
      }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockProtocolFees.sol pool-utils/contracts/test/MockProtocolFees.sol
---- pool-utils/contracts/test/MockProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/contracts/test/MockProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/contracts/test/MockProtocolFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,27 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -5395,8 +5485,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockRateProvider.sol pool-utils/contracts/test/MockRateProvider.sol
---- pool-utils/contracts/test/MockRateProvider.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-utils/contracts/test/MockRateProvider.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockRateProvider.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-utils/contracts/test/MockRateProvider.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -5410,8 +5500,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockRateProvider is IRateProvider {
      uint256 internal _rate;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockRecoveryModeStorage.sol pool-utils/contracts/test/MockRecoveryModeStorage.sol
---- pool-utils/contracts/test/MockRecoveryModeStorage.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/test/MockRecoveryModeStorage.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockRecoveryModeStorage.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/test/MockRecoveryModeStorage.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -5422,8 +5512,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../RecoveryMode.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/contracts/test/MockVault.sol pool-utils/contracts/test/MockVault.sol
---- pool-utils/contracts/test/MockVault.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/contracts/test/MockVault.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/contracts/test/MockVault.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/contracts/test/MockVault.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,15 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -5448,7 +5538,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockVault is IPoolSwapStructs {
      struct Pool {
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/test/InvariantGrowthProtocolSwapFees.test.ts pool-utils/test/InvariantGrowthProtocolSwapFees.test.ts
---- pool-utils/test/InvariantGrowthProtocolSwapFees.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/test/InvariantGrowthProtocolSwapFees.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/test/InvariantGrowthProtocolSwapFees.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,84 +0,0 @@
 -import { Contract } from 'ethers';
@@ -5536,8 +5626,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/test/ProtocolFeeCache.test.ts pool-utils/test/ProtocolFeeCache.test.ts
---- pool-utils/test/ProtocolFeeCache.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-utils/test/ProtocolFeeCache.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-utils/test/ProtocolFeeCache.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-utils/test/ProtocolFeeCache.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -85,26 +85,12 @@
            expect(await protocolFeeCache.getProtocolFeePercentageCache(feeType)).to.equal(NEW_VALUE);
          });
@@ -5567,7 +5657,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          });
        });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-utils/test/ProtocolFees.test.ts pool-utils/test/ProtocolFees.test.ts
---- pool-utils/test/ProtocolFees.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-utils/test/ProtocolFees.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-utils/test/ProtocolFees.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,41 +0,0 @@
 -import { Contract } from 'ethers';
@@ -5612,8 +5702,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/BaseWeightedPool.sol pool-weighted/contracts/BaseWeightedPool.sol
---- pool-weighted/contracts/BaseWeightedPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/BaseWeightedPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/BaseWeightedPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/BaseWeightedPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,12 +15,12 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -5971,7 +6061,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/InvariantGrowthProtocolFees.sol pool-weighted/contracts/InvariantGrowthProtocolFees.sol
 --- pool-weighted/contracts/InvariantGrowthProtocolFees.sol	1969-12-31 16:00:00.000000000 -0800
-+++ pool-weighted/contracts/InvariantGrowthProtocolFees.sol	2022-09-14 21:05:00.000000000 -0700
++++ pool-weighted/contracts/InvariantGrowthProtocolFees.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,83 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -6057,8 +6147,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/WeightedMath.sol pool-weighted/contracts/WeightedMath.sol
---- pool-weighted/contracts/WeightedMath.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/WeightedMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/WeightedMath.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/WeightedMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -6118,8 +6208,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
       * @dev Calculate the amount of BPT which should be minted when adding a new token to the Pool.
       *
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/WeightedPool.sol pool-weighted/contracts/WeightedPool.sol
---- pool-weighted/contracts/WeightedPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/WeightedPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/WeightedPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/WeightedPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,15 +16,15 @@
  pragma experimental ABIEncoderV2;
  
@@ -6656,8 +6746,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/WeightedPoolFactory.sol pool-weighted/contracts/WeightedPoolFactory.sol
---- pool-weighted/contracts/WeightedPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/WeightedPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/WeightedPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/WeightedPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,17 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -6702,7 +6792,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
                      getVault(),
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/WeightedPoolNoAMFactory.sol pool-weighted/contracts/WeightedPoolNoAMFactory.sol
 --- pool-weighted/contracts/WeightedPoolNoAMFactory.sol	1969-12-31 16:00:00.000000000 -0800
-+++ pool-weighted/contracts/WeightedPoolNoAMFactory.sol	2022-09-14 21:05:00.000000000 -0700
++++ pool-weighted/contracts/WeightedPoolNoAMFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,62 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +// This program is free software: you can redistribute it and/or modify
@@ -6767,7 +6857,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/WeightedPoolProtocolFees.sol pool-weighted/contracts/WeightedPoolProtocolFees.sol
---- pool-weighted/contracts/WeightedPoolProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/contracts/WeightedPoolProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/contracts/WeightedPoolProtocolFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,359 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -7130,8 +7220,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/lib/GradualValueChange.sol pool-weighted/contracts/lib/GradualValueChange.sol
---- pool-weighted/contracts/lib/GradualValueChange.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-weighted/contracts/lib/GradualValueChange.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/lib/GradualValueChange.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-weighted/contracts/lib/GradualValueChange.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -12,8 +12,8 @@
  // You should have received a copy of the GNU General Public License
  // along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -7144,8 +7234,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  pragma solidity ^0.7.0;
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/lib/WeightCompression.sol pool-weighted/contracts/lib/WeightCompression.sol
---- pool-weighted/contracts/lib/WeightCompression.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-weighted/contracts/lib/WeightCompression.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/lib/WeightCompression.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-weighted/contracts/lib/WeightCompression.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -7156,8 +7246,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Library for compressing and decompressing numbers by using smaller types.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/smart/BaseManagedPoolFactory.sol pool-weighted/contracts/smart/BaseManagedPoolFactory.sol
---- pool-weighted/contracts/smart/BaseManagedPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/smart/BaseManagedPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/smart/BaseManagedPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/smart/BaseManagedPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -7173,8 +7263,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./ManagedPool.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol
---- pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-weighted/contracts/smart/LiquidityBootstrappingPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -7189,8 +7279,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../lib/GradualValueChange.sol";
  import "../lib/WeightCompression.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol
---- pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/smart/LiquidityBootstrappingPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,17 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -7215,8 +7305,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      }
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/smart/ManagedPool.sol pool-weighted/contracts/smart/ManagedPool.sol
---- pool-weighted/contracts/smart/ManagedPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/smart/ManagedPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/smart/ManagedPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/smart/ManagedPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,18 +15,16 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -7732,8 +7822,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
      // Functions that convert weights between internal (denormalized) and external (normalized) representations
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/smart/ManagedPoolFactory.sol pool-weighted/contracts/smart/ManagedPoolFactory.sol
---- pool-weighted/contracts/smart/ManagedPoolFactory.sol	2022-06-20 13:18:36.000000000 -0700
-+++ pool-weighted/contracts/smart/ManagedPoolFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/smart/ManagedPoolFactory.sol	2022-06-22 10:15:28.000000000 -0700
++++ pool-weighted/contracts/smart/ManagedPoolFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -7744,8 +7834,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BaseManagedPoolFactory.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/test/MockWeightedMath.sol pool-weighted/contracts/test/MockWeightedMath.sol
---- pool-weighted/contracts/test/MockWeightedMath.sol	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/contracts/test/MockWeightedMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/contracts/test/MockWeightedMath.sol	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/contracts/test/MockWeightedMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -118,4 +118,19 @@
                  swapFee
              );
@@ -7767,7 +7857,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +    }
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/test/MockWeightedPool.sol pool-weighted/contracts/test/MockWeightedPool.sol
---- pool-weighted/contracts/test/MockWeightedPool.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/contracts/test/MockWeightedPool.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/contracts/test/MockWeightedPool.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,35 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -7806,7 +7896,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/contracts/test/MockWeightedPoolProtocolFees.sol pool-weighted/contracts/test/MockWeightedPoolProtocolFees.sol
---- pool-weighted/contracts/test/MockWeightedPoolProtocolFees.sol	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/contracts/test/MockWeightedPoolProtocolFees.sol	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/contracts/test/MockWeightedPoolProtocolFees.sol	1969-12-31 16:00:00.000000000 -0800
 @@ -1,154 +0,0 @@
 -// SPDX-License-Identifier: GPL-3.0-or-later
@@ -7964,8 +8054,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -    }
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/BaseWeightedPool.behavior.ts pool-weighted/test/BaseWeightedPool.behavior.ts
---- pool-weighted/test/BaseWeightedPool.behavior.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/test/BaseWeightedPool.behavior.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/test/BaseWeightedPool.behavior.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/test/BaseWeightedPool.behavior.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -3,12 +3,11 @@
  import { BigNumber } from 'ethers';
  import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
@@ -8058,7 +8148,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          await expect(pool.swapGivenIn({ in: 1, out: 0, amount })).to.be.revertedWith('MAX_IN_RATIO');
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/InvariantGrowthProtocolFees.behavior.ts pool-weighted/test/InvariantGrowthProtocolFees.behavior.ts
 --- pool-weighted/test/InvariantGrowthProtocolFees.behavior.ts	1969-12-31 16:00:00.000000000 -0800
-+++ pool-weighted/test/InvariantGrowthProtocolFees.behavior.ts	2022-09-14 21:05:00.000000000 -0700
++++ pool-weighted/test/InvariantGrowthProtocolFees.behavior.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,152 @@
 +import { WeightedPoolEncoder } from '@balancer-labs/balancer-js';
 +import { WeightedPoolType } from '@balancer-labs/v2-helpers/src/models/pools/weighted/types';
@@ -8213,8 +8303,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +  });
 +}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/ManagedPool.test.ts pool-weighted/test/ManagedPool.test.ts
---- pool-weighted/test/ManagedPool.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/test/ManagedPool.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/test/ManagedPool.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/test/ManagedPool.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -11,18 +11,8 @@
    advanceTime,
    advanceToTimestamp,
@@ -8680,7 +8770,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
        await advanceTime(180 * DAY);
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/PostJoinExitProtocolFees.test.ts pool-weighted/test/PostJoinExitProtocolFees.test.ts
---- pool-weighted/test/PostJoinExitProtocolFees.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/test/PostJoinExitProtocolFees.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/test/PostJoinExitProtocolFees.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,297 +0,0 @@
 -import { expect } from 'chai';
@@ -8981,8 +9071,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  }
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/WeightedMath.test.ts pool-weighted/test/WeightedMath.test.ts
---- pool-weighted/test/WeightedMath.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/test/WeightedMath.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/test/WeightedMath.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/test/WeightedMath.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -1,12 +1,13 @@
  import { Contract } from 'ethers';
  
@@ -9069,8 +9159,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +  });
  });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/WeightedPool.test.ts pool-weighted/test/WeightedPool.test.ts
---- pool-weighted/test/WeightedPool.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/test/WeightedPool.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/test/WeightedPool.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/test/WeightedPool.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -1,81 +1,27 @@
 -import { ethers } from 'hardhat';
 -import { BigNumber, Contract } from 'ethers';
@@ -9357,8 +9447,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
  });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/WeightedPoolFactory.test.ts pool-weighted/test/WeightedPoolFactory.test.ts
---- pool-weighted/test/WeightedPoolFactory.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ pool-weighted/test/WeightedPoolFactory.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- pool-weighted/test/WeightedPoolFactory.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ pool-weighted/test/WeightedPoolFactory.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -17,8 +17,8 @@
    let tokens: TokenList;
    let factory: Contract;
@@ -9420,7 +9510,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/WeightedPoolNoAMFactory.test.ts pool-weighted/test/WeightedPoolNoAMFactory.test.ts
 --- pool-weighted/test/WeightedPoolNoAMFactory.test.ts	1969-12-31 16:00:00.000000000 -0800
-+++ pool-weighted/test/WeightedPoolNoAMFactory.test.ts	2022-09-14 21:05:00.000000000 -0700
++++ pool-weighted/test/WeightedPoolNoAMFactory.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -0,0 +1,138 @@
 +import { ethers } from 'hardhat';
 +import { expect } from 'chai';
@@ -9561,7 +9651,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 +  });
 +});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/WeightedPoolProtocolFees.behavior.ts pool-weighted/test/WeightedPoolProtocolFees.behavior.ts
---- pool-weighted/test/WeightedPoolProtocolFees.behavior.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/test/WeightedPoolProtocolFees.behavior.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/test/WeightedPoolProtocolFees.behavior.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,260 +0,0 @@
 -import { WeightedPoolEncoder } from '@balancer-labs/balancer-js';
@@ -9825,7 +9915,7 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
 -}
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts pool-weighted/test/YieldProtocolFees.test.ts pool-weighted/test/YieldProtocolFees.test.ts
---- pool-weighted/test/YieldProtocolFees.test.ts	2022-09-14 21:04:53.000000000 -0700
+--- pool-weighted/test/YieldProtocolFees.test.ts	2022-09-16 02:04:26.000000000 -0700
 +++ pool-weighted/test/YieldProtocolFees.test.ts	1969-12-31 16:00:00.000000000 -0800
 @@ -1,213 +0,0 @@
 -import { expect } from 'chai';
@@ -10042,8 +10132,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  }
 -});
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/Authentication.sol solidity-utils/contracts/helpers/Authentication.sol
---- solidity-utils/contracts/helpers/Authentication.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/helpers/Authentication.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/Authentication.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/helpers/Authentication.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10056,8 +10146,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Building block for performing access control on external functions.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/CodeDeployer.sol solidity-utils/contracts/helpers/CodeDeployer.sol
---- solidity-utils/contracts/helpers/CodeDeployer.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/helpers/CodeDeployer.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/CodeDeployer.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/helpers/CodeDeployer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10068,8 +10158,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Library used to deploy contracts with specific code. This can be used for long-term storage of immutable data as
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/EOASignaturesValidator.sol solidity-utils/contracts/helpers/EOASignaturesValidator.sol
---- solidity-utils/contracts/helpers/EOASignaturesValidator.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/EOASignaturesValidator.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/EOASignaturesValidator.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/EOASignaturesValidator.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10082,8 +10172,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../openzeppelin/EIP712.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/ERC20Helpers.sol solidity-utils/contracts/helpers/ERC20Helpers.sol
---- solidity-utils/contracts/helpers/ERC20Helpers.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/ERC20Helpers.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/ERC20Helpers.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/ERC20Helpers.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10117,8 +10207,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
      IERC20 tokenA,
      IERC20 tokenB,
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol
---- solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/ExtraCalldataEOASignaturesValidator.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10129,8 +10219,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./EOASignaturesValidator.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/InputHelpers.sol solidity-utils/contracts/helpers/InputHelpers.sol
---- solidity-utils/contracts/helpers/InputHelpers.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/helpers/InputHelpers.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/InputHelpers.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/helpers/InputHelpers.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10143,8 +10233,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  library InputHelpers {
      function ensureInputLengthMatch(uint256 a, uint256 b) internal pure {
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/OptionalOnlyCaller.sol solidity-utils/contracts/helpers/OptionalOnlyCaller.sol
---- solidity-utils/contracts/helpers/OptionalOnlyCaller.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/OptionalOnlyCaller.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/OptionalOnlyCaller.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/OptionalOnlyCaller.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10157,8 +10247,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./SignaturesValidator.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/SignaturesValidator.sol solidity-utils/contracts/helpers/SignaturesValidator.sol
---- solidity-utils/contracts/helpers/SignaturesValidator.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/SignaturesValidator.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/SignaturesValidator.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/SignaturesValidator.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10169,8 +10259,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./EOASignaturesValidator.sol";
  import "../openzeppelin/Address.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/SingletonAuthentication.sol solidity-utils/contracts/helpers/SingletonAuthentication.sol
---- solidity-utils/contracts/helpers/SingletonAuthentication.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/helpers/SingletonAuthentication.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/SingletonAuthentication.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/helpers/SingletonAuthentication.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10183,8 +10273,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./Authentication.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/TemporarilyPausable.sol solidity-utils/contracts/helpers/TemporarilyPausable.sol
---- solidity-utils/contracts/helpers/TemporarilyPausable.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/helpers/TemporarilyPausable.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/TemporarilyPausable.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/helpers/TemporarilyPausable.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -10197,8 +10287,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Allows for a contract to be paused during an initial period after deployment, disabling functionality. Can be
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contracts/helpers/WordCodec.sol
---- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10209,8 +10299,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../math/Math.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/math/FixedPoint.sol
---- solidity-utils/contracts/math/FixedPoint.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/math/FixedPoint.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10221,8 +10311,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./LogExpMath.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/math/LogExpMath.sol solidity-utils/contracts/math/LogExpMath.sol
---- solidity-utils/contracts/math/LogExpMath.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/math/LogExpMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/math/LogExpMath.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/math/LogExpMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10233,8 +10323,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /* solhint-disable */
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/math/Math.sol solidity-utils/contracts/math/Math.sol
---- solidity-utils/contracts/math/Math.sol	2022-09-01 18:13:11.000000000 -0700
-+++ solidity-utils/contracts/math/Math.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/math/Math.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/math/Math.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10245,8 +10335,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Wrappers over Solidity's arithmetic operations with added overflow checks.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/Address.sol solidity-utils/contracts/openzeppelin/Address.sol
---- solidity-utils/contracts/openzeppelin/Address.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/Address.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/Address.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/Address.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -5,7 +5,7 @@
  
  pragma solidity ^0.7.0;
@@ -10257,8 +10347,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Collection of functions related to the address type
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/Create2.sol solidity-utils/contracts/openzeppelin/Create2.sol
---- solidity-utils/contracts/openzeppelin/Create2.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/Create2.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/Create2.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/Create2.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10269,8 +10359,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Helper to make usage of the `CREATE2` EVM opcode easier and safer.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/ERC20.sol solidity-utils/contracts/openzeppelin/ERC20.sol
---- solidity-utils/contracts/openzeppelin/ERC20.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/ERC20.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/ERC20.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/ERC20.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,8 +2,8 @@
  
  pragma solidity ^0.7.0;
@@ -10283,8 +10373,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./SafeMath.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/ERC20Permit.sol solidity-utils/contracts/openzeppelin/ERC20Permit.sol
---- solidity-utils/contracts/openzeppelin/ERC20Permit.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/ERC20Permit.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/ERC20Permit.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/ERC20Permit.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10295,8 +10385,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./ERC20.sol";
  import "../helpers/EOASignaturesValidator.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/EnumerableMap.sol solidity-utils/contracts/openzeppelin/EnumerableMap.sol
---- solidity-utils/contracts/openzeppelin/EnumerableMap.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/EnumerableMap.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/EnumerableMap.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/EnumerableMap.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -11,8 +11,8 @@
  
  pragma solidity ^0.7.0;
@@ -10309,8 +10399,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Library for managing an enumerable variant of Solidity's
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/EnumerableSet.sol solidity-utils/contracts/openzeppelin/EnumerableSet.sol
---- solidity-utils/contracts/openzeppelin/EnumerableSet.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/EnumerableSet.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/EnumerableSet.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/EnumerableSet.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -7,7 +7,7 @@
  
  pragma solidity ^0.7.0;
@@ -10321,8 +10411,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Library for managing
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/Ownable.sol solidity-utils/contracts/openzeppelin/Ownable.sol
---- solidity-utils/contracts/openzeppelin/Ownable.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/Ownable.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/Ownable.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/Ownable.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -5,7 +5,7 @@
  
  pragma solidity ^0.7.0;
@@ -10333,8 +10423,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Contract module which provides a basic access control mechanism, where
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol
---- solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -6,7 +6,7 @@
  
  pragma solidity ^0.7.0;
@@ -10345,8 +10435,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Contract module that helps prevent reentrant calls to a function.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/SafeCast.sol solidity-utils/contracts/openzeppelin/SafeCast.sol
---- solidity-utils/contracts/openzeppelin/SafeCast.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/SafeCast.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/SafeCast.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/SafeCast.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10357,8 +10447,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Wrappers over Solidity's uintXX/intXX casting operators with added overflow
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/SafeERC20.sol solidity-utils/contracts/openzeppelin/SafeERC20.sol
---- solidity-utils/contracts/openzeppelin/SafeERC20.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/SafeERC20.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/SafeERC20.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/SafeERC20.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -6,8 +6,8 @@
  
  pragma solidity ^0.7.0;
@@ -10371,8 +10461,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @title SafeERC20
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/openzeppelin/SafeMath.sol solidity-utils/contracts/openzeppelin/SafeMath.sol
---- solidity-utils/contracts/openzeppelin/SafeMath.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/openzeppelin/SafeMath.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/openzeppelin/SafeMath.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/openzeppelin/SafeMath.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10383,8 +10473,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Wrappers over Solidity's arithmetic operations with added overflow
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/test/BalancerErrorsMock.sol solidity-utils/contracts/test/BalancerErrorsMock.sol
---- solidity-utils/contracts/test/BalancerErrorsMock.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/test/BalancerErrorsMock.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/test/BalancerErrorsMock.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/test/BalancerErrorsMock.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10395,8 +10485,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract BalancerErrorsMock {
      function fail(uint256 code) external pure {
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/test/ERC1271Mock.sol solidity-utils/contracts/test/ERC1271Mock.sol
---- solidity-utils/contracts/test/ERC1271Mock.sol	2022-09-14 21:04:53.000000000 -0700
-+++ solidity-utils/contracts/test/ERC1271Mock.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/test/ERC1271Mock.sol	2022-09-16 02:04:26.000000000 -0700
++++ solidity-utils/contracts/test/ERC1271Mock.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10407,8 +10497,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract ERC1271Mock is IERC1271 {
      mapping(bytes32 => bool) private _approved;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/test/EnumerableMapMock.sol solidity-utils/contracts/test/EnumerableMapMock.sol
---- solidity-utils/contracts/test/EnumerableMapMock.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/test/EnumerableMapMock.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/test/EnumerableMapMock.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/test/EnumerableMapMock.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;
@@ -10419,8 +10509,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../openzeppelin/EnumerableMap.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts solidity-utils/contracts/test/SingletonAuthenticationMock.sol solidity-utils/contracts/test/SingletonAuthenticationMock.sol
---- solidity-utils/contracts/test/SingletonAuthenticationMock.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/test/SingletonAuthenticationMock.sol	2022-09-14 21:05:00.000000000 -0700
+--- solidity-utils/contracts/test/SingletonAuthenticationMock.sol	2022-06-22 10:15:28.000000000 -0700
++++ solidity-utils/contracts/test/SingletonAuthenticationMock.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -10431,8 +10521,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../helpers/SingletonAuthentication.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/BALTokenHolder.sol standalone-utils/contracts/BALTokenHolder.sol
---- standalone-utils/contracts/BALTokenHolder.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/BALTokenHolder.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/BALTokenHolder.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/BALTokenHolder.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
@@ -10452,8 +10542,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev This contract simply holds the BAL token and delegates to Balancer Governance the permission to withdraw it. It
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/BALTokenHolderFactory.sol standalone-utils/contracts/BALTokenHolderFactory.sol
---- standalone-utils/contracts/BALTokenHolderFactory.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/BALTokenHolderFactory.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/BALTokenHolderFactory.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/BALTokenHolderFactory.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,11 @@
  
  pragma solidity ^0.7.0;
@@ -10471,8 +10561,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BALTokenHolder.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/BalancerQueries.sol standalone-utils/contracts/BalancerQueries.sol
---- standalone-utils/contracts/BalancerQueries.sol	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/contracts/BalancerQueries.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/BalancerQueries.sol	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/contracts/BalancerQueries.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,16 +15,16 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10498,8 +10588,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev This contract simply builds on top of the Balancer V2 architecture to provide useful helpers to users.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/ProtocolFeePercentagesProvider.sol standalone-utils/contracts/ProtocolFeePercentagesProvider.sol
---- standalone-utils/contracts/ProtocolFeePercentagesProvider.sol	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/contracts/ProtocolFeePercentagesProvider.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/ProtocolFeePercentagesProvider.sol	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/contracts/ProtocolFeePercentagesProvider.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,11 +15,11 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10517,8 +10607,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract ProtocolFeePercentagesProvider is IProtocolFeePercentagesProvider, SingletonAuthentication {
      using SafeCast for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/ProtocolFeesWithdrawer.sol standalone-utils/contracts/ProtocolFeesWithdrawer.sol
---- standalone-utils/contracts/ProtocolFeesWithdrawer.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/ProtocolFeesWithdrawer.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/ProtocolFeesWithdrawer.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/ProtocolFeesWithdrawer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,11 +14,11 @@
  
  pragma solidity ^0.7.0;
@@ -10536,8 +10626,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @author Balancer Labs
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/AaveWrapping.sol standalone-utils/contracts/relayer/AaveWrapping.sol
---- standalone-utils/contracts/relayer/AaveWrapping.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/AaveWrapping.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/AaveWrapping.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/AaveWrapping.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10553,8 +10643,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/BalancerRelayer.sol standalone-utils/contracts/relayer/BalancerRelayer.sol
---- standalone-utils/contracts/relayer/BalancerRelayer.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/BalancerRelayer.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/BalancerRelayer.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/BalancerRelayer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10570,8 +10660,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @title Balancer Relayer
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/BaseRelayerLibrary.sol standalone-utils/contracts/relayer/BaseRelayerLibrary.sol
---- standalone-utils/contracts/relayer/BaseRelayerLibrary.sol	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/contracts/relayer/BaseRelayerLibrary.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/BaseRelayerLibrary.sol	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/contracts/relayer/BaseRelayerLibrary.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10684,8 +10774,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          // mapping's storage slot, and subtracting 1 at the end. This should be more than enough to prevent collisions
          // with other state variables this or derived contracts might use.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/ERC4626Wrapping.sol standalone-utils/contracts/relayer/ERC4626Wrapping.sol
---- standalone-utils/contracts/relayer/ERC4626Wrapping.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/ERC4626Wrapping.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/ERC4626Wrapping.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/ERC4626Wrapping.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10701,8 +10791,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/GaugeActions.sol standalone-utils/contracts/relayer/GaugeActions.sol
---- standalone-utils/contracts/relayer/GaugeActions.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/GaugeActions.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/GaugeActions.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/GaugeActions.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,11 +15,11 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10720,8 +10810,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol
---- standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/contracts/relayer/IBaseRelayerLibrary.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10744,8 +10834,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
          address sender,
          IERC20 token,
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/LidoWrapping.sol standalone-utils/contracts/relayer/LidoWrapping.sol
---- standalone-utils/contracts/relayer/LidoWrapping.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/LidoWrapping.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/LidoWrapping.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/LidoWrapping.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,11 +15,11 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10763,8 +10853,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/UnbuttonWrapping.sol standalone-utils/contracts/relayer/UnbuttonWrapping.sol
---- standalone-utils/contracts/relayer/UnbuttonWrapping.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/UnbuttonWrapping.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/UnbuttonWrapping.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/UnbuttonWrapping.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10780,8 +10870,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/VaultActions.sol standalone-utils/contracts/relayer/VaultActions.sol
---- standalone-utils/contracts/relayer/VaultActions.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/VaultActions.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/VaultActions.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/VaultActions.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,12 +15,12 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10801,8 +10891,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/VaultPermit.sol standalone-utils/contracts/relayer/VaultPermit.sol
---- standalone-utils/contracts/relayer/VaultPermit.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/relayer/VaultPermit.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/VaultPermit.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/relayer/VaultPermit.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10817,8 +10907,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./IBaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol
---- standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/contracts/relayer/special/DoubleEntrypointFixRelayer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,13 +15,13 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -10840,8 +10930,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "hardhat/console.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/test/MockBaseRelayerLibrary.sol standalone-utils/contracts/test/MockBaseRelayerLibrary.sol
---- standalone-utils/contracts/test/MockBaseRelayerLibrary.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/test/MockBaseRelayerLibrary.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/test/MockBaseRelayerLibrary.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/test/MockBaseRelayerLibrary.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,7 +16,7 @@
  
  pragma solidity ^0.7.0;
@@ -10852,8 +10942,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../relayer/BaseRelayerLibrary.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/test/MockStETH.sol standalone-utils/contracts/test/MockStETH.sol
---- standalone-utils/contracts/test/MockStETH.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/test/MockStETH.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/test/MockStETH.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/test/MockStETH.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,10 +16,10 @@
  
  pragma solidity ^0.7.0;
@@ -10869,8 +10959,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockStETH is TestToken, IstETH {
      constructor(
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/test/MockWstETH.sol standalone-utils/contracts/test/MockWstETH.sol
---- standalone-utils/contracts/test/MockWstETH.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/test/MockWstETH.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/test/MockWstETH.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/test/MockWstETH.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,11 +16,11 @@
  
  pragma solidity ^0.7.0;
@@ -10888,8 +10978,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockWstETH is ERC20, IwstETH {
      using FixedPoint for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/contracts/test/TestWETH.sol standalone-utils/contracts/test/TestWETH.sol
---- standalone-utils/contracts/test/TestWETH.sol	2022-06-20 13:18:36.000000000 -0700
-+++ standalone-utils/contracts/test/TestWETH.sol	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/contracts/test/TestWETH.sol	2022-06-22 10:15:28.000000000 -0700
++++ standalone-utils/contracts/test/TestWETH.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -16,7 +16,7 @@
  
  pragma solidity ^0.7.0;
@@ -10900,8 +10990,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract TestWETH is IWETH {
      string public name = "Wrapped Ether";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/test/BaseRelayerLibrary.test.ts standalone-utils/test/BaseRelayerLibrary.test.ts
---- standalone-utils/test/BaseRelayerLibrary.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/test/BaseRelayerLibrary.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/test/BaseRelayerLibrary.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/test/BaseRelayerLibrary.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -1,5 +1,5 @@
  import { ethers } from 'hardhat';
 -import { BigNumber, Contract } from 'ethers';
@@ -11083,8 +11173,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
 -  });
  });
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/test/UnbuttonWrapping.test.ts standalone-utils/test/UnbuttonWrapping.test.ts
---- standalone-utils/test/UnbuttonWrapping.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/test/UnbuttonWrapping.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/test/UnbuttonWrapping.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/test/UnbuttonWrapping.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -13,12 +13,11 @@
  import { deploy, deployedAt } from '@balancer-labs/v2-helpers/src/contract';
  import { actionId } from '@balancer-labs/v2-helpers/src/models/misc/actions';
@@ -11150,8 +11240,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
          it('unwraps with chained references', async () => {
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts standalone-utils/test/helpers/chainedReferences.ts standalone-utils/test/helpers/chainedReferences.ts
---- standalone-utils/test/helpers/chainedReferences.ts	2022-09-14 21:04:53.000000000 -0700
-+++ standalone-utils/test/helpers/chainedReferences.ts	2022-09-14 21:05:00.000000000 -0700
+--- standalone-utils/test/helpers/chainedReferences.ts	2022-09-16 02:04:26.000000000 -0700
++++ standalone-utils/test/helpers/chainedReferences.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -4,13 +4,11 @@
  import { BigNumberish } from '@balancer-labs/v2-helpers/src/numbers';
  import * as expectEvent from '@balancer-labs/v2-helpers/src/test/expectEvent';
@@ -11170,8 +11260,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
    return BigNumber.from(paddedPrefix).add(key);
  }
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/AssetHelpers.sol vault/contracts/AssetHelpers.sol
---- vault/contracts/AssetHelpers.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/AssetHelpers.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/AssetHelpers.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/AssetHelpers.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -11186,8 +11276,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  abstract contract AssetHelpers {
      // solhint-disable-next-line var-name-mixedcase
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/AssetManagers.sol vault/contracts/AssetManagers.sol
---- vault/contracts/AssetManagers.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/AssetManagers.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/AssetManagers.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/AssetManagers.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,13 +15,13 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11209,8 +11299,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./UserBalance.sol";
  import "./balances/BalanceAllocation.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/AssetTransfersHandler.sol vault/contracts/AssetTransfersHandler.sol
---- vault/contracts/AssetTransfersHandler.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/AssetTransfersHandler.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/AssetTransfersHandler.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/AssetTransfersHandler.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,15 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11237,8 +11327,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./AssetHelpers.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/Fees.sol vault/contracts/Fees.sol
---- vault/contracts/Fees.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/Fees.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/Fees.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/Fees.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,13 +15,13 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11261,8 +11351,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./ProtocolFeesCollector.sol";
  import "./VaultAuthorization.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/FlashLoans.sol vault/contracts/FlashLoans.sol
---- vault/contracts/FlashLoans.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/FlashLoans.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/FlashLoans.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/FlashLoans.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -19,12 +19,12 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11282,8 +11372,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./Fees.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/PoolBalances.sol vault/contracts/PoolBalances.sol
---- vault/contracts/PoolBalances.sol	2022-08-19 15:27:22.000000000 -0700
-+++ vault/contracts/PoolBalances.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/PoolBalances.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/PoolBalances.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,14 +15,14 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11308,8 +11398,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./Fees.sol";
  import "./PoolTokens.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/PoolRegistry.sol vault/contracts/PoolRegistry.sol
---- vault/contracts/PoolRegistry.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/PoolRegistry.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/PoolRegistry.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/PoolRegistry.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11323,8 +11413,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./VaultAuthorization.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/PoolTokens.sol vault/contracts/PoolTokens.sol
---- vault/contracts/PoolTokens.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/PoolTokens.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/PoolTokens.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/PoolTokens.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11338,8 +11428,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./AssetManagers.sol";
  import "./PoolRegistry.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/ProtocolFeesCollector.sol vault/contracts/ProtocolFeesCollector.sol
---- vault/contracts/ProtocolFeesCollector.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/ProtocolFeesCollector.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/ProtocolFeesCollector.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/ProtocolFeesCollector.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,12 +15,12 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11359,8 +11449,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev This an auxiliary contract to the Vault, deployed by it during construction. It offloads some of the tasks the
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/Swaps.sol vault/contracts/Swaps.sol
---- vault/contracts/Swaps.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/Swaps.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/Swaps.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/Swaps.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,20 +15,20 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11396,8 +11486,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./PoolBalances.sol";
  import "./balances/BalanceAllocation.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/UserBalance.sol vault/contracts/UserBalance.sol
---- vault/contracts/UserBalance.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/UserBalance.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/UserBalance.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/UserBalance.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,13 +15,13 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11419,8 +11509,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./AssetTransfersHandler.sol";
  import "./VaultAuthorization.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/Vault.sol vault/contracts/Vault.sol
---- vault/contracts/Vault.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/Vault.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/Vault.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/Vault.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11433,8 +11523,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./VaultAuthorization.sol";
  import "./FlashLoans.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/VaultAuthorization.sol vault/contracts/VaultAuthorization.sol
---- vault/contracts/VaultAuthorization.sol	2022-09-14 21:04:53.000000000 -0700
-+++ vault/contracts/VaultAuthorization.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/VaultAuthorization.sol	2022-09-16 02:04:26.000000000 -0700
++++ vault/contracts/VaultAuthorization.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,14 +15,14 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11459,8 +11549,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /**
   * @dev Manages access control of Vault permissioned functions by relying on the Authorizer and signature validation.
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/authorizer/TimelockAuthorizer.sol vault/contracts/authorizer/TimelockAuthorizer.sol
---- vault/contracts/authorizer/TimelockAuthorizer.sol	2022-09-14 21:04:53.000000000 -0700
-+++ vault/contracts/authorizer/TimelockAuthorizer.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/authorizer/TimelockAuthorizer.sol	2022-09-16 02:04:26.000000000 -0700
++++ vault/contracts/authorizer/TimelockAuthorizer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,15 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11487,8 +11577,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  
  /**
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/authorizer/TimelockExecutor.sol vault/contracts/authorizer/TimelockExecutor.sol
---- vault/contracts/authorizer/TimelockExecutor.sol	2022-09-14 21:04:53.000000000 -0700
-+++ vault/contracts/authorizer/TimelockExecutor.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/authorizer/TimelockExecutor.sol	2022-09-16 02:04:26.000000000 -0700
++++ vault/contracts/authorizer/TimelockExecutor.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,8 +14,8 @@
  
  pragma solidity ^0.7.0;
@@ -11501,8 +11591,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./TimelockAuthorizer.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/balances/BalanceAllocation.sol vault/contracts/balances/BalanceAllocation.sol
---- vault/contracts/balances/BalanceAllocation.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/balances/BalanceAllocation.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/balances/BalanceAllocation.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/balances/BalanceAllocation.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -11513,8 +11603,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  // This library is used to create a data structure that represents a token's balance for a Pool. 'cash' is how many
  // tokens the Pool has sitting inside of the Vault. 'managed' is how many tokens were withdrawn from the Vault by the
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/balances/GeneralPoolsBalance.sol vault/contracts/balances/GeneralPoolsBalance.sol
---- vault/contracts/balances/GeneralPoolsBalance.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/balances/GeneralPoolsBalance.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/balances/GeneralPoolsBalance.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/balances/GeneralPoolsBalance.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,10 +14,10 @@
  
  pragma solidity ^0.7.0;
@@ -11530,8 +11620,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BalanceAllocation.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol
---- vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/balances/MinimalSwapInfoPoolsBalance.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11547,8 +11637,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BalanceAllocation.sol";
  import "../PoolRegistry.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/balances/TwoTokenPoolsBalance.sol vault/contracts/balances/TwoTokenPoolsBalance.sol
---- vault/contracts/balances/TwoTokenPoolsBalance.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/balances/TwoTokenPoolsBalance.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/balances/TwoTokenPoolsBalance.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/balances/TwoTokenPoolsBalance.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,8 +15,8 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11561,8 +11651,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "./BalanceAllocation.sol";
  import "../PoolRegistry.sol";
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockAssetTransfersHandler.sol vault/contracts/test/MockAssetTransfersHandler.sol
---- vault/contracts/test/MockAssetTransfersHandler.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/test/MockAssetTransfersHandler.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockAssetTransfersHandler.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/test/MockAssetTransfersHandler.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,9 +15,9 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11577,8 +11667,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  import "../AssetTransfersHandler.sol";
  
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockAuthenticatedContract.sol vault/contracts/test/MockAuthenticatedContract.sol
---- vault/contracts/test/MockAuthenticatedContract.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/test/MockAuthenticatedContract.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockAuthenticatedContract.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/test/MockAuthenticatedContract.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,7 +15,7 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11589,8 +11679,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  /*
   * @author Balancer Labs
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockBasicAuthorizer.sol vault/contracts/test/MockBasicAuthorizer.sol
---- vault/contracts/test/MockBasicAuthorizer.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/test/MockBasicAuthorizer.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockBasicAuthorizer.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/test/MockBasicAuthorizer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,11 +15,11 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11608,8 +11698,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockBasicAuthorizer is IBasicAuthorizer {
      using EnumerableSet for EnumerableSet.AddressSet;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockFlashLoanRecipient.sol vault/contracts/test/MockFlashLoanRecipient.sol
---- vault/contracts/test/MockFlashLoanRecipient.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/test/MockFlashLoanRecipient.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockFlashLoanRecipient.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/test/MockFlashLoanRecipient.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -14,13 +14,13 @@
  
  pragma solidity ^0.7.0;
@@ -11632,8 +11722,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockFlashLoanRecipient is IFlashLoanRecipient {
      using Math for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockInternalBalanceRelayer.sol vault/contracts/test/MockInternalBalanceRelayer.sol
---- vault/contracts/test/MockInternalBalanceRelayer.sol	2022-06-20 13:18:36.000000000 -0700
-+++ vault/contracts/test/MockInternalBalanceRelayer.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockInternalBalanceRelayer.sol	2022-06-22 10:15:28.000000000 -0700
++++ vault/contracts/test/MockInternalBalanceRelayer.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,10 +15,10 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11649,8 +11739,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockInternalBalanceRelayer {
      IVault public vault;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/contracts/test/MockPool.sol vault/contracts/test/MockPool.sol
---- vault/contracts/test/MockPool.sol	2022-09-14 21:04:53.000000000 -0700
-+++ vault/contracts/test/MockPool.sol	2022-09-14 21:05:00.000000000 -0700
+--- vault/contracts/test/MockPool.sol	2022-09-16 02:04:26.000000000 -0700
++++ vault/contracts/test/MockPool.sol	2022-09-16 02:18:01.000000000 -0700
 @@ -15,12 +15,12 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -11670,8 +11760,8 @@ diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scri
  contract MockPool is IGeneralPool, IMinimalSwapInfoPool {
      using FixedPoint for uint256;
 diff -ruN --exclude=node_modules --exclude=deployments --exclude=governance-scripts vault/test/FlashLoan.test.ts vault/test/FlashLoan.test.ts
---- vault/test/FlashLoan.test.ts	2022-09-14 21:04:53.000000000 -0700
-+++ vault/test/FlashLoan.test.ts	2022-09-14 21:05:00.000000000 -0700
+--- vault/test/FlashLoan.test.ts	2022-09-16 02:04:26.000000000 -0700
++++ vault/test/FlashLoan.test.ts	2022-09-16 02:18:01.000000000 -0700
 @@ -10,7 +10,7 @@
  import { deploy, deployedAt } from '@balancer-labs/v2-helpers/src/contract';
  import { actionId } from '@balancer-labs/v2-helpers/src/models/misc/actions';

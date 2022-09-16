@@ -80,6 +80,8 @@ methods {
     // getToken4() returns(address) envfree
     getTotalTokens() returns (uint256) envfree
     onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256) returns (uint256)
+
+    beenCalled() returns (bool) envfree // stableMath harness
 }
 
 // function setup() { 
@@ -612,3 +614,18 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 //     onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
 //     uint256 counter_ = payProtocolFreeCounter();
 // }
+
+rule recoveryModeSimpleMath(method f) filtered {f -> ( 
+        f.selector == setSwapFeePercentage(uint256).selector ||
+        f.selector == setAssetManagerPoolConfig(address,bytes).selector ||
+        f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256, bytes).selector || 
+        f.selector == onSwap(uint8,uint256,bytes32,uint256,uint256).selector || 
+        f.selector == getRate().selector) }
+{
+    env e; calldataarg args;
+    // setup(e);
+    require inRecoveryMode();
+    require !beenCalled();
+    f(e, args);
+    assert !beenCalled(), "math function didn't revert";
+}

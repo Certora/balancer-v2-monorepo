@@ -22,21 +22,26 @@ import "../munged/solidity-utils/contracts/math/Math.sol";
 // derivations.
 // solhint-disable private-vars-leading-underscore, var-name-mixedcase
 
-library StableMath {
+contract StableMath {
     using FixedPoint for uint256;
 
     uint256 public constant _MIN_AMP = 1;
     uint256 public constant _MAX_AMP = 5000;
     uint256 public constant _AMP_PRECISION = 1e3;
 
-    uint256 internal constant _MAX_STABLE_TOKENS = 5;
+    uint256 public constant _MAX_STABLE_TOKENS = 5;
 
+    bool public beenCalled; 
+
+    constructor() {
+        beenCalled = false;
+    }
 
     function _calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
         public
-        pure
         returns (uint256)
     {
+        beenCalled = true;
         require (amplificationParameter>0 && amplificationParameter<5000); 
         return amplificationParameter * 2;
     }
@@ -49,7 +54,8 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountIn,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         return tokenAmountIn * 2;
     }
 
@@ -60,7 +66,8 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountOut,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         return tokenAmountOut * 2;    
     }
 
@@ -71,7 +78,8 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         // uint256 input;
         // for (uint256 i; i< amountsIn.length; ++i) {
         //     input += amountsIn[i];
@@ -94,7 +102,8 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,        
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         return bptAmountOut * 2;
     }
 
@@ -105,7 +114,8 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         // uint256 input;
         // for (uint256 i; i< amountsOut.length; ++i) {
         //     input += amountsOut[i];
@@ -128,7 +138,8 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         return bptAmountIn * 2;
     }
 
@@ -137,7 +148,8 @@ library StableMath {
         uint256[] memory balances,
         uint256 invariant,
         uint256 tokenIndex
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         return invariant * 2;
     }
 
@@ -145,7 +157,8 @@ library StableMath {
         uint256[] memory balances,
         uint256 amp,
         uint256 supply
-    ) public pure returns (uint256) {
+    ) public returns (uint256) {
+        beenCalled = true;
         require (amp>0 && amp<5000); 
         return amp * 2;
     }
