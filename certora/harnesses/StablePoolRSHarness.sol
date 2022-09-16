@@ -246,4 +246,9 @@ contract StablePoolRSHarness is StablePoolRS {
     function userDataIsRecoveryModeExit(bytes memory userData) public pure returns (bool) {
         return userData.isRecoveryModeExitKind();
     }
+
+    function encodeIsRecoveryModeExit(bytes memory userData) public returns (bytes memory) {
+        abi.encode(userData, 0, 255);
+        return userData;
+    }
 }

@@ -53,6 +53,7 @@ methods {
     AMP_PRECISION() returns (uint256) envfree
     beenCalled() returns (bool) envfree
     userDataIsRecoveryModeExit(bytes) returns (bool) envfree
+    encodeIsRecoveryModeExit(bytes) returns (bytes) envfree
 
     _token0.balanceOf(address) returns(uint256) envfree
     _token1.balanceOf(address) returns(uint256) envfree
@@ -67,6 +68,8 @@ methods {
     getToken4() returns(address) envfree
     getTotalTokens() returns (uint256) envfree
 
+    // registerPool() returns (bytes32) => NONDET
+    registerTokens(bytes32, address[], address[]) => NONDET
 }
 
 /// Add the following assumptions:
@@ -142,19 +145,24 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
 /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
 rule exitNonRevertingOnRecoveryMode() {
-    env e; calldataarg args;
+    require !inRecoveryMode();
+
+    env e;
     require e.msg.sender == getVault();
     setup(e);
+    require totalSupply() > 0;
+
     storage init = lastStorage;
     bytes32 poolId; address sender; address recipient; uint256[] balances;
     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    require userData.length > 0;
+    require !userDataIsRecoveryModeExit(userData);
+
+
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     require !lastReverted; // only cases where exit pool does not revert
 
     setRecoveryMode(true) at init;
-    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-
-    // setup(e); // not sure we need this
 
     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
