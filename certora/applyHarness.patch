@@ -3253,7 +3253,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePool.sol pool-stable/contracts/ComposableStablePool.sol
 --- pool-stable/contracts/ComposableStablePool.sol	2022-09-08 16:57:42.324515300 -0400
-+++ pool-stable/contracts/ComposableStablePool.sol	2022-09-16 15:49:36.679539200 -0400
++++ pool-stable/contracts/ComposableStablePool.sol	2022-09-19 14:48:24.707176400 -0400
 @@ -15,26 +15,26 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3498,15 +3498,26 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // Since this index is sent in from the user, we interpret it as NOT including the BPT token
          (uint256 bptAmountIn, uint256 tokenIndex) = userData.exactBptInForTokenOut();
          // Note that there is no minimum amountOut parameter: this is handled by `IVault.exitPool`.
-@@ -943,7 +960,7 @@
+@@ -942,8 +959,8 @@
+      *  amplification factor at the last join or exit operation.
       */
      function _getSupplyAndFeesData()
-         private
+-        private
 -        view
++        public
 +       
          returns (
              uint256[] memory balances,
              uint256 virtualSupply,
+@@ -955,7 +972,7 @@
+         // First we query the Vault for current registered balances (which includes preminted BPT), to then calculate
+         // the current scaled balances and virtual supply.
+         (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+-        _upscaleArray(registeredBalances, _scalingFactors());
++        // _upscaleArray(registeredBalances, _scalingFactors());
+         (virtualSupply, balances) = _dropBptItemFromBalances(registeredBalances);
+ 
+         // Now we need to calculate any BPT due in the form of protocol fees. This requires data from the last join or
 @@ -992,7 +1009,7 @@
       * behavior in the `transferFrom` function (like ERC777 tokens do). These tokens are strictly incompatible with the
       * Vault and Pool design, and are not safe to be used.
@@ -3525,18 +3536,23 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          (, uint256 virtualSupply, uint256 protocolFeeAmount, , ) = _getSupplyAndFeesData();
          return virtualSupply.add(protocolFeeAmount);
      }
-@@ -1094,6 +1111,10 @@
+@@ -1094,8 +1111,13 @@
          // retroactively accrued, which would be incorrect and could lead to the value of `getRate` decreasing.
  
          (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+-        _upscaleArray(registeredBalances, _scalingFactors());
+-        uint256[] memory balances = _dropBptItem(registeredBalances);
 +        // require (registeredBalances.length==3);
 +        // require (_getTotalTokens()==3);
 +        // require (getBptIndex()==2);
 +        // require (_scalingFactors().length==3);
-         _upscaleArray(registeredBalances, _scalingFactors());
-         uint256[] memory balances = _dropBptItem(registeredBalances);
++        // _upscaleArray(registeredBalances, _scalingFactors());
++        // uint256[] memory balances = _dropBptItem(registeredBalances);
++        uint256[] memory balances = registeredBalances;
  
-@@ -1113,13 +1134,16 @@
+         (uint256 currentAmp, ) = _getAmplificationParameter();
+         uint256 currentInvariant = StableMath._calculateInvariant(currentAmp, balances);
+@@ -1113,13 +1135,16 @@
      function _mutateAmounts(
          uint256[] memory toMutate,
          uint256[] memory arguments,
@@ -3555,7 +3571,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          }
      }
  
-@@ -1131,7 +1155,7 @@
+@@ -1131,7 +1156,7 @@
       */
      function _isOwnerOnlyAction(bytes32 actionId)
          internal
@@ -4758,7 +4774,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
                              tokens: tokens,
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePoolProtocolFees.sol pool-stable/contracts/ComposableStablePoolProtocolFees.sol
 --- pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-08 16:57:42.383635200 -0400
-+++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-16 15:48:31.590794000 -0400
++++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-19 12:08:11.826320900 -0400
 @@ -15,14 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;

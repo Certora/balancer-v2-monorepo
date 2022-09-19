@@ -281,8 +281,27 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     function getProtocolPoolOwnershipPercentage(
         uint256[] memory balances
     ) public returns (uint256, uint256) {
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        // _upscaleArray(registeredBalances, _scalingFactors());
+        // uint256[] memory balances = _dropBptItem(registeredBalances);
+        uint256[] memory balances = registeredBalances;
+
         (uint256 lastJoinExitAmp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
         return _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
         // return (0, 0);
+    }
+
+
+    uint256[] balances_;
+    uint256 virtualSupply_;
+    uint256 protocolFeeAmount_;
+    function getSupplyAndFeesData(uint idx) public returns(uint256) {
+        if (idx == 0) {
+            (balances_, virtualSupply_, protocolFeeAmount_,,) = _getSupplyAndFeesData();
+            return balances_[0];
+        } 
+        if (idx == 1) return balances_[1];
+        if (idx == 2) return virtualSupply_;
+        if (idx == 3) return protocolFeeAmount_;
     }
 }
