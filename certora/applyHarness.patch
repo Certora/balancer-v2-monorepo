@@ -1,13 +1,13 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-09-14 13:50:49.000000000 -0700
++++ .gitignore	2022-09-14 21:30:46.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
 diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
---- interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 13:22:41.000000000 -0700
-+++ interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 13:52:33.000000000 -0700
+--- interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 21:18:07.000000000 -0700
++++ interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 21:30:46.000000000 -0700
 @@ -28,6 +28,7 @@
   * @dev Reverts with a revert reason containing `errorCode`. Only codes up to 999 are supported.
   */
@@ -17,8 +17,8 @@ diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfa
      // 'BAL#{errorCode}'
      // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).
 diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
---- pool-stable/contracts/StableMath.sol	2022-09-14 13:22:41.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-14 13:50:49.000000000 -0700
+--- pool-stable/contracts/StableMath.sol	2022-09-14 21:18:07.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-16 12:33:22.000000000 -0700
 @@ -30,7 +30,7 @@
      uint256 internal constant _AMP_PRECISION = 1e3;
  
@@ -115,7 +115,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
 -        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
 +        ret = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
-+        //return ret; // not asserting nonzero output.
++        return ret; // not asserting nonzero output.
 +        if (ret > 0) {
 +            return ret;
 +        } else {
@@ -159,7 +159,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          uint256 tokenIndex
 -    ) internal pure returns (uint256) {
 +    ) internal view returns (uint256) {
-+        //return getTokenBal(balances[0], balances[1], invariant, tokenIndex);
++        return getTokenBal(balances[0], balances[1], invariant, tokenIndex);
          // Rounds result up overall
 -
          uint256 ampTimesTotal = amplificationParameter * balances.length;
@@ -174,8 +174,8 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
              prevTokenBalance = tokenBalance;
  
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-09-14 13:22:41.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-09-14 13:50:49.000000000 -0700
+--- pool-stable/contracts/StablePool.sol	2022-09-14 21:18:07.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-09-18 18:53:03.000000000 -0700
 @@ -302,7 +302,7 @@
          uint256[] memory dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
@@ -189,11 +189,20 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          uint256[] memory scalingFactors,
          bytes memory userData
      ) private view returns (uint256, uint256[] memory) {
-+        return _joinExactTokensInForBPTOut(balances, scalingFactors, userData);
-+        //return _joinTokenInForExactBPTOut(balances, userData);
++        //return _joinExactTokensInForBPTOut(balances, scalingFactors, userData);
++        return _joinTokenInForExactBPTOut(balances, userData);
          StablePoolUserData.JoinKind kind = userData.joinKind();
  
          if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
+@@ -336,7 +338,7 @@
+         (uint256[] memory amountsIn, uint256 minBPTAmountOut) = userData.exactTokensInForBptOut();
+         InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
+ 
+-        _upscaleArray(amountsIn, scalingFactors);
++        //_upscaleArray(amountsIn, scalingFactors);
+ 
+         (uint256 currentAmp, ) = _getAmplificationParameter();
+         uint256 bptAmountOut = StableMath._calcBptOutGivenExactTokensIn(
 @@ -403,7 +405,7 @@
          dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
@@ -209,8 +218,8 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          bytes memory userData
 -    ) private view returns (uint256, uint256[] memory) {
 +    ) internal view returns (uint256, uint256[] memory) { // MUNGED private => internal
-+        return _exitBPTInForExactTokensOut(balances, scalingFactors, userData);
-+        return _exitExactBPTInForTokensOut(balances, userData);
++        //return _exitBPTInForExactTokensOut(balances, scalingFactors, userData);
++        //return _exitExactBPTInForTokensOut(balances, userData);
 +        return _exitExactBPTInForTokenOut(balances, userData);
 +        
          StablePoolUserData.ExitKind kind = userData.exitKind();
@@ -256,9 +265,64 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData();
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
+diff -ruN pool-utils/contracts/LegacyBasePool.sol pool-utils/contracts/LegacyBasePool.sol
+--- pool-utils/contracts/LegacyBasePool.sol	2022-09-14 21:47:16.000000000 -0700
++++ pool-utils/contracts/LegacyBasePool.sol	2022-09-14 21:30:44.000000000 -0700
+@@ -377,7 +377,7 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptOut, uint256[] memory amountsIn) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+ 
+         _queryAction(
+             poolId,
+@@ -393,7 +393,7 @@
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        return (bptOut, amountsIn);*/
++        return (bptOut, amountsIn);
+     }
+ 
+     /**
+@@ -416,7 +416,7 @@
+         uint256 protocolSwapFeePercentage,
+         bytes memory userData
+     ) external returns (uint256 bptIn, uint256[] memory amountsOut) {
+-        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
++        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
+ 
+         _queryAction(
+             poolId,
+@@ -432,7 +432,7 @@
+ 
+         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
+         // and we don't need to return anything here - it just silences compiler warnings.
+-        return (bptIn, amountsOut);*/
++        return (bptIn, amountsOut);
+     }
+ 
+     // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
+@@ -663,7 +663,7 @@
+         // Governance control.
+         return getVault().getAuthorizer();
+     }
+-/*
++
+     function _queryAction(
+         bytes32 poolId,
+         address sender,
+@@ -784,5 +784,5 @@
+                 revert(start, add(size, 68))
+             }
+         }
+-    }*/
++    }
+ }
 diff -ruN solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contracts/helpers/WordCodec.sol
---- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 13:22:41.000000000 -0700
-+++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 13:53:50.000000000 -0700
+--- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:18:07.000000000 -0700
++++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:30:46.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -288,7 +352,7 @@ diff -ruN solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contract
          // the maximum bit length.
 diff -ruN solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/math/FixedPoint.sol
 --- solidity-utils/contracts/math/FixedPoint.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-14 13:50:49.000000000 -0700
++++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-14 21:30:46.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -300,7 +364,7 @@ diff -ruN solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/
  
 diff -ruN solidity-utils/contracts/math/Math.sol solidity-utils/contracts/math/Math.sol
 --- solidity-utils/contracts/math/Math.sol	2022-09-01 18:13:11.000000000 -0700
-+++ solidity-utils/contracts/math/Math.sol	2022-09-14 13:50:49.000000000 -0700
++++ solidity-utils/contracts/math/Math.sol	2022-09-14 21:30:46.000000000 -0700
 @@ -2,7 +2,7 @@
  
  pragma solidity ^0.7.0;

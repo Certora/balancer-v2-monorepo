@@ -40,7 +40,7 @@ methods {
     calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => newCalcInvar(balance1,balance2)
 
     //// @dev decoding function called internally by one of the join kinds
-    exactTokensInForBptOut(bytes) returns (uint256[], uint256) => NONDET
+    //exactTokensInForBptOut(bytes) returns (uint256[], uint256) => NONDET
 	
     //// @dev stable math
     //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
@@ -90,7 +90,14 @@ methods {
 
 }
 
-function setup() { 
+function setup(env e) { 
+    require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+    require currentContract < _token0;
+    require e.msg.sender < currentContract;
+    require getTotalTokens()>1 && getTotalTokens()<6;
+}
+
+function setup1() { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
@@ -100,7 +107,7 @@ function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
     uint256 invar;
     require invar >= balance1 + balance2;
     require invar <= balance1 * balance2;
-    //require determineInvariant[balance1][balance2] == invar;
+    require determineInvariant[balance1][balance2] == invar;
     return invar;
 }
 
@@ -167,23 +174,58 @@ rule sanityRecovery(method f)
 	assert false;
 }
 
+rule cantProfitOffRecovery {
+    require !inRecoveryMode();
+    env e;
+    storage initial = lastStorage;
+
+    bytes32 poolId; address sender; address recipient; uint256[] balances; 
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+
+    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData) at initial;
+    uint256 totalTokensNormal = totalTokensBalance();
+
+    setRecoveryMode(e, true) at initial;
+    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    uint256 totalTokensRecovery = totalTokensBalance();
+
+    assert totalTokensRecovery < totalTokensNormal;
+}
+
 // balances == 0 && totalSupply == 0 => no mint
 // everything zero or all nonzero
 // assumption about invariant
 // assumption 2: balances increase if invariant increased
-// assumption 3: _joinTokenInForExactBPTOut type join (only nontimeout, also makes sense)
+
+// totalSupply > 0, noRecovery sane
+// _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/e30c999191a5376ce1d4/?anonymousKey=e3118f4c4be777bdf4dae67da3d961e23b49e20b
+// _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/c25ae22b90a487c8ed3c/?anonymousKey=e528798fd99a3a481ec6df1d5a53c7401a7514f0
+
+// totalSupply == 0, noRecovery, sane
+// _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/6feaeddf8f79219dd9d0/?anonymousKey=d373e7198e408779d3b5d58c60f977009e2c6c2e
+// _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/41515ce11a120f23cc68/?anonymousKey=471d5eb61d6f67f3261ba4b6a44975b23e290ad5
+
+// totalSupply > 0, Recovery, sane
+// _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/e1a9bb7822505b64d11b/?anonymousKey=994e6cb322a0d1f0fa4270c4027a13ee585c4a75
+// _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/568f236669cb8e863831/?anonymousKey=9b9bda670b64e5b6e19f0175ebd3db0de6da5052
+
+// totalSupply == 0, Recovery, sane
+// _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/80fc853c0ff47c343d48/?anonymousKey=4abfb9806a151f68f7433a7f9bb718d9f0edecac
+// _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/b5e2cd6a77a88c1099d7/?anonymousKey=9822a1adfb5e2eec4fed08a5ed6a320337e51c2d
 rule noFreeMinting(method f) {
     
-    setup();
+    setup1();
+    require totalSupply() > 0; // cutting out big branch
+    require !inRecoveryMode();
 
     uint256 _totalBpt = totalSupply();
     uint256 _totalTokens = totalTokensBalance();
 
-    address u; env e;
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    env e;
 
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
         require sender != currentContract; // times out if I remove this 
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
