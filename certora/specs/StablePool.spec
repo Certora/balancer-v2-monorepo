@@ -28,12 +28,9 @@ methods {
     _MIN_UPDATE_TIME() returns (uint256) envfree
     _MAX_AMP_UPDATE_DAILY_RATE() returns (uint256) envfree
 
-    //// @dev heavy but important function, want to fix timeout
-    //_doExit(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
-    //_doJoin(uint256[],uint256[],bytes) returns (uint256, uint256[]) => NONDET
-
     // stable pool
 	_getAmplificationParameter() returns (uint256,bool)
+    getJoinKind(bytes) returns (uint8) envfree
 
     //// @dev functions called by stable math functions to remove dynamic array from funtion signature
     getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
@@ -54,10 +51,6 @@ methods {
     // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
     //_getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
     // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
-
-    //// @dev "view" functions that call internal function with function pointers as input
-    queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
-    queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256, uint256[]) => NONDET
     
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
@@ -75,17 +68,6 @@ methods {
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
 
-    _token0.balanceOf(address) returns(uint256) envfree
-    _token1.balanceOf(address) returns(uint256) envfree
-    _token2.balanceOf(address) returns(uint256) envfree
-    _token3.balanceOf(address) returns(uint256) envfree
-    _token4.balanceOf(address) returns(uint256) envfree
-
-    getToken0() returns(address) envfree
-    getToken1() returns(address) envfree
-    getToken2() returns(address) envfree
-    getToken3() returns(address) envfree
-    getToken4() returns(address) envfree
     getTotalTokens() returns (uint256) envfree
 
 }
@@ -156,42 +138,6 @@ invariant solvency()
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
 
-rule sanity(method f) 
-{
-	env e;
-	calldataarg args;
-    require !inRecoveryMode();
-	f(e,args);
-	assert false;
-}
-
-rule sanityRecovery(method f) 
-{
-	env e;
-	calldataarg args;
-    require inRecoveryMode();
-	f(e,args);
-	assert false;
-}
-
-rule cantProfitOffRecovery {
-    require !inRecoveryMode();
-    env e;
-    storage initial = lastStorage;
-
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-
-    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData) at initial;
-    uint256 totalTokensNormal = totalTokensBalance();
-
-    setRecoveryMode(e, true) at initial;
-    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    uint256 totalTokensRecovery = totalTokensBalance();
-
-    assert totalTokensRecovery < totalTokensNormal;
-}
-
 // balances == 0 && totalSupply == 0 => no mint
 // everything zero or all nonzero
 // assumption about invariant
@@ -212,7 +158,63 @@ rule cantProfitOffRecovery {
 // totalSupply == 0, Recovery, sane
 // _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/80fc853c0ff47c343d48/?anonymousKey=4abfb9806a151f68f7433a7f9bb718d9f0edecac
 // _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/b5e2cd6a77a88c1099d7/?anonymousKey=9822a1adfb5e2eec4fed08a5ed6a320337e51c2d
-rule noFreeMinting(method f) {
+rule noFreeMinting_exactTokens_noSupply_noRecovery(method f) {
+    
+    setup1();
+    require totalSupply() == 0;
+    require !inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 1; // exact tokens
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactTokens_noSupply_yesRecovery(method f) {
+    
+    setup1();
+    require totalSupply() == 0;
+    require inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 1; // exact tokens
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactTokens_yesSupply_noRecovery(method f) {
     
     setup1();
     require totalSupply() > 0; // cutting out big branch
@@ -226,7 +228,148 @@ rule noFreeMinting(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 1; // exact tokens
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactTokens_yesSupply_yesRecovery(method f) {
+    
+    setup1();
+    require totalSupply() > 0; // cutting out big branch
+    require inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
         require sender != currentContract; // times out if I remove this 
+        require getJoinKind(bytes) == 1; // exact tokens
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactBpt_noSupply_noRecovery(method f) {
+    
+    setup1();
+    require totalSupply() == 0;
+    require !inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 2; // exact bpt
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactBpt_noSupply_yesRecovery(method f) {
+    
+    setup1();
+    require totalSupply() == 0;
+    require inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 2; // exact bpt
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactBpt_yesSupply_noRecovery(method f) {
+    
+    setup1();
+    require totalSupply() > 0; // cutting out big branch
+    require !inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract;
+        require getJoinKind(bytes) == 2; // exact bpt
+        onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+
+    uint256 totalBpt_ = totalSupply();
+    uint256 totalTokens_ = totalTokensBalance();
+
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, "an increase in total BPT must lead to an increase in pool's total tokens";
+}
+
+rule noFreeMinting_exactBpt_yesSupply_yesRecovery(method f) {
+    
+    setup1();
+    require totalSupply() > 0; // cutting out big branch
+    require inRecoveryMode();
+
+    uint256 _totalBpt = totalSupply();
+    uint256 _totalTokens = totalTokensBalance();
+
+    env e;
+
+    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
+        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+        require sender != currentContract; // times out if I remove this 
+        require getJoinKind(bytes) == 2; // exact bpt
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;

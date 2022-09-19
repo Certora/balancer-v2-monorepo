@@ -8,6 +8,7 @@ import "../munged/pool-stable/contracts/StablePool.sol";
 // more complex methods in the original contract.
 contract StablePoolHarness is StablePool {
     using SafeMath for uint256;
+    using StablePoolUserData for bytes;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
@@ -32,6 +33,11 @@ contract StablePoolHarness is StablePool {
         require(!initialized, "for rules");
         initialized == true;
     }
+
+    function getJoinKind(bytes memory userData) public pure returns(StablePoolUserData.JoinKind) {
+        return userData.joinKind();
+    }
+        
     
     // sets recovery mode on or off
     function setRecoveryMode(bool enabled) public {

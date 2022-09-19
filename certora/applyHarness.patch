@@ -18,7 +18,7 @@ diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfa
      // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).
 diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
 --- pool-stable/contracts/StableMath.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-16 12:33:22.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-19 10:22:07.000000000 -0700
 @@ -30,7 +30,7 @@
      uint256 internal constant _AMP_PRECISION = 1e3;
  
@@ -109,22 +109,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          // First calculate the sum of all token balances, which will be used to calculate
          // the current weight of each token
          uint256 sumBalances = 0;
-@@ -297,7 +308,13 @@
-         uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount);
- 
-         // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
--        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
-+        ret = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
-+        return ret; // not asserting nonzero output.
-+        if (ret > 0) {
-+            return ret;
-+        } else {
-+            revert();
-+        }
-     }
- 
-     /*
-@@ -365,7 +382,7 @@
+@@ -365,7 +376,7 @@
          uint256 bptAmountIn,
          uint256 bptTotalSupply,
          uint256 swapFeePercentage
@@ -133,7 +118,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          // Token out, so we round down overall.
  
          // Get the current and new invariants.
-@@ -436,7 +453,7 @@
+@@ -436,7 +447,7 @@
          uint256 lastInvariant,
          uint256 tokenIndex,
          uint256 protocolSwapFeePercentage
@@ -142,7 +127,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          /**************************************************************************************************************
          // oneTokenSwapFee - polynomial equation to solve                                                            //
          // af = fee amount to calculate in one token                                                                 //
-@@ -469,6 +486,10 @@
+@@ -469,6 +480,10 @@
          return accumulatedTokenSwapFees.mulDown(protocolSwapFeePercentage);
      }
  
@@ -153,7 +138,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      // This function calculates the balance of a given token (tokenIndex)
      // given all the other balances and the invariant
      function _getTokenBalanceGivenInvariantAndAllOtherBalances(
-@@ -476,9 +497,9 @@
+@@ -476,9 +491,9 @@
          uint256[] memory balances,
          uint256 invariant,
          uint256 tokenIndex
@@ -165,7 +150,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
          uint256 ampTimesTotal = amplificationParameter * balances.length;
          uint256 sum = balances[0];
          uint256 P_D = balances[0] * balances.length;
-@@ -502,7 +523,6 @@
+@@ -502,7 +517,6 @@
          // We multiply the first iteration outside the loop with the invariant to set the value of the
          // initial approximation.
          uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
@@ -175,7 +160,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
  
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
 --- pool-stable/contracts/StablePool.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-09-18 18:53:03.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-09-19 10:22:52.000000000 -0700
 @@ -302,7 +302,7 @@
          uint256[] memory dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
@@ -185,25 +170,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          (uint256 bptAmountOut, uint256[] memory amountsIn) = _doJoin(balances, scalingFactors, userData);
  
          // Update the invariant with the balances the Pool will have after the join, in order to compute the
-@@ -317,6 +317,8 @@
-         uint256[] memory scalingFactors,
-         bytes memory userData
-     ) private view returns (uint256, uint256[] memory) {
-+        //return _joinExactTokensInForBPTOut(balances, scalingFactors, userData);
-+        return _joinTokenInForExactBPTOut(balances, userData);
-         StablePoolUserData.JoinKind kind = userData.joinKind();
- 
-         if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
-@@ -336,7 +338,7 @@
-         (uint256[] memory amountsIn, uint256 minBPTAmountOut) = userData.exactTokensInForBptOut();
-         InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
- 
--        _upscaleArray(amountsIn, scalingFactors);
-+        //_upscaleArray(amountsIn, scalingFactors);
- 
-         (uint256 currentAmp, ) = _getAmplificationParameter();
-         uint256 bptAmountOut = StableMath._calcBptOutGivenExactTokensIn(
-@@ -403,7 +405,7 @@
+@@ -403,7 +403,7 @@
          dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
          // Update current balances by subtracting the protocol fee amounts
@@ -212,20 +179,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          (bptAmountIn, amountsOut) = _doExit(balances, scalingFactors, userData);
  
-@@ -420,7 +422,11 @@
-         uint256[] memory balances,
-         uint256[] memory scalingFactors,
-         bytes memory userData
--    ) private view returns (uint256, uint256[] memory) {
-+    ) internal view returns (uint256, uint256[] memory) { // MUNGED private => internal
-+        //return _exitBPTInForExactTokensOut(balances, scalingFactors, userData);
-+        //return _exitExactBPTInForTokensOut(balances, userData);
-+        return _exitExactBPTInForTokenOut(balances, userData);
-+        
-         StablePoolUserData.ExitKind kind = userData.exitKind();
- 
-         if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
-@@ -571,7 +577,7 @@
+@@ -571,7 +571,7 @@
       * in the future.
       */
      function _updateInvariantAfterJoin(uint256[] memory balances, uint256[] memory amountsIn) private {
@@ -234,7 +188,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          (uint256 currentAmp, ) = _getAmplificationParameter();
          // This invariant is used only to compute the final balance when calculating the protocol fees. These are
-@@ -584,7 +590,7 @@
+@@ -584,7 +584,7 @@
       * in the future.
       */
      function _updateInvariantAfterExit(uint256[] memory balances, uint256[] memory amountsOut) private {
@@ -243,7 +197,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          (uint256 currentAmp, ) = _getAmplificationParameter();
          // This invariant is used only to compute the final balance when calculating the protocol fees. These are
-@@ -600,10 +606,10 @@
+@@ -600,10 +600,10 @@
      function _mutateAmounts(
          uint256[] memory toMutate,
          uint256[] memory arguments,
@@ -256,7 +210,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          }
      }
  
-@@ -682,7 +688,7 @@
+@@ -682,7 +682,7 @@
          precision = StableMath._AMP_PRECISION;
      }
  
@@ -266,7 +220,7 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
  
          // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
 diff -ruN pool-utils/contracts/LegacyBasePool.sol pool-utils/contracts/LegacyBasePool.sol
---- pool-utils/contracts/LegacyBasePool.sol	2022-09-14 21:47:16.000000000 -0700
+--- pool-utils/contracts/LegacyBasePool.sol	2022-09-19 10:08:26.000000000 -0700
 +++ pool-utils/contracts/LegacyBasePool.sol	2022-09-14 21:30:44.000000000 -0700
 @@ -377,7 +377,7 @@
          uint256 protocolSwapFeePercentage,
