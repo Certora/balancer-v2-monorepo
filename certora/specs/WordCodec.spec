@@ -14,24 +14,6 @@ methods {
 
 //// # Reversion Behavior //////////////////////////////////////////////////////
 
-/// Method calls not subject to parameter validation must not revert.
-rule doesNotRevert(method f) 
-filtered {
-    f -> f.selector != insertUint(bytes32,uint256,uint256,uint256).selector
-      && f.selector != insertInt(bytes32,int256,uint256,uint256).selector
-      && f.selector != encodeUint(uint256,uint256,uint256).selector
-      && f.selector != encodeInt(int256,uint256,uint256).selector
-      && f.selector != validateEncodingParamsUint(uint256,uint256,uint256).selector
-      && f.selector != validateEncodingParamsInt(int256,uint256,uint256).selector
-}
-{
-    env e; calldataarg args;
-    require e.msg.value == 0;
-
-    f@withrevert(e, args);
-    assert !lastReverted, "method calls not subject to parameter validation must not revert";
-}
-
 /// Calls to insertBool must not revert.
 rule insertBoolDoesNotRevert {    
     insertBool@withrevert(_, _, _);
