@@ -139,87 +139,36 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
  
-// Recovery and Paused Modes
-/// @title rule: noRevertOnRecoveryMode
-/// @notice: When in recovery mode the following operation must not revert
-/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
-/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-rule exitNonRevertingOnRecoveryMode() {
-    require !inRecoveryMode();
+// // Recovery and Paused Modes
+// /// @title rule: noRevertOnRecoveryMode
+// /// @notice: When in recovery mode the following operation must not revert
+// /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
+// /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
+// /// @notice: always times out
+// rule exitNonRevertingOnRecoveryMode() {
+//     require !inRecoveryMode();
 
-    env e;
-    require e.msg.sender == getVault();
-    setup(e);
-    require totalSupply() > 0;
+//     env e;
+//     require e.msg.sender == getVault();
+//     setup(e);
+//     require totalSupply() > 0;
 
-    storage init = lastStorage;
-    bytes32 poolId; address sender; address recipient; uint256[] balances;
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    require userData.length > 0;
-    require !userDataIsRecoveryModeExit(userData);
+//     storage init = lastStorage;
+//     bytes32 poolId; address sender; address recipient; uint256[] balances;
+//     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+//     require userData.length > 0;
+//     require !userDataIsRecoveryModeExit(userData);
 
 
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    require !lastReverted; // only cases where exit pool does not revert
+//     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+//     require !lastReverted; // only cases where exit pool does not revert
 
-    setRecoveryMode(true) at init;
+//     setRecoveryMode(true) at init;
 
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
+//     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
-    assert !lastReverted, "recovery mode must not fail";
-}
-
-rule joinThenRecoveryExit() {
-    env e;
-    setup(e);
-    require e.msg.sender == getVault();
-    require totalSupply() != 0;
-
-    bytes32 poolIdA; address senderA; address recipientA;
-    uint256[] balancesA; uint256 lastChangeBlockA; uint256 protocolSwapFeePercentageA; bytes userDataA;
-    onJoinPool(e, poolIdA, senderA, recipientA, balancesA, lastChangeBlockA, protocolSwapFeePercentageA, userDataA);
-
-    setRecoveryMode(true);
-
-    bytes32 poolId; address sender; address recipient; uint256[] balances;
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
-    
-    assert !lastReverted, "joined then couldn't do a recovery exit";
-}
-
-// Pause + recovery mode
-
-// People can only withdraw 
-
-/// @title rule: prWithdrawOnly
-/// @notice if both paused and recovery mode is active, withdraw must never revert
-rule prWithdrawNeverReverts(method f) {
-    env e; calldataarg args;
-    require e.msg.sender == getVault();
-    // require inRecoveryMode(e);
-    // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(); // needs to stay in recovery mode
-    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-    bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
-    paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
-
-    bytes32 poolId; address sender; address recipient; uint256[] balances; 
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-
-    require balances.length == getTotalTokens(); // correct number of tokens
-    uint256 i;
-    require i < balances.length && balances[i] > 0; // at least one token must have a nonzero value
-    uint256 bptIn; uint256 tokenIndex;
-    // tokenIndex, bptIn = exactTokensInForBptOut(userData);
-    // uint256[] amountsOut; uint256 maxBptIn;
-    // amountsOut, maxBptIn = bptInForExactTokensOut(userData);
-    // require tokenIndex < getTotalTokens();
-
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
-
-    assert !lastReverted, "recovery mode must not fail";
-}
+//     assert !lastReverted, "recovery mode must not fail";
+// }
 
 /// @title rule: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
