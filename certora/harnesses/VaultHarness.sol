@@ -290,6 +290,9 @@ contract VaultHarness {
      * the amounts used by joins, exits and swaps. For a detailed breakdown of token balances, use `getPoolTokenInfo`
      * instead.
      */
+    mapping(bytes32 => IERC20[]) tokens_map;
+    mapping(bytes32 => uint256[]) balances_map;
+    mapping(bytes32 => uint256) lastChangeBlock_map;
     function getPoolTokens(bytes32 poolId)
         external
         view
@@ -298,10 +301,7 @@ contract VaultHarness {
             uint256[] memory balances,
             uint256 lastChangeBlock
         ) {
-            IERC20[] memory tokens;
-            uint256[] memory balances;
-            uint256 lastChangeBlock;
-            return (tokens, balances, lastChangeBlock);
+            return (tokens_map[poolId], balances_map[poolId], lastChangeBlock_map[poolId]);
         }
 
     /**

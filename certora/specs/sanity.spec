@@ -89,3 +89,4 @@ rule sanity(method f) filtered { f ->
 	f(e,args);
 	assert false;
 }
+

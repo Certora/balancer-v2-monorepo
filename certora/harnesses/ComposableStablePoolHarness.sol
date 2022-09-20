@@ -28,14 +28,14 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         // initialized == true;
     }
     // gets join kind
-    function getJoinKind(bytes memory userData) public view returns(StablePoolUserData.JoinKind) {
+    function getJoinKind(bytes memory userData) public returns(StablePoolUserData.JoinKind) {
         StablePoolUserData.JoinKind kind = userData.joinKind();
         return kind;
     }
     
     
     // gets action id by selector
-    function getActionId(uint32 selector) view public returns (bytes32) {
+    function getActionId(uint32 selector) public returns (bytes32) {
         return getActionId(bytes4(selector));
     }
 
@@ -238,7 +238,7 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         total -= this.balanceOf(address(this));
     }
 
-    function totalTokensBalance() public view returns (uint256 total) {        
+    function totalTokensBalance() public returns (uint256 total) {        
         total = _token0.balanceOf(address(this));
         total = total.add(_token1.balanceOf(address(this)));
         total = total.add(_token2.balanceOf(address(this)));
@@ -264,7 +264,7 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         require (address(this) == address(getToken(getBptIndex())));
     }
 
-    function getTotalTokens() public view returns (uint256) {
+    function getTotalTokens() public returns (uint256) {
         return _getTotalTokens();
     }
     function minAmp() public pure returns (uint256) {
@@ -281,5 +281,32 @@ contract ComposableStablePoolHarness is ComposableStablePool {
 
     function isRecoveryModeExitKind(bytes memory userData) public pure returns (bool) {
         return BasePoolUserData.isRecoveryModeExitKind(userData);
+    }
+    
+    function getProtocolPoolOwnershipPercentage(
+        uint256[] memory balances
+    ) public returns (uint256, uint256) {
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        // _upscaleArray(registeredBalances, _scalingFactors());
+        // uint256[] memory balances = _dropBptItem(registeredBalances);
+        uint256[] memory balances = registeredBalances;
+
+        (uint256 lastJoinExitAmp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
+        return _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
+        // return (0, 0);
+    }
+
+
+    uint256[] balances_;
+    uint256 virtualSupply_;
+    uint256 protocolFeeAmount_;
+    function getSupplyAndFeesData(uint idx) public returns(uint256) {
+        if (idx == 0) {
+            (balances_, virtualSupply_, protocolFeeAmount_,,) = _getSupplyAndFeesData();
+            return balances_[0];
+        } 
+        if (idx == 1) return balances_[1];
+        if (idx == 2) return virtualSupply_;
+        if (idx == 3) return protocolFeeAmount_;
     }
 }
