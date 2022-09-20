@@ -469,3 +469,22 @@ rule amplificationFactorUpdatingOneDay(method f) {
     assert isUpdating_, "must still be updating";
 }
 
+rule amplificationUpdateCanFinish() {
+    require _MIN_UPDATE_TIME() == DAY();
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+
+    env _e;
+    uint256 endValue; uint256 endTime;
+
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(_e);
+    require !isUpdating;
+
+    startAmplificationParameterUpdate(e_pre, endValue, endTime);
+
+    env e_;
+    require e_.block.timestamp > _e.block.timestamp + (10000 * DAY()); // arbitrarily use 10000 days to represent a very long time
+    startValue, isUpdating = _getAmplificationParameter(_e);
+
+    assert !isUpdating, "system still updating";
+}
