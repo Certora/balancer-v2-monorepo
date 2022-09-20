@@ -1,4 +1,5 @@
 
+
 import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
@@ -30,7 +31,7 @@ methods {
 
     // stable pool
 	_getAmplificationParameter() returns (uint256,bool)
-    //getJoinKind(bytes) returns (uint8) envfree
+    getJoinKind(bytes) returns (uint8) envfree
 
     //// @dev functions called by stable math functions to remove dynamic array from funtion signature
     getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
