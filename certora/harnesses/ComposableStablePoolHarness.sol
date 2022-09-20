@@ -2,6 +2,7 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "../munged/pool-stable/contracts/ComposableStablePool.sol";
+import "../munged/interfaces/contracts/pool-utils/BasePoolUserData.sol";
 
 // This is the contract that is actually verified; it may contain some helper
 // methods for the spec to access internal state, or may override some of the
@@ -276,5 +277,9 @@ contract ComposableStablePoolHarness is ComposableStablePool {
 
     function AMP_PRECISION() public pure returns (uint256) {
         return StableMath._AMP_PRECISION;
+    }
+
+    function isRecoveryModeExitKind(bytes memory userData) public pure returns (bool) {
+        return BasePoolUserData.isRecoveryModeExitKind(userData);
     }
 }

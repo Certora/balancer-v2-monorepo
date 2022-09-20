@@ -19,5 +19,5 @@ certoraRun \
     --send_only \
     $RULE \
     --rule_sanity \
-    --msg "CSP: $1 $2" \
-    --solc solc7.3
+    --msg "CSP: PauseRecovery $1 $2" \
+    --solc solc7.1
