@@ -47,6 +47,8 @@ methods {
     maxAmp() returns(uint256) envfree
     AMP_PRECISION() envfree
     // mul(uint256, uint256) returns (uint256) => NONDET
+    mul(uint256, uint256) returns (uint256) => NONDET
+    isRecoveryModeExitKind(bytes) returns (bool) envfree
 
     balanceOf(uint256) returns (uint256) envfree
     balanceOf(address,uint256) returns (uint256) envfree
@@ -57,6 +59,82 @@ methods {
     beenCalled() returns (bool) envfree // stableMath harness
 }
 
+// function setup() { 
+//     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+//     require getTotalTokens()>1 && getTotalTokens()<6;
+// }
+
+////////////////////////////////////////////////////////////////////////////
+//                    Ghosts, hooks and definitions                       //
+////////////////////////////////////////////////////////////////////////////
+
+// assume sum of all balances initially equals 0
+// ghost sum_all_users_BPT() returns uint256 {
+//     init_state axiom sum_all_users_BPT() == 0;
+// }
+
+// // everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
+// hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
+//   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
+// }
+
+definition DAY() returns uint256 = 1531409238;
+
+function getAmplificationFactor(env e) returns uint256 {
+    uint256 param; bool updating;
+    param, updating = _getAmplificationParameter(e);
+    return param;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+//                            Invariants                                  //
+////////////////////////////////////////////////////////////////////////////
+
+invariant amplificationFactorBounded(env e)
+    getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
+{ preserved {
+    // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
+    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    require _MIN_UPDATE_TIME() == DAY();
+    require AMP_PRECISION() == 1000;
+} }
+
+////////////////////////////////////////////////////////////////////////////
+//                               Rule                                     //
+////////////////////////////////////////////////////////////////////////////
+
+rule recoveryExitAll() {
+    env e;
+	calldataarg args;
+    require inRecoveryMode();
+    onExitPool(e, args);
+    assert(balanceOf(0)==0 && balanceOf(1)==0 && balanceOf(2)==0);
+}
+
+
+// Recovery and Paused Modes
+/// @title rule: noRevertOnRecoveryMode
+/// @notice: When in recovery mode the following operation must not revert
+/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
+/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
+rule exitNonRevertingOnRecoveryMode(method f) {
+    env e; calldataarg args;
+    require e.msg.sender == getVault();
+    // require inRecoveryMode(e);
+    // f(e, args); // arbitrary f in case there is frontrunning
+    require inRecoveryMode(); // needs to stay in recovery mode
+    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
+    require e.msg.value == 0;
+    // setup();
+    bytes32 poolId; address sender; address recipient; uint256[] balances;
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
+
+    assert !lastReverted, "recovery mode must not fail";
+}
+
+ 
 // Paused Mode:
 
 /// @rule: basicOperationsRevertOnPause
@@ -110,11 +188,9 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     require bufferPeriodEndTime >= pauseWindowEndTime; 
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
- 
 
-/// @title: rule: DisablingRMDoesNotChangeValues
-/// @notice: _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
-/// @notice: passes
+
+// c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
 rule ZeroOwnerPercentageInRecovery() {
     env e; 
     calldataarg args;
@@ -165,4 +241,35 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
     f@withrevert(e, args);
 
     assert lastReverted, "function did not revert";
+}
+
+// rule noFeeForRecoveryMode() {
+//     env e;
+// 	calldataarg args;
+//     uint256 _counter = payProtocolFreeCounter();
+//     require inRecoveryMode();
+//     onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
+//     uint256 counter_ = payProtocolFreeCounter();
+// }
+
+/// @title: recoveryExitNoStableMath
+/// @notice: in recovery mode, exit never calls any simple math functions
+/// @notice: passes
+rule recoveryExitNoStableMath() {
+
+    require inRecoveryMode();
+    require !beenCalled();
+
+    env e;
+    // setup(e);
+
+    bytes userData;
+    require isRecoveryModeExitKind(userData);
+
+    bytes32 poolId; address sender; address recipient; uint256[] balances;
+    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
+
+    onExitPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
+
+    assert !beenCalled();
 }
