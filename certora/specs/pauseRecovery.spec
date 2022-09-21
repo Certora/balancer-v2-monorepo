@@ -31,6 +31,9 @@ methods {
 
     getPoolId() returns(bytes32) envfree
     _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
+    _isTokenExemptFromYieldProtocolFee(uint) returns bool envfree
+    _hasRateProvider(uint) returns bool envfree
+
 
 	// stable pool
 	_getAmplificationParameter() returns (uint256,bool) => CONSTANT
@@ -41,7 +44,7 @@ methods {
     getBptIndex() envfree
 
     // harness functions
-    disableRecoveryMode() envfree
+    disableRecoveryMode() 
     // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
@@ -125,27 +128,54 @@ rule ZeroOwnerPercentageInRecovery() {
     assert feePercentage==0;
 }
 
-/// @title: rule: DisablingRMDoesNotChangeValues
-/// @notice: Disabling recovery mode should not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode
-/// @notice: passes
-rule DisablingRMDoesNotChangeValues() {
-    uint256 _balance0 = getSupplyAndFeesData(0);
-    uint256 _balance1 = getSupplyAndFeesData(1);
-    uint256 _virtualSupply = getSupplyAndFeesData(2);
-    uint256 _protocolFeeAmount =  getSupplyAndFeesData(3);
 
-    disableRecoveryMode();
+// invariant TokenExemptOnlyIfHasRateProvider()
+//     ((_isTokenExemptFromYieldProtocolFee(0) == true) => (_hasRateProvider(0) == true)) &&
+//     ((_isTokenExemptFromYieldProtocolFee(1) == true) => (_hasRateProvider(1) == true)) &&
+//     ((_isTokenExemptFromYieldProtocolFee(2) == true) => (_hasRateProvider(2) == true))
 
-    uint256 balance0_ = getSupplyAndFeesData(0);
-    uint256 balance1_ = getSupplyAndFeesData(1);
-    uint256 virtualSupply_ = getSupplyAndFeesData(2);
-    uint256 protocolFeeAmount_ =  getSupplyAndFeesData(3);
+// /// @title: rule: DisablingRMDoesNotChangeValues
+// /// @notice: Disabling recovery mode should not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode
+// /// @notice: passes
+// rule DisablingRMDoesNotChangeValues() {
+//     require getTotalTokens() == 3;
+//     require getBptIndex() == 2;
+//     requireInvariant TokenExemptOnlyIfHasRateProvider();
 
-    assert _balance0 == balance0_;
-    assert _balance1 == balance1_;
-    assert _virtualSupply == virtualSupply_;
-    assert protocolFeeAmount_ == 0;
-}
+//     uint256 _balance0 = getSupplyAndFeesData(0);
+//     uint256 _balance1 = getSupplyAndFeesData(1);
+//     uint256 _virtualSupply = getSupplyAndFeesData(2);
+//     uint256 _protocolFeeAmount =  getSupplyAndFeesData(3);
+
+//     disableRecoveryMode();
+
+//     uint256 balance0_ = getSupplyAndFeesData(0);
+//     uint256 balance1_ = getSupplyAndFeesData(1);
+//     uint256 virtualSupply_ = getSupplyAndFeesData(2);
+//     uint256 protocolFeeAmount_ =  getSupplyAndFeesData(3);
+
+//     assert _balance0 == balance0_;
+//     assert _balance1 == balance1_;
+//     assert _virtualSupply == virtualSupply_;
+//     assert protocolFeeAmount_ == 0;
+// }
+
+// // e) _getProtocolPoolOwnershipPercentage should return 0 immediately after disabling recovery mode
+// rule ZeroOwnerPercentageAfterDisablingRecovery() {
+//     env e; 
+//     calldataarg args;
+
+//     requireInvariant TokenExemptOnlyIfHasRateProvider();
+//     require getTotalTokens() == 3;
+//     require getBptIndex() == 2;
+    
+//     require inRecoveryMode(); 
+//     disableRecoveryMode();
+//     uint256 feePercentage;
+//     uint256 totalGrowthInvariant;
+//     feePercentage, totalGrowthInvariant = getProtocolPoolOwnershipPercentage(e, args);
+//     assert feePercentage==0;
+// }
 
 /// @title rule: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
@@ -166,3 +196,4 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 
     assert lastReverted, "function did not revert";
 }
+

@@ -18,7 +18,6 @@ certoraRun \
     --staging \
     --settings -enableEqualitySaturation=false \
     --settings -divideNoRemainder=true \
-    --smt_timeout 3000 \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
@@ -27,3 +26,4 @@ certoraRun \
     --msg "CSP: $1 $2" \
     --solc solc7.3
     # --settings -divideNoRemainder=true \
+    # --smt_timeout 3000 \
