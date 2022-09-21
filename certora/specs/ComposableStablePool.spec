@@ -480,11 +480,12 @@ rule amplificationUpdateCanFinish() {
     startValue, isUpdating = _getAmplificationParameter(_e);
     require !isUpdating;
 
-    startAmplificationParameterUpdate(e_pre, endValue, endTime);
+    startAmplificationParameterUpdate(_e, endValue, endTime);
 
     env e_;
     require e_.block.timestamp > _e.block.timestamp + (10000 * DAY()); // arbitrarily use 10000 days to represent a very long time
-    startValue, isUpdating = _getAmplificationParameter(_e);
+    bool isStillUpdating;
+    _, isStillUpdating = _getAmplificationParameter(e_);
 
-    assert !isUpdating, "system still updating";
+    assert !isStillUpdating, "system still updating";
 }
