@@ -1,24 +1,13 @@
 diff -ruN .gitignore .gitignore
 --- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-09-14 21:30:46.000000000 -0700
++++ .gitignore	2022-09-20 11:42:37.000000000 -0700
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
-diff -ruN interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
---- interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 21:18:07.000000000 -0700
-+++ interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol	2022-09-14 21:30:46.000000000 -0700
-@@ -28,6 +28,7 @@
-  * @dev Reverts with a revert reason containing `errorCode`. Only codes up to 999 are supported.
-  */
- function _revert(uint256 errorCode) pure {
-+    revert();
-     // We're going to dynamically create a revert string based on the error code, with the following format:
-     // 'BAL#{errorCode}'
-     // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).
 diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
 --- pool-stable/contracts/StableMath.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-19 10:22:07.000000000 -0700
++++ pool-stable/contracts/StableMath.sol	2022-09-21 15:18:01.000000000 -0700
 @@ -30,7 +30,7 @@
      uint256 internal constant _AMP_PRECISION = 1e3;
  
@@ -37,97 +26,45 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      // Computes the invariant given the current balances, using the Newton-Raphson approximation.
      // The amplification parameter equals: A n^(n-1)
      // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
-@@ -58,7 +58,12 @@
+@@ -58,7 +58,8 @@
          internal
          pure
          returns (uint256)
 -    {
 +    {   
 +        return calculateInvariant(balances[0], balances[1]);
-+        //return balances[0] > balances[1] ? balances[1] * 2 : balances[0] * 2
-+        //invar < balances[0] * balances[1];
-+        //invar > balances[0] + balances[1];
-+        return balances[0] + balances[1];
          /**********************************************************************************************
          // invariant                                                                                 //
          // D = invariant                                                  D^(n+1)                    //
-@@ -69,7 +74,7 @@
+@@ -69,7 +70,6 @@
          **********************************************************************************************/
  
          // Always round down, to match Vyper's arithmetic (which always truncates).
 -
-+        /*
          uint256 sum = 0; // S in the Curve version
          uint256 numTokens = balances.length;
          for (uint256 i = 0; i < numTokens; i++) {
-@@ -117,6 +122,11 @@
-         }
- 
+@@ -119,6 +119,10 @@
          _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
-+        */
-+    }
-+
-+    function calculateInvariant(uint256 balance1, uint256 balance2) public pure returns(uint256) {
-+        return balance1;
      }
  
++    function calculateInvariant(uint256 balance1, uint256 balance2) public pure returns(uint256) {
++        return balance1;
++    }
++
      // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.
-@@ -129,7 +139,7 @@
-         uint256 tokenIndexOut,
-         uint256 tokenAmountIn,
-         uint256 invariant
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256) {
-         /**************************************************************************************************************
-         // outGivenIn token x for y - polynomial equation to solve                                                   //
-         // ay = amount out to calculate                                                                              //
-@@ -170,7 +180,7 @@
-         uint256 tokenIndexOut,
-         uint256 tokenAmountOut,
-         uint256 invariant
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256) {
-         /**************************************************************************************************************
-         // inGivenOut token x for y - polynomial equation to solve                                                   //
-         // ax = amount in to calculate                                                                               //
-@@ -264,7 +274,7 @@
-         uint256 bptAmountOut,
-         uint256 bptTotalSupply,
-         uint256 swapFeePercentage
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256 ret) {
-         // Token in, so we round up overall.
- 
-         // Get the current invariant
-@@ -281,7 +291,8 @@
+     // The amplification parameter equals: A n^(n-1)
+     // The invariant should be rounded up.
+@@ -281,7 +285,7 @@
              tokenIndex
          );
          uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
 -
-+        //return amountInWithoutFee;
-+        //return amountInWithoutFee;
++        
          // First calculate the sum of all token balances, which will be used to calculate
          // the current weight of each token
          uint256 sumBalances = 0;
-@@ -365,7 +376,7 @@
-         uint256 bptAmountIn,
-         uint256 bptTotalSupply,
-         uint256 swapFeePercentage
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256) {
-         // Token out, so we round down overall.
- 
-         // Get the current and new invariants.
-@@ -436,7 +447,7 @@
-         uint256 lastInvariant,
-         uint256 tokenIndex,
-         uint256 protocolSwapFeePercentage
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256) {
-         /**************************************************************************************************************
-         // oneTokenSwapFee - polynomial equation to solve                                                            //
-         // af = fee amount to calculate in one token                                                                 //
-@@ -469,6 +480,10 @@
+@@ -469,6 +473,10 @@
          return accumulatedTokenSwapFees.mulDown(protocolSwapFeePercentage);
      }
  
@@ -138,19 +75,17 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      // This function calculates the balance of a given token (tokenIndex)
      // given all the other balances and the invariant
      function _getTokenBalanceGivenInvariantAndAllOtherBalances(
-@@ -476,9 +491,9 @@
-         uint256[] memory balances,
+@@ -477,8 +485,8 @@
          uint256 invariant,
          uint256 tokenIndex
--    ) internal pure returns (uint256) {
-+    ) internal view returns (uint256) {
+     ) internal pure returns (uint256) {
 +        return getTokenBal(balances[0], balances[1], invariant, tokenIndex);
          // Rounds result up overall
 -
          uint256 ampTimesTotal = amplificationParameter * balances.length;
          uint256 sum = balances[0];
          uint256 P_D = balances[0] * balances.length;
-@@ -502,7 +517,6 @@
+@@ -502,7 +510,6 @@
          // We multiply the first iteration outside the loop with the invariant to set the value of the
          // initial approximation.
          uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
@@ -160,7 +95,7 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
  
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
 --- pool-stable/contracts/StablePool.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-09-19 10:22:52.000000000 -0700
++++ pool-stable/contracts/StablePool.sol	2022-09-21 15:17:52.000000000 -0700
 @@ -302,7 +302,7 @@
          uint256[] memory dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
@@ -210,73 +145,9 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
          }
      }
  
-@@ -682,7 +682,7 @@
-         precision = StableMath._AMP_PRECISION;
-     }
- 
--    function _getAmplificationParameter() internal view returns (uint256 value, bool isUpdating) {
-+    function _getAmplificationParameter() public view returns (uint256 value, bool isUpdating) { // HARNESS: changed to public
-         (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData();
- 
-         // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
-diff -ruN pool-utils/contracts/LegacyBasePool.sol pool-utils/contracts/LegacyBasePool.sol
---- pool-utils/contracts/LegacyBasePool.sol	2022-09-19 10:08:26.000000000 -0700
-+++ pool-utils/contracts/LegacyBasePool.sol	2022-09-14 21:30:44.000000000 -0700
-@@ -377,7 +377,7 @@
-         uint256 protocolSwapFeePercentage,
-         bytes memory userData
-     ) external returns (uint256 bptOut, uint256[] memory amountsIn) {
--        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
-+        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
- 
-         _queryAction(
-             poolId,
-@@ -393,7 +393,7 @@
- 
-         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
-         // and we don't need to return anything here - it just silences compiler warnings.
--        return (bptOut, amountsIn);*/
-+        return (bptOut, amountsIn);
-     }
- 
-     /**
-@@ -416,7 +416,7 @@
-         uint256 protocolSwapFeePercentage,
-         bytes memory userData
-     ) external returns (uint256 bptIn, uint256[] memory amountsOut) {
--        /*InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
-+        InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
- 
-         _queryAction(
-             poolId,
-@@ -432,7 +432,7 @@
- 
-         // The `return` opcode is executed directly inside `_queryAction`, so execution never reaches this statement,
-         // and we don't need to return anything here - it just silences compiler warnings.
--        return (bptIn, amountsOut);*/
-+        return (bptIn, amountsOut);
-     }
- 
-     // Internal hooks to be overridden by derived contracts - all token amounts (except BPT) in these interfaces are
-@@ -663,7 +663,7 @@
-         // Governance control.
-         return getVault().getAuthorizer();
-     }
--/*
-+
-     function _queryAction(
-         bytes32 poolId,
-         address sender,
-@@ -784,5 +784,5 @@
-                 revert(start, add(size, 68))
-             }
-         }
--    }*/
-+    }
- }
 diff -ruN solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contracts/helpers/WordCodec.sol
 --- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:18:07.000000000 -0700
-+++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:30:46.000000000 -0700
++++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-20 11:42:37.000000000 -0700
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
@@ -304,27 +175,3 @@ diff -ruN solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contract
          _require(offset < 256, Errors.OUT_OF_BOUNDS);
          // We never accept 256 bit values (which would make the codec pointless), and the larger the offset the smaller
          // the maximum bit length.
-diff -ruN solidity-utils/contracts/math/FixedPoint.sol solidity-utils/contracts/math/FixedPoint.sol
---- solidity-utils/contracts/math/FixedPoint.sol	2022-06-20 13:18:36.000000000 -0700
-+++ solidity-utils/contracts/math/FixedPoint.sol	2022-09-14 21:30:46.000000000 -0700
-@@ -14,7 +14,7 @@
- 
- pragma solidity ^0.7.0;
- 
--import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
-+import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
- 
- import "./LogExpMath.sol";
- 
-diff -ruN solidity-utils/contracts/math/Math.sol solidity-utils/contracts/math/Math.sol
---- solidity-utils/contracts/math/Math.sol	2022-09-01 18:13:11.000000000 -0700
-+++ solidity-utils/contracts/math/Math.sol	2022-09-14 21:30:46.000000000 -0700
-@@ -2,7 +2,7 @@
- 
- pragma solidity ^0.7.0;
- 
--import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
-+import "../../../interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol";
- 
- /**
-  * @dev Wrappers over Solidity's arithmetic operations with added overflow checks.

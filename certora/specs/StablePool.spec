@@ -3,9 +3,6 @@ import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
 using DummyERC20B as _token1
-using DummyERC20C as _token2
-using DummyERC20D as _token3
-using DummyERC20E as _token4
 
 /*
 need to check:
@@ -62,7 +59,7 @@ methods {
 
 function setup() { 
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
-    require getTotalTokens()>1 && getTotalTokens()<6;
+    require getTotalTokens() == 2;
 }
 
 // invariant must be greater than the sum of pool's token balances and less than the product 
@@ -199,7 +196,7 @@ rule noFreeMinting_exactTokens_noSupply_yesRecovery(method f) {
 
 rule noFreeMinting_exactTokens_yesSupply_noRecovery(method f) {
     
-    setup();
+    require getTotalTokens() == 2;
     require totalSupply() > 0; // cutting out big branch
     require !inRecoveryMode();
 
