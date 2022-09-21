@@ -1,6 +1,7 @@
 
 import "../helpers/erc20.spec"
 
+// MDG: may be unnecessary
 using DummyERC20A as _token0
 using DummyERC20B as _token1
 using DummyERC20C as _token2
@@ -34,7 +35,9 @@ methods {
 
     //// @dev functions called by stable math functions to remove dynamic array from funtion signature
     getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
-    calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => newCalcInvar(balance1,balance2)
+    
+    /// MDG: Assumption: calculateInvariant is deterministic and ...
+    calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => _calculatedInvariant(balance1, balance2)
     
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
@@ -60,24 +63,32 @@ methods {
 //                            Helper Functions                            //
 ////////////////////////////////////////////////////////////////////////////
 
+/**
+ * MDG: This makes some basic setup assumptions, justified because we assume the
+ * vault guarantees these properties
+ */
 function setup() { 
+    // MDG: doesn't even work, can only be handled by linking
     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
+
+    // MDG: does this need to stay?
     require getTotalTokens()>1 && getTotalTokens()<6;
 }
 
-// invariant must be greater than the sum of pool's token balances and less than the product 
-function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
-    uint256 invar;
-    require invar >= balance1 + balance2;
-    require invar <= balance1 * balance2;
-    require determineInvariant[balance1][balance2] == invar;
-    return invar;
-}
+// /// MDG: This function is a summary for calcInvariant that assumes that the invariant
+// /// is greater than the sum of pool's token balances and less than the product 
+// function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
+//     uint256 invar;
+//     require invar >= balance1 + balance2;
+//     require invar <= balance1 * balance2;
+//     require determineInvariant[balance1][balance2] == invar;
+//     return invar;
+// }
 
 // if invariant increases, the new balance should be greater than the previous balance.
 function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns uint256 {
     uint256 newBalance;
-    uint256 oldInvariant = determineInvariant[balance1][balance2];
+    uint256 oldInvariant = determineInvariant(balance1,balance2);
     if (index == 0) {
         require newInvariant > oldInvariant => newBalance > balance1;
     } else {
@@ -93,31 +104,43 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
 /// A ghost tracking values for an invariant given two token balances;
 ///
 /// @dev we assume only 2 tokens in a pool and that a bounded arbitrary value for the invariant
-ghost mapping(uint256 => mapping(uint256 => uint256)) determineInvariant;
+ghost _calculatedInvariant(uint256 balance1, uint256 balance2) returns(uint256) {
+    axiom forall uint256 balance1. forall uint256 balance2.
+        determineInvariant(balance1, balance2) >= balance1 + balance2;
+    axiom forall uint256 balance1. forall uint256 balance2.
+        determineInvariant(balance1, balance2) <= balance1 * balance2;
+}
 
 /// A ghost tracking the sum of all BPT user balances in the pool
 ///
 /// @dev we assume sum of all balances initially equals 0
-ghost sum_all_users_BPT() returns uint256 {
+ghost mathint sum_all_users_BPT {
     init_state axiom sum_all_users_BPT() == 0;
 }
 
 /// @dev keep `sum_all_users_BPT` up to date with the `_balances` mapping
 hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
-  havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
+  // havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
+    sum_all_users_BPT = sum_all_users_BPT + balance - old_balance;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 //                            Invariants                                  //
 ////////////////////////////////////////////////////////////////////////////
 
-/// @title Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
+// MDG: if it's actually equal, might as well prove that.
+/// Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
 invariant solvency()
-    totalSupply() >= sum_all_users_BPT()
+    totalSupply() >= sum_all_users_BPT
 
 ////////////////////////////////////////////////////////////////////////////
 //                               Rules                                    //
 ////////////////////////////////////////////////////////////////////////////
+
+// 
+// The following rules taken together prove that if total BPT increases, then
+// the total balance of the tokens held by the pool increased
+
 
 // balances == 0 && totalSupply == 0 => no mint
 // everything zero or all nonzero
@@ -139,8 +162,22 @@ invariant solvency()
 // totalSupply == 0, Recovery, sane
 // _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/80fc853c0ff47c343d48/?anonymousKey=4abfb9806a151f68f7433a7f9bb718d9f0edecac
 // _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/b5e2cd6a77a88c1099d7/?anonymousKey=9822a1adfb5e2eec4fed08a5ed6a320337e51c2d
+
+/// MDG: use function instead of copy-paste
+function noFreeMintingHelper(totalSupplyIsZero, inRecoveryMode, joinKind) {
+
+}
+
 rule noFreeMinting_exactTokens_noSupply_noRecovery(method f) {
-    
+    noFreeMintingHelper(false, true, 1);
+}
+rule noFreeMinting_exactTokens_noSupply_noRecovery(method f) {
+    noFreeMintingHelper(false, false, 1);
+}
+
+
+rule 
+
     setup();
     require totalSupply() == 0;
     require !inRecoveryMode();
