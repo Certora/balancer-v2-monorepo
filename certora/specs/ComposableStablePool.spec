@@ -26,6 +26,7 @@ methods {
     _AMP_PRECISION() returns (uint256) envfree
     maxAmp() returns (uint256) envfree
     minAmp() returns (uint256) envfree
+    initialized() returns (bool) envfree
 	// stable math
     // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
@@ -380,6 +381,7 @@ invariant amplificationFactorBounded(env e)
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _MIN_UPDATE_TIME() == DAY();
     require _AMP_PRECISION() == 1000;
+    require !initialized() => getAmplificationFactor(e) == 0;
 } }
 
 

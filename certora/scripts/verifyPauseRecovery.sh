@@ -22,6 +22,7 @@ certoraRun \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
+    --cache balancerComposable \
     $RULE \
     --rule_sanity \
     --msg "CSP: PauseRecovery $1 $2" \

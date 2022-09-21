@@ -21,7 +21,7 @@ methods {
     registerTokens(bytes32, address[], address[]) => NONDET
     registerPool(uint8) returns (bytes32) => NONDET
     getProtocolFeesCollector() returns (address) => NONDET
-    getRate() returns (uint256) envfree    
+    getRate() returns (uint256) 
     getSupplyAndFeesData(uint256) returns (uint256) envfree
     getActualSupply() returns (uint256) envfree
     
@@ -41,7 +41,7 @@ methods {
     getBptIndex() envfree
 
     // harness functions
-    disableRecoveryMode() envfree
+    disableRecoveryMode()
     // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
@@ -86,20 +86,6 @@ function getAmplificationFactor(env e) returns uint256 {
     return param;
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-//                            Invariants                                  //
-////////////////////////////////////////////////////////////////////////////
-
-invariant amplificationFactorBounded(env e)
-    getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
-{ preserved {
-    // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
-    require AMP_PRECISION() == 1000;
-} }
-
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
@@ -113,26 +99,26 @@ rule recoveryExitAll() {
 }
 
 
-// Recovery and Paused Modes
-/// @title rule: noRevertOnRecoveryMode
-/// @notice: When in recovery mode the following operation must not revert
-/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
-/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-rule exitNonRevertingOnRecoveryMode(method f) {
-    env e; calldataarg args;
-    require e.msg.sender == getVault();
-    // require inRecoveryMode(e);
-    // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(); // needs to stay in recovery mode
-    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-    require e.msg.value == 0;
-    // setup();
-    bytes32 poolId; address sender; address recipient; uint256[] balances;
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
+// // Recovery and Paused Modes
+// /// @title rule: noRevertOnRecoveryMode
+// /// @notice: When in recovery mode the following operation must not revert
+// /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
+// /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
+// rule exitNonRevertingOnRecoveryMode(method f) {
+//     env e; calldataarg args;
+//     require e.msg.sender == getVault();
+//     // require inRecoveryMode(e);
+//     // f(e, args); // arbitrary f in case there is frontrunning
+//     require inRecoveryMode(); // needs to stay in recovery mode
+//     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
+//     require e.msg.value == 0;
+//     // setup();
+//     bytes32 poolId; address sender; address recipient; uint256[] balances;
+//     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
+//     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
-    assert !lastReverted, "recovery mode must not fail";
-}
+//     assert !lastReverted, "recovery mode must not fail";
+// }
 
  
 // Paused Mode:
@@ -209,8 +195,9 @@ rule DisablingRMDoesNotChangeValues() {
     uint256 _balance1 = getSupplyAndFeesData(1);
     uint256 _virtualSupply = getSupplyAndFeesData(2);
     uint256 _protocolFeeAmount =  getSupplyAndFeesData(3);
+    env e;
 
-    disableRecoveryMode();
+    disableRecoveryMode(e);
 
     uint256 balance0_ = getSupplyAndFeesData(0);
     uint256 balance1_ = getSupplyAndFeesData(1);

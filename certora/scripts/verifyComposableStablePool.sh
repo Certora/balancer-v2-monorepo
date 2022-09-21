@@ -29,6 +29,7 @@ certoraRun \
     --send_only \
     $RULE \
     --msg "ComposableStablePool: $1 $2" \
+    --rule_sanity \
 
 
 
