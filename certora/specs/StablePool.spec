@@ -30,43 +30,27 @@ methods {
 
     // stable pool
 	_getAmplificationParameter() returns (uint256,bool)
-    //getJoinKind(bytes) returns (uint8) envfree
+    getJoinKind(bytes) returns (uint8) envfree
 
     //// @dev functions called by stable math functions to remove dynamic array from funtion signature
     getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) => newGetTokenBalance(balance1, balance2, newInvariant, index)
     calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) => newCalcInvar(balance1,balance2)
-
-    //// @dev decoding function called internally by one of the join kinds
-    //exactTokensInForBptOut(bytes) returns (uint256[], uint256) => NONDET
-	
-    //// @dev stable math
-    //_calculateInvariant(uint256 ampParam, uint256[] balances) returns (uint256) => NONDET
-    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    //_calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256)returns (uint256) => ALWAYS(1)
-    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => NONDET
-	// _calcTokensOutGivenExactBptIn(uint256[],uint256,uint256) returns (uint256[]) => NONDET
-    // _calcDueTokenProtocolSwapFeeAmount(uint256 ,uint256[],uint256,uint256,uint256) returns (uint256) => NONDET
-    //_getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => NONDET
-    // _getRate(uint256[],uint256,uint256) returns (uint256) => NONDET
     
     //// @dev vault 
     getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
     getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
-    getVault() returns address envfree;
-    // authorizor functions
     getAuthorizor() returns address => NONDET
     _getAuthorizor() returns address => NONDET
     _canPerform(bytes32, address) returns (bool) => DISPATCHER(true)
     canPerform(bytes32, address, address) returns (bool) => DISPATCHER(true)
+
     // harness functions
     setRecoveryMode(bool)
     minAmp() returns (uint256) envfree
     maxAmp() returns (uint256) envfree
     initialized() returns (bool) envfree
     AMP_PRECISION() returns (uint256) envfree
+    getUintArrayIndex(uint256[], uint256) returns (uint256) envfree
 
     getTotalTokens() returns (uint256) envfree
 
@@ -169,8 +153,9 @@ rule noFreeMinting_exactTokens_noSupply_noRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 1; // exact tokens
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 1; // exact tokens
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -197,8 +182,9 @@ rule noFreeMinting_exactTokens_noSupply_yesRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 1; // exact tokens
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 1; // exact tokens
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -225,8 +211,9 @@ rule noFreeMinting_exactTokens_yesSupply_noRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 1; // exact tokens
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 1; // exact tokens
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -253,8 +240,9 @@ rule noFreeMinting_exactTokens_yesSupply_yesRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract; // times out if I remove this 
-        require getJoinKind(bytes) == 1; // exact tokens
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 1; // exact tokens
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -281,8 +269,9 @@ rule noFreeMinting_exactBpt_noSupply_noRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 2; // exact bpt
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 2; // exact bpt
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -309,8 +298,9 @@ rule noFreeMinting_exactBpt_noSupply_yesRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 2; // exact bpt
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 2; // exact bpt
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -337,8 +327,9 @@ rule noFreeMinting_exactBpt_yesSupply_noRecovery(method f) {
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
         bytes32 poolId; address sender; address recipient; uint256[] balances; 
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-        require sender != currentContract;
-        require getJoinKind(bytes) == 2; // exact bpt
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 2; // exact bpt
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;
@@ -363,10 +354,12 @@ rule noFreeMinting_exactBpt_yesSupply_yesRecovery(method f) {
     env e;
 
     if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        bytes32 poolId; address sender; address recipient; uint256[] balances; 
+        bytes32 poolId; address sender; address recipient; uint256[] balances;
         uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
         require sender != currentContract; // times out if I remove this 
-        require getJoinKind(bytes) == 2; // exact bpt
+        require getUintArrayIndex(balances, 0) > 0;
+        require getUintArrayIndex(balances, 1) > 0;
+        require getJoinKind(userData) == 2; // exact bpt
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
     } else {
         calldataarg args;

@@ -37,7 +37,10 @@ contract StablePoolHarness is StablePool {
     function getJoinKind(bytes memory userData) public pure returns(StablePoolUserData.JoinKind) {
         return userData.joinKind();
     }
-        
+    
+    function getUintArrayIndex(uint256[] memory array, uint256 index) public pure returns(uint256) {
+        return array[index];
+    }
     
     // sets recovery mode on or off
     function setRecoveryMode(bool enabled) public {
@@ -52,11 +55,7 @@ contract StablePoolHarness is StablePool {
         uint256 lastChangeBlock,
         uint256 protocolSwapFeePercentage,
         bytes memory userData
-    ) public override returns (uint256[] memory, uint256[] memory) {
-        uint256[] memory amounts;
-        uint256[] memory fees;
-        require(balances[0] > 0);
-        require(balances[1] > 0);
+    ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
         require(_getTotalTokens() == balances.length, "length needs to be the same");
         (amounts, fees) = super.onJoinPool(
             poolId,
@@ -109,11 +108,7 @@ contract StablePoolHarness is StablePool {
         uint256 lastChangeBlock,
         uint256 protocolSwapFeePercentage,
         bytes memory userData
-    ) public override returns (uint256[] memory, uint256[] memory) {
-        uint256[] memory amounts;
-        uint256[] memory fees;
-        //require(balances[0] > 0);
-        //require(balances[1] > 0);
+    ) public override returns (uint256[] memory amounts, uint256[] memory fees) {
         require(recipient != address(this), "can not send pool tokes when exiting");
         require(_getTotalTokens() == balances.length, "length needs to be the same");
         uint256 inputBalance;
@@ -168,16 +163,15 @@ contract StablePoolHarness is StablePool {
         bytes32 _poolId, // used in both            
         uint256 indexIn,
         uint256 indexOut
-    ) public returns (uint256) {
+    ) public returns (uint256 amountCalculated) {
         SwapRequest memory request;
         uint256 amountGiven;
-        uint256 amountCalculated;
         uint256 amountIn;
         uint256 amountOut;
 
         if (_getTotalTokens()==2) {
             request = SwapRequest({kind: IVault.SwapKind(_kind), tokenIn: IERC20(address(0)), tokenOut: IERC20(address(0)), amount: _amount, poolId: _poolId, lastChangeBlock: 0, from: address(0), to: address(0), userData: '0'});
-            super.onSwap(request, balanceOf(indexIn), balanceOf(indexOut));
+            amountCalculated = super.onSwap(request, balanceOf(indexIn), balanceOf(indexOut));
         } else {
             request = SwapRequest({kind: IVault.SwapKind(_kind), tokenIn: IERC20(address(0)), tokenOut: IERC20(address(0)), amount: _amount, poolId: _poolId, lastChangeBlock: 0, from: address(0), to: address(0), userData: '0'});
             uint256[] memory balances = new uint256[](_getTotalTokens());
@@ -221,14 +215,6 @@ contract StablePoolHarness is StablePool {
         total = total.add(_token4.balanceOf(address(this)));
     }
 
-    function totalFees() public view returns (uint256 total) {        
-        total = collectedFees[0];
-        total = total.add(collectedFees[1]);
-        total = total.add(collectedFees[2]);
-        total = total.add(collectedFees[3]);
-        total = total.add(collectedFees[4]);
-    }
-
     function totalTokensBalanceUser(address user) public view returns (uint256 total) {        
         total = _token0.balanceOf(user);
         total = total.add(_token1.balanceOf(user));
@@ -237,21 +223,6 @@ contract StablePoolHarness is StablePool {
         total = total.add(_token4.balanceOf(user));
     }
 
-    function getToken0() public view returns (address) {
-        return address(_token0);
-    }
-    function getToken1() public view returns (address) {
-        return address(_token1);
-    }
-    function getToken2() public view returns (address) {
-        return address(_token2);
-    }
-    function getToken3() public view returns (address) {
-        return address(_token3);
-    }
-    function getToken4() public view returns (address) {
-        return address(_token4);
-    }
     function getTotalTokens() public view returns (uint256) {
         return _getTotalTokens();
     }
@@ -267,9 +238,3 @@ contract StablePoolHarness is StablePool {
     function AMP_PRECISION() public pure returns (uint256) {
         return StableMath._AMP_PRECISION;
     }
-
-    // function sanitizeUserData(bytes memory userData) public {
-    //     (, uint256[] memory amountsIn, uint256 minBPTAmountOut) = abi.decode(userData, (StablePoolUserData.ExitKind, uint256[], uint256));
-    //     InputHelpers.ensureInputLengthMatch(_getTotalTokens(), amountsIn.length);
-    // }
-}
