@@ -295,79 +295,6 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
 // returns value encoded in solidity for 1 day
 definition DAY() returns uint256 = 1531409238;
 
-
-// /// @rule amplfiicationFactorFollowsEndTime
-// /// @description: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
-// /// amplification factor must be less than value set
-// rule amplificationFactorFollowsEndTime(method f) {
-//     env e; calldataarg args;
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-//     startValue, isUpdating = _getAmplificationParameter(e);
-
-//     assert !inRecoveryMode();
-//     startAmplificationParameterUpdate(e, endValue, endTime);
-//     f(e, args); // call some arbitrary function
-
-//     env e_post;
-//     require e_post.block.timestamp > e.block.timestamp;
-//     require e_post.block.timestamp < endTime;
-//     uint256 currentParam;
-//     currentParam, isUpdating = _getAmplificationParameter(e_post);
-
-//     if (endValue > startValue) {
-//         assert currentParam < endValue, "getter: parameter increased too fast";
-//         assert currentParam > startValue, "amplification did not increase";
-//     } else {
-//         assert currentParam > endValue, "getter: parameter decreased too fast";
-//         assert currentParam < startValue, "amplification did not decrease";
-//     }
-// }
-
-// /// @rule: amplificationFactorTwoDayWait
-// /// @description: start the amplification factor changing. Wait 2 days. Check the value at that timestamp, and then assert the value doesn't change after
-// rule amplificationFactorTwoDayWait(method f) {
-//     env e; 
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-//     startValue, isUpdating = _getAmplificationParameter(e);
-//     startAmplificationParameterUpdate(e, endValue, endTime);
-
-//     env e_f; calldataarg args;
-//     f(e_f, args);
-
-//     env e_2days;
-//     require e_2days.block.timestamp == e.block.timestamp + (2 * DAY());
-//     uint256 actualEndValue;
-//     actualEndValue, isUpdating = _getAmplificationParameter(e_2days);
-
-//     env e_post;
-//     require e_post.block.timestamp > e_2days.block.timestamp;
-//     uint256 endValuePost;
-//     endValuePost, isUpdating = _getAmplificationParameter(e_post);
-//     assert endValuePost == actualEndValue, "amplfication factor still changing after 2 days";
-// }
-
-// /// @rule: amplificationFactorNoMoreThanDouble
-// /// @descrption: the amplification factor may not increase by more than a factor of two in a given day
-// rule amplificationFactorNoMoreThanDouble(method f) {
-//     env e; 
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-//     startValue, isUpdating = _getAmplificationParameter(e);
-//     startAmplificationParameterUpdate(e, endValue, endTime);
-
-//     calldataarg args; env e_f;
-//     f(e_f, args);
-
-//     env e_incr;
-//     require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
-//     uint256 actualEndValue;
-//     actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
-
-//     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
-// }
-
 function getAmplificationFactor(env e) returns uint256 {
     uint256 param; bool updating;
     param, updating = _getAmplificationParameter(e);
@@ -379,7 +306,8 @@ invariant amplificationFactorBounded(env e)
 { preserved {
     // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
     require _AMP_PRECISION() == 1000;
     require !initialized() => getAmplificationFactor(e) == 0;
 } }
@@ -391,7 +319,8 @@ invariant amplificationFactorBounded(env e)
 /// @notice: passes
 rule amplificationFactorFollowsEndTime(method f) {
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
     require _AMP_PRECISION() == 1000; 
 
     env e; calldataarg args;
@@ -399,7 +328,7 @@ rule amplificationFactorFollowsEndTime(method f) {
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
 
-    assert !inRecoveryMode();
+    inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
     f(e, args); // call some arbitrary function
 
@@ -423,7 +352,8 @@ rule amplificationFactorFollowsEndTime(method f) {
 /// @notice: passes
 rule amplificationFactorNoMoreThanDouble(method f) {
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
     require _AMP_PRECISION() == 1000;
 
     env e; 
@@ -448,7 +378,8 @@ rule amplificationFactorNoMoreThanDouble(method f) {
 /// @descrption: if the amplification factor starts updating, then it must continue so for one day
 /// @notice: passes
 rule amplificationFactorUpdatingOneDay(method f) {
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _AMP_PRECISION() == 1000;
 
@@ -472,15 +403,19 @@ rule amplificationFactorUpdatingOneDay(method f) {
 }
 
 rule amplificationUpdateCanFinish() {
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
 
     env _e;
     uint256 endValue; uint256 endTime;
 
+    require maxAmp() < 100000;
     uint256 startValue; bool isUpdating;
+
     startValue, isUpdating = _getAmplificationParameter(_e);
     require !isUpdating;
+    require startValue < maxAmp();
 
     startAmplificationParameterUpdate(_e, endValue, endTime);
 
@@ -488,6 +423,27 @@ rule amplificationUpdateCanFinish() {
     require e_.block.timestamp > _e.block.timestamp + (10000 * DAY()); // arbitrarily use 10000 days to represent a very long time
     bool isStillUpdating;
     _, isStillUpdating = _getAmplificationParameter(e_);
-
     assert !isStillUpdating, "system still updating";
+}
+
+
+// rule cantDoubleUpdate() {
+//     env e;
+//     uint256 endValue; uint256 endTime;
+//     uint256 startValue; bool isUpdating;
+
+//     startValue, isUpdating = _getAmplificationParameter(e);
+//     require isUpdating;
+
+//     startAmplificationParameterUpdate@withrevert(e, endValue, endTime);
+//     assert lastReverted, "double update";
+// }
+
+rule testingRequires() {
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
+    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2; // b
+    // require _AMP_PRECISION() == 1000; // c
+
+    assert _MIN_UPDATE_TIME() == DAY(), "explicit";
 }
