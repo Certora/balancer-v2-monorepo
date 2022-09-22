@@ -11,7 +11,7 @@ contract StablePoolHarness is StablePool {
     using StablePoolUserData for bytes;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
-    uint256[] collectedFees;
+    uint256[] public collectedFees;
     
     constructor(
         IVault vault,
@@ -27,7 +27,11 @@ contract StablePoolHarness is StablePool {
     swapFeePercentage, pauseWindowDuration, bufferPeriodDuration, owner) {
     }
 
-    function getAmplificationParameter() public view returns(uint256, bool) {
+    function getTotalTokens() public view returns (uint256) {
+        return _getTotalTokens();
+    }
+
+    function getAmplificationParameter_() public view returns(uint256, bool) {
         return _getAmplificationParameter();
     }
 
@@ -100,8 +104,8 @@ contract StablePoolHarness is StablePool {
         _sendAsset(_token1, recipient, amounts[1], fees[1], 1);
     }
         
-    function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee, uint256 id) public {
-        require(token == _token0 || token == _token1 || token == _token2 || token == _token3 || token == _token4);
+    function _sendAsset(IERC20 token, address recipient, uint256 amount, uint256 fee, uint256 id) internal {
+        require(token == _token0 || token == _token1);
         token.transfer(recipient, amount);
         if (fee > 0) {
             collectedFees[id] += fee;
@@ -111,10 +115,6 @@ contract StablePoolHarness is StablePool {
     function totalTokensBalance() public view returns (uint256 total) {        
         total = _token0.balanceOf(address(this));
         total = total.add(_token1.balanceOf(address(this)));
-    }
-
-    function getTotalTokens() public view returns (uint256) {
-        return _getTotalTokens();
     }
 
     function MIN_AMP() public pure returns (uint256) {
@@ -128,3 +128,4 @@ contract StablePoolHarness is StablePool {
     function AMP_PRECISION() public pure returns (uint256) {
         return StableMath._AMP_PRECISION;
     }
+}

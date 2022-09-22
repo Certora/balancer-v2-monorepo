@@ -79,7 +79,7 @@ definition DAY() returns uint256 = 1531409238;
 
 function getAmplificationFactor(env e) returns uint256 {
     uint256 param; bool updating;
-    param, updating = _getAmplificationParameter(e);
+    param, updating = getAmplificationParameter_(e);
     return param;
 }
 
@@ -110,7 +110,7 @@ rule amplificationFactorFollowsEndTime(method f) {
     env e; calldataarg args;
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
-    startValue, isUpdating = _getAmplificationParameter(e);
+    startValue, isUpdating = getAmplificationParameter_(e);
 
     require !inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
@@ -120,7 +120,7 @@ rule amplificationFactorFollowsEndTime(method f) {
     require e_post.block.timestamp > e.block.timestamp;
     require e_post.block.timestamp < endTime;
     uint256 currentParam;
-    currentParam, isUpdating = _getAmplificationParameter(e_post);
+    currentParam, isUpdating = getAmplificationParameter_(e_post);
 
     if (endValue > startValue) {
         assert currentParam < endValue, "getter: parameter increased too fast";
@@ -143,7 +143,7 @@ rule amplificationFactorFollowsEndTime(method f) {
 //     env e; 
 //     uint256 endValue; uint256 endTime;
 //     uint256 startValue; bool isUpdating;
-//     startValue, isUpdating = _getAmplificationParameter(e);
+//     startValue, isUpdating = getAmplificationParameter_(e);
 //     startAmplificationParameterUpdate(e, endValue, endTime);
 
 //     env e_f; calldataarg args;
@@ -152,12 +152,12 @@ rule amplificationFactorFollowsEndTime(method f) {
 //     env e_2days;
 //     require e_2days.block.timestamp == e.block.timestamp + (2 * DAY());
 //     uint256 actualEndValue;
-//     actualEndValue, isUpdating = _getAmplificationParameter(e_2days);
+//     actualEndValue, isUpdating = getAmplificationParameter_(e_2days);
 
 //     env e_post;
 //     require e_post.block.timestamp > e_2days.block.timestamp;
 //     uint256 endValuePost;
-//     endValuePost, isUpdating = _getAmplificationParameter(e_post);
+//     endValuePost, isUpdating = getAmplificationParameter_(e_post);
 //     assert endValuePost == actualEndValue, "amplfication factor still changing after 2 days";
 // }
 
@@ -173,7 +173,7 @@ rule amplificationFactorNoMoreThanDouble(method f) {
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
 
-    startValue, isUpdating = _getAmplificationParameter(e);
+    startValue, isUpdating = getAmplificationParameter_(e);
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     calldataarg args; env e_f;
@@ -182,7 +182,7 @@ rule amplificationFactorNoMoreThanDouble(method f) {
     env e_incr;
     require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
     uint256 actualEndValue;
-    actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
+    actualEndValue, isUpdating = getAmplificationParameter_(e_incr);
 
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
 }
@@ -202,7 +202,7 @@ rule amplificationFactorUpdatingOneDay(method f) {
     // require endValue <= maxAmp();
 
     uint256 startValue; bool isUpdating;
-    startValue, isUpdating = _getAmplificationParameter(e_pre);
+    startValue, isUpdating = getAmplificationParameter_(e_pre);
     require endValue != startValue;
     require !isUpdating; // can't already be updating
     startAmplificationParameterUpdate(e_pre, endValue, endTime);
@@ -210,6 +210,6 @@ rule amplificationFactorUpdatingOneDay(method f) {
     env e_post;
     require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + DAY());
     uint256 actualEndValue; bool isUpdating_;
-    actualEndValue, isUpdating_ = _getAmplificationParameter(e_post);
+    actualEndValue, isUpdating_ = getAmplificationParameter_(e_post);
     assert isUpdating_, "must still be updating";
 }
