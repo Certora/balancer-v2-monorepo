@@ -27,7 +27,8 @@ certoraRun \
     --settings -s=z3 \
     --packages @balancer-labs=node_modules/@balancer-labs \
     --solc_args "['--optimize', '--optimize-runs', '200']" \
-    --path ./
+    --path ./ \
+    --solc solc7.1
     # --packages @balancer-labs=/mnt/c/Users/YufeiLi/Desktop/sms/certora/ComposableStablePool/node_modules/@balancer-labs
     # --packages_path node_modules
     # --packages_path /mnt/c/Users/YufeiLi/Desktop/sms/certora/ComposableStablePool/node_modules

@@ -364,7 +364,7 @@ contract StableMath {
     ) public returns (uint256) {
         beenCalled = true;
         require (_getTokenBalanceGivenInvariantAndAllOtherBalances_map[amplificationParameter][balances[0]][balances[1]][invariant][tokenIndex]>0);
-       return _getTokenBalanceGivenInvariantAndAllOtherBalances_map[amplificationParameter][balances[0]][balances[1]][invariant][tokenIndex];
+        return _getTokenBalanceGivenInvariantAndAllOtherBalances_map[amplificationParameter][balances[0]][balances[1]][invariant][tokenIndex];
         // return amplificationParameter + balances[0] + balances[1] + invariant + tokenIndex;
     }
 }

@@ -2,6 +2,7 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "../munged/pool-stable/contracts/ComposableStablePool.sol";
+// import "../munged/interfaces/contracts/pool-utils/BasePoolUserData.sol";
 
 // This is the contract that is actually verified; it may contain some helper
 // methods for the spec to access internal state, or may override some of the
@@ -9,6 +10,7 @@ import "../munged/pool-stable/contracts/ComposableStablePool.sol";
 contract ComposableStablePoolHarness is ComposableStablePool {
     using SafeMath for uint256;
     using StablePoolUserData for bytes;
+    using PriceRateCache for bytes32;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
@@ -272,6 +274,10 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         return StableMath._AMP_PRECISION;
     }
 
+    function isRecoveryModeExitKind(bytes memory userData) public pure returns (bool) {
+        return BasePoolUserData.isRecoveryModeExitKind(userData);
+    }
+    
     function getProtocolPoolOwnershipPercentage(
         uint256[] memory balances
     ) public returns (uint256, uint256) {
@@ -298,4 +304,39 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         if (idx == 2) return virtualSupply_;
         if (idx == 3) return protocolFeeAmount_;
     }
-}
+
+    function getAdjustedBalances(uint256 balance, bool ignoreExemptFlags)
+        public       
+        returns (uint256)
+    {
+        uint256[] memory balances = new uint256[](1);
+        balances[0] = balance;        
+        uint256[] memory adjustedBalances = _getAdjustedBalances(balances, ignoreExemptFlags);
+        return adjustedBalances[0];
+    }
+
+    function getCurrentRate(uint256 index) public returns(uint256) {
+        bytes32 cache = _tokenRateCaches[index];
+        return cache.getCurrentRate();
+    }
+
+    function getOldRate(uint256 index) public returns(uint256) {
+        bytes32 cache = _tokenRateCaches[index];
+        return cache.getOldRate();
+    }
+
+    function getCurrentAmpAndInvariant() public returns(uint256, uint256) {        
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        // uint256[] memory balances = _dropBptItem(registeredBalances);
+        uint256[] memory balances = registeredBalances;
+
+        (uint256 currentAmp, ) = _getAmplificationParameter();
+        uint256 currentInvariant = StableMath._calculateInvariant(currentAmp, balances);
+        return (currentAmp, currentInvariant);
+    }
+
+    function getVirtualSupply() public returns(uint256) {
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        return totalSupply().sub(registeredBalances[getBptIndex()]);
+    }
+ }

@@ -23,7 +23,5 @@ certoraRun \
     --send_only \
     $RULE \
     --rule_sanity \
-    --msg "CSP: $1 $2" \
+    --msg "CSP: PauseRecovery $1 $2" \
     --solc solc7.3
-    # --settings -divideNoRemainder=true \
-    # --smt_timeout 3000 \
