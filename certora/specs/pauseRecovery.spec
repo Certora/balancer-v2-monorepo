@@ -1,3 +1,16 @@
+/***
+### Assumptions and Simplifications
+ #### TODO
+    
+#### Harnessing
+ #### TODO
+    
+#### Munging
+    
+#### Definitions
+
+*/
+
 import "../helpers/erc20.spec"
 
 // using DummyERC20A as _token0
@@ -174,7 +187,7 @@ rule DisablingRMDoesNotChangeValues() {
 }
 
 /// @title: prOtherFunctionsAlwaysRevert
-/// @notice If both paused and recovery mode is active, the set functions must always revert
+/// @notice If both paused and recovery mode is active, the set functions must always revert.
 /// @dev: passes
 rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
@@ -194,7 +207,7 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 }
 
 /// @title: recoveryExitNoStableMath
-/// @notice: in recovery mode, exit must never enter any of the functions in StableMath.sol
+/// @notice: In recovery mode, exit must never enter any of the functions in StableMath.sol.
 /// @dev: passes
 rule recoveryExitNoStableMath() {
 

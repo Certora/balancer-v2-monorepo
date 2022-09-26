@@ -1,3 +1,15 @@
+/***
+### Assumptions and Simplifications
+ #### TODO
+    
+#### Harnessing
+ #### TODO
+    
+#### Munging
+    
+#### Definitions
+
+*/
 methods {
     totalTokensBalance(address) returns (uint256) envfree
     inRecoveryMode() returns (bool) envfree

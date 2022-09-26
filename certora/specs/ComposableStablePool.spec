@@ -1,6 +1,15 @@
-////////////////////////////////////////////////////////////////////////////
-//                      Methods                                           //
-////////////////////////////////////////////////////////////////////////////
+/***
+### Assumptions and Simplifications
+ #### TODO
+    
+#### Harnessing
+ #### TODO
+    
+#### Munging
+    
+#### Definitions
+
+*/
 
 methods {
     // getters
@@ -288,8 +297,9 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
 definition DAY() returns uint256 = 1531409238;
 
 function ampSetup() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
+    // require _MIN_UPDATE_TIME() <= DAY();
+    // require _MIN_UPDATE_TIME() > 0;
+    require _MIN_UPDATE_TIME == DAY();
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _AMP_PRECISION() == 1000;
     require maxAmp() > minAmp();
