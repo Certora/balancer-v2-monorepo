@@ -87,7 +87,7 @@ rule recoveryExitAll() {
 // // Recovery and Paused Modes
 
 /// @title: basicOperationsRevertOnPause
-/// @description: All basic operations must revert while in a paused state
+/// @description: All basic operations must revert while in a paused state.
 /// @dev: passes
 rule basicOperationsRevertOnPause(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
@@ -105,7 +105,7 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> (
 }
 
 /// @title pauseStartOnlyPauseWindow
-/// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow
+/// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow.
 /// @dev passing 
 rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
@@ -124,7 +124,7 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
 
 /// @title: rule: unpausedAfterBuffer
 /// @notice: After the buffer window finishes, the contract may not enter the paused state
-/// @notice: passes
+/// @dev: passes
 rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     // call some arbitrary function
@@ -139,7 +139,7 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
 }
 
 /// @title: ZeroOwnerPercentageInRecovery
-/// @notice: _getProtocolPoolOwnershipPercentage must always return 0 if recovery mode is enabled
+/// @notice: _getProtocolPoolOwnershipPercentage must always return 0 if recovery mode is enabled.
 rule ZeroOwnerPercentageInRecovery() {
     env e; 
     calldataarg args;
@@ -151,7 +151,7 @@ rule ZeroOwnerPercentageInRecovery() {
 }
 
 /// @title: DisablingRMDoesNotChangeValues
-/// @notice: Disabling recovery mode must not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode
+/// @notice: Disabling recovery mode must not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode.
 /// @dev: passes
 rule DisablingRMDoesNotChangeValues() {
     uint256 _balance0 = getSupplyAndFeesData(0);

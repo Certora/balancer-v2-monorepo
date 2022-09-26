@@ -304,7 +304,7 @@ function getAmplificationFactor(env e) returns uint256 {
 }
 
 /// @title: amplfiicationFactorBounded
-/// @notice: the amplification factor must not go past the set minimum amp and maximum amp
+/// @notice: The amplification factor must not go past the set minimum amp and maximum amp
 invariant amplificationFactorBounded(env e)
     getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
 { preserved {
@@ -367,8 +367,8 @@ rule amplificationFactorFollowsEndTimeIncr(method f) {
     assert currentParam > startValue, "amplification did not increase";
 }
 
-/// @rule: amplificationFactorNoMoreThanDouble
-/// @notice: the amplification factor may not increase by more than a factor of two in a given day
+/// @title: amplificationFactorNoMoreThanDouble
+/// @notice: The amplification factor may not increase by more than a factor of two in a given day
 /// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts
 /// @notice: passes
 rule amplificationFactorNoMoreThanDoubleIncr(method f) {
@@ -430,7 +430,7 @@ rule amplificationFactorNoMoreThanDoubleDecr(method f) {
 }
 
 /// @rule: amplificationFactorUpdatingOneDay
-/// @notice: if the amplification factor starts updating, then it must continue so for one day
+/// @notice: if the amplification factor starts updating, then it must continue so for one day.
 /// @dev: passes
 rule amplificationFactorUpdatingOneDay(method f) {
     ampSetup();
@@ -459,8 +459,8 @@ rule amplificationFactorUpdatingOneDay(method f) {
 }
 
 /// @title: amplificationUpdateCanFinish
-/// @notice: If you start an amplification update, it must be able to finish within a large number of days
-/// @notice: We choose 1000 days as our metric for an excessive amount of days
+/// @notice: If you start an amplification update, it must be able to finish within a large number of days.
+/// @notice: We choose 1000 days as our metric for an excessive amount of days.
 rule amplificationUpdateCanFinish() {
     ampSetup();
 
@@ -484,7 +484,8 @@ rule amplificationUpdateCanFinish() {
 }
 
 /// @title: noDoubleUpdate
-/// @description: You must not be able to change the amplification factor if it is currently in the process of updating
+/// @notice: You must not be able to change the amplification factor if it is currently in the process of updating.
+/// @dev: passes
 rule noDoubleUpdate() {
     ampSetup();
 
@@ -563,28 +564,4 @@ rule storageCheck2TK() {
     require ret != 0;
     // does it get set to be the same as the value, or scaled up
     assert ret == endValue * _AMP_PRECISION();
-}
-
-
-
-
-// rule cantDoubleUpdate() {
-//     env e;
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-
-//     startValue, isUpdating = _getAmplificationParameter(e);
-//     require isUpdating;
-
-//     startAmplificationParameterUpdate@withrevert(e, endValue, endTime);
-//     assert lastReverted, "double update";
-// }
-
-rule testingRequires() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2; // b
-    // require _AMP_PRECISION() == 1000; // c
-
-    assert _MIN_UPDATE_TIME() == DAY(), "explicit";
 }
