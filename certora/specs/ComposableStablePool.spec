@@ -203,7 +203,7 @@ invariant solvency()
 /// @title: onlyOnJoinPoolCanAndMustInitialize
 /// @notice: `totalSupply` must be non-zero if and only if `onJoinPool` is successfully called. Additionally, the balance of the zero adress must be non-zero if `onJoinPool` was successfully called.
 /// @dev Calling `onJoinPool` for the first time initializes the pool, minting some BPT to the zero address.
-// @status? passing with rule_sanity advanced
+/// @dev passing with rule_sanity advanced
 rule onlyOnJoinPoolCanAndMustInitialize(method f) {
     env e; calldataarg args; address zero;
     require totalSupply() == 0;
@@ -215,8 +215,8 @@ rule onlyOnJoinPoolCanAndMustInitialize(method f) {
     assert f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector => balanceOf(zero) > 0, "zero address must be minted some tokens on initialization";
 }
 
-// @title The zero address's BPT balance can never go from non-zero to zero.
-// @status? passing with rule_sanity advanced
+/// @title The zero address's BPT balance can never go from non-zero to zero.
+/// @dev passing with rule_sanity advanced
 rule cantBurnZerosBPT(method f) {
     address  zero = 0;
     require balanceOf(zero) > 0;
