@@ -1,4 +1,17 @@
 
+/***
+### Assumptions and Simplifications
+ #### TODO
+    
+#### Harnessing
+ #### TODO
+    
+#### Munging
+    
+#### Definitions
+
+*/
+
 import "../helpers/erc20.spec"
 
 using DummyERC20A as _token0
