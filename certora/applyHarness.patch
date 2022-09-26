@@ -3253,7 +3253,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePool.sol pool-stable/contracts/ComposableStablePool.sol
 --- pool-stable/contracts/ComposableStablePool.sol	2022-09-08 16:57:42.324515300 -0400
-+++ pool-stable/contracts/ComposableStablePool.sol	2022-09-19 14:48:24.707176400 -0400
++++ pool-stable/contracts/ComposableStablePool.sol	2022-09-23 21:52:47.244733000 -0400
 @@ -15,26 +15,26 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -3509,16 +3509,20 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          returns (
              uint256[] memory balances,
              uint256 virtualSupply,
-@@ -955,7 +972,7 @@
+@@ -955,8 +972,10 @@
          // First we query the Vault for current registered balances (which includes preminted BPT), to then calculate
          // the current scaled balances and virtual supply.
          (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
 -        _upscaleArray(registeredBalances, _scalingFactors());
+-        (virtualSupply, balances) = _dropBptItemFromBalances(registeredBalances);
 +        // _upscaleArray(registeredBalances, _scalingFactors());
-         (virtualSupply, balances) = _dropBptItemFromBalances(registeredBalances);
++        // (virtualSupply, balances) = _dropBptItemFromBalances(registeredBalances);
++        virtualSupply = totalSupply().sub(registeredBalances[getBptIndex()]);
++        balances = registeredBalances;
  
          // Now we need to calculate any BPT due in the form of protocol fees. This requires data from the last join or
-@@ -992,7 +1009,7 @@
+         // exit operation. `lastJoinExitAmp` can be useful in the scenario in which the amplification factor has not
+@@ -992,7 +1011,7 @@
       * behavior in the `transferFrom` function (like ERC777 tokens do). These tokens are strictly incompatible with the
       * Vault and Pool design, and are not safe to be used.
       */
@@ -3527,7 +3531,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // We need to compute the current invariant and actual total supply. The latter includes protocol fees that have
          // accrued but are not yet minted: in calculating these we'll actually end up fetching most of the data we need
          // for the invariant.
-@@ -1038,7 +1055,7 @@
+@@ -1038,7 +1057,7 @@
       *
       * In the vast majority of cases, this function should be used instead of `totalSupply()`.
       */
@@ -3536,23 +3540,18 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          (, uint256 virtualSupply, uint256 protocolFeeAmount, , ) = _getSupplyAndFeesData();
          return virtualSupply.add(protocolFeeAmount);
      }
-@@ -1094,8 +1111,13 @@
+@@ -1094,8 +1113,9 @@
          // retroactively accrued, which would be incorrect and could lead to the value of `getRate` decreasing.
  
          (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
 -        _upscaleArray(registeredBalances, _scalingFactors());
--        uint256[] memory balances = _dropBptItem(registeredBalances);
-+        // require (registeredBalances.length==3);
-+        // require (_getTotalTokens()==3);
-+        // require (getBptIndex()==2);
-+        // require (_scalingFactors().length==3);
 +        // _upscaleArray(registeredBalances, _scalingFactors());
-+        // uint256[] memory balances = _dropBptItem(registeredBalances);
-+        uint256[] memory balances = registeredBalances;
+         uint256[] memory balances = _dropBptItem(registeredBalances);
++        // uint256[] memory balances = registeredBalances;
  
          (uint256 currentAmp, ) = _getAmplificationParameter();
          uint256 currentInvariant = StableMath._calculateInvariant(currentAmp, balances);
-@@ -1113,13 +1135,16 @@
+@@ -1113,13 +1133,16 @@
      function _mutateAmounts(
          uint256[] memory toMutate,
          uint256[] memory arguments,
@@ -3571,7 +3570,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          }
      }
  
-@@ -1131,7 +1156,7 @@
+@@ -1131,7 +1154,7 @@
       */
      function _isOwnerOnlyAction(bytes32 actionId)
          internal
@@ -4774,7 +4773,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
                              tokens: tokens,
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePoolProtocolFees.sol pool-stable/contracts/ComposableStablePoolProtocolFees.sol
 --- pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-08 16:57:42.383635200 -0400
-+++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-19 12:08:11.826320900 -0400
++++ pool-stable/contracts/ComposableStablePoolProtocolFees.sol	2022-09-23 18:27:33.450685700 -0400
 @@ -15,14 +15,15 @@
  pragma solidity ^0.7.0;
  pragma experimental ABIEncoderV2;
@@ -4820,7 +4819,15 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // We compute three invariants, adjusting the balances of tokens that have rate providers by undoing the current
          // rate adjustment and then applying the old rate. This is equivalent to multiplying by old rate / current rate.
          //
-@@ -189,8 +196,7 @@
+@@ -127,6 +134,7 @@
+             uint256 swapFeeGrowthInvariant,
+             uint256 totalNonExemptGrowthInvariant,
+             uint256 totalGrowthInvariant
++        // ) = (lastPostJoinExitInvariant, lastPostJoinExitInvariant, lastPostJoinExitInvariant);        
+         ) = _getGrowthInvariants(balances, lastJoinExitAmp);
+ 
+         // By comparing the invariant increase attributable to each source of growth to the total growth invariant,
+@@ -189,8 +197,7 @@
      }
  
      function _getGrowthInvariants(uint256[] memory balances, uint256 lastJoinExitAmp)
@@ -4830,7 +4837,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          returns (
              uint256 swapFeeGrowthInvariant,
              uint256 totalNonExemptGrowthInvariant,
-@@ -202,7 +208,8 @@
+@@ -202,7 +209,8 @@
  
          swapFeeGrowthInvariant = StableMath._calculateInvariant(
              lastJoinExitAmp,
@@ -4840,7 +4847,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          );
  
          // For the other invariants, we can potentially skip some work. In the edge cases where none or all of the
-@@ -227,7 +234,8 @@
+@@ -227,7 +235,8 @@
  
              totalNonExemptGrowthInvariant = StableMath._calculateInvariant(
                  lastJoinExitAmp,
@@ -4850,7 +4857,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
              );
  
              totalGrowthInvariant = StableMath._calculateInvariant(lastJoinExitAmp, balances);
-@@ -278,14 +286,15 @@
+@@ -278,14 +287,15 @@
       * yield fees.
       */
      function _updatePostJoinExit(uint256 currentAmp, uint256 postJoinExitInvariant) internal {
@@ -4874,7 +4881,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          _updateOldRates();
      }
  
-@@ -294,20 +303,22 @@
+@@ -294,20 +304,22 @@
       */
      function getLastJoinExitData()
          public
@@ -4909,7 +4916,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
      }
  
      /**
-@@ -316,7 +327,7 @@
+@@ -316,7 +328,7 @@
       */
      function _isOwnerOnlyAction(bytes32 actionId)
          internal
@@ -4920,7 +4927,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
              // Our inheritance pattern creates a small diamond that requires explicitly listing the parents here.
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePoolRates.sol pool-stable/contracts/ComposableStablePoolRates.sol
 --- pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-08 16:57:42.431634800 -0400
-+++ pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-16 15:48:31.596793300 -0400
++++ pool-stable/contracts/ComposableStablePoolRates.sol	2022-09-22 22:49:41.184228100 -0400
 @@ -14,12 +14,12 @@
  
  pragma solidity ^0.7.0;
@@ -4939,6 +4946,15 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
  import "./ComposableStablePoolStorage.sol";
  
+@@ -87,7 +87,7 @@
+     /**
+      * @dev Updates the old rate for the token at `index` (including BPT). Assumes `index` is valid.
+      */
+-    function _updateOldRate(uint256 index) internal {
++    function _updateOldRate(uint256 index) public {
+         bytes32 cache = _tokenRateCaches[index];
+         _tokenRateCaches[index] = cache.updateOldRate();
+     }
 @@ -96,11 +96,11 @@
       * @dev Returns the rate for a given token. All token rates are fixed-point values with 18 decimals.
       * If there is no rate provider for the provided token, it returns FixedPoint.ONE.
@@ -4961,16 +4977,17 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          returns (
              uint256 rate,
              uint256 oldRate,
-@@ -227,7 +226,7 @@
+@@ -226,8 +225,7 @@
+      * The `balances` array is assumed to not include BPT to ensure that token indices align.
       */
      function _getAdjustedBalances(uint256[] memory balances, bool ignoreExemptFlags)
-         internal
+-        internal
 -        view
-+       
++        internal       
          returns (uint256[] memory)
      {
          uint256 totalTokensWithoutBpt = balances.length;
-@@ -254,7 +253,7 @@
+@@ -254,7 +252,7 @@
      /**
       * @dev Overrides scaling factor getter to compute the tokens' rates.
       */
@@ -4979,7 +4996,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // There is no need to check the arrays length since both are based on `_getTotalTokens`
          uint256 totalTokens = _getTotalTokens();
          uint256[] memory scalingFactors = new uint256[](totalTokens);
-@@ -269,7 +268,7 @@
+@@ -269,7 +267,7 @@
      /**
       * @dev Overrides only owner action to allow setting the cache duration for the token rates
       */
@@ -4990,7 +5007,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  }
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-stable/contracts/ComposableStablePoolStorage.sol pool-stable/contracts/ComposableStablePoolStorage.sol
 --- pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-14 22:38:19.736201400 -0400
-+++ pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-16 15:46:20.191881300 -0400
++++ pool-stable/contracts/ComposableStablePoolStorage.sol	2022-09-24 22:00:06.030927500 -0400
 @@ -14,15 +14,17 @@
  
  pragma solidity ^0.7.0;
@@ -5034,6 +5051,15 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
      // All token balances are normalized to behave as if the token had 18 decimals. We assume a token's decimals will
      // not change throughout its lifetime, and store the corresponding scaling factor for each at construction time.
+@@ -64,7 +66,7 @@
+ 
+     // Rate Providers accommodate tokens with a known price ratio, such as Compound's cTokens.
+ 
+-    IRateProvider internal immutable _rateProvider0;
++    IRateProvider public immutable _rateProvider0;
+     IRateProvider internal immutable _rateProvider1;
+     IRateProvider internal immutable _rateProvider2;
+     IRateProvider internal immutable _rateProvider3;
 @@ -107,9 +109,9 @@
          _token0 = params.registeredTokens[0];
          _token1 = params.registeredTokens[1];
@@ -5096,7 +5122,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // Currently this is never called with an index passed in from user input, so this check
          // should not be necessary. Included for completion (and future proofing).
          _require(index != getBptIndex(), Errors.OUT_OF_BOUNDS);
-@@ -243,7 +246,7 @@
+@@ -243,13 +246,26 @@
      /**
       * @dev Remove the item at `_bptIndex` from an arbitrary array (e.g., amountsIn).
       */
@@ -5105,7 +5131,27 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          uint256[] memory amountsWithoutBpt = new uint256[](amounts.length - 1);
          for (uint256 i = 0; i < amountsWithoutBpt.length; i++) {
              amountsWithoutBpt[i] = amounts[i < getBptIndex() ? i : i + 1];
-@@ -258,7 +261,6 @@
+         }
+-
++        // require(_getTotalTokens() == 3);
++        // require(amounts.length==_getTotalTokens());
++        // uint256[] memory amountsWithoutBpt = new uint256[](2);
++        // if (getBptIndex()==2) {
++        //     amountsWithoutBpt[0] = amounts[0];
++        //     amountsWithoutBpt[1] = amounts[1];
++        // } else if (getBptIndex()==1) {
++        //     amountsWithoutBpt[0] = amounts[0];
++        //     amountsWithoutBpt[1] = amounts[2];
++        // } else {
++        //     amountsWithoutBpt[0] = amounts[1];
++        //     amountsWithoutBpt[1] = amounts[2];
++        // }
+         return amountsWithoutBpt;
++        // return amounts;
+     }
+ 
+     /**
+@@ -258,7 +274,6 @@
       */
      function _dropBptItemFromBalances(uint256[] memory registeredBalances)
          internal
@@ -5113,7 +5159,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          returns (uint256, uint256[] memory)
      {
          return (_getVirtualSupply(registeredBalances[getBptIndex()]), _dropBptItem(registeredBalances));
-@@ -268,7 +270,7 @@
+@@ -268,7 +283,7 @@
      // to an index into an array including BPT (the Vault's registered token list).
      // `index` must not be the BPT token index itself, if it is the last element, and the result must be
      // in the range of registered tokens.
@@ -5122,7 +5168,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          // This can be called from an index passed in from user input.
          registeredIndex = index < getBptIndex() ? index : index.add(1);
  
-@@ -285,7 +287,6 @@
+@@ -285,7 +300,6 @@
       */
      function _addBptItem(uint256[] memory amounts, uint256 bptAmount)
          internal
@@ -5130,7 +5176,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          returns (uint256[] memory registeredTokenAmounts)
      {
          registeredTokenAmounts = new uint256[](amounts.length + 1);
-@@ -296,7 +297,7 @@
+@@ -296,7 +310,7 @@
  
      // Rate Providers
  
@@ -5139,7 +5185,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          if (index == 0) return _scalingFactor0;
          if (index == 1) return _scalingFactor1;
          if (index == 2) return _scalingFactor2;
-@@ -311,7 +312,7 @@
+@@ -311,7 +325,7 @@
      /**
       * @dev Returns the rate providers configured for each token (in the same order as registered).
       */
@@ -5148,7 +5194,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          uint256 totalTokens = _getTotalTokens();
          IRateProvider[] memory providers = new IRateProvider[](totalTokens);
  
-@@ -322,7 +323,7 @@
+@@ -322,7 +336,7 @@
          return providers;
      }
  
@@ -5157,12 +5203,12 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
          if (index == 0) return _rateProvider0;
          if (index == 1) return _rateProvider1;
          if (index == 2) return _rateProvider2;
-@@ -337,21 +338,21 @@
+@@ -337,21 +351,21 @@
      /**
       * @notice Return true if the token at this index has a rate provider
       */
 -    function _hasRateProvider(uint256 tokenIndex) internal view returns (bool) {
-+    function _hasRateProvider(uint256 tokenIndex) internal returns (bool) {
++    function _hasRateProvider(uint256 tokenIndex) public returns (bool) {
          return _rateProviderInfoBitmap.decodeBool(_RATE_PROVIDER_FLAGS_OFFSET + tokenIndex);
      }
  
@@ -5170,7 +5216,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
       * @notice Return true if all tokens are exempt from yield fees.
       */
 -    function _areAllTokensExempt() internal view returns (bool) {
-+    function _areAllTokensExempt() internal returns (bool) {
++    function _areAllTokensExempt() public returns (bool) {
          return _allTokensExempt;
      }
  
@@ -5178,11 +5224,11 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
       * @notice Return true if no tokens are exempt from yield fees.
       */
 -    function _areNoTokensExempt() internal view returns (bool) {
-+    function _areNoTokensExempt() internal returns (bool) {
++    function _areNoTokensExempt() public returns (bool) {
          return _noTokensExempt;
      }
  
-@@ -362,12 +363,12 @@
+@@ -362,12 +376,12 @@
       * If the BPT token is passed in (which doesn't make much sense, but shouldn't fail,
       * since it is a valid pool token), the corresponding flag will be false.
       */
@@ -5193,11 +5239,11 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
      // This assumes the tokenIndex is valid. If it's not, it will just return false.
 -    function _isTokenExemptFromYieldProtocolFee(uint256 registeredTokenIndex) internal view returns (bool) {
-+    function _isTokenExemptFromYieldProtocolFee(uint256 registeredTokenIndex) internal returns (bool) {
++    function _isTokenExemptFromYieldProtocolFee(uint256 registeredTokenIndex) public returns (bool) {
          return _rateProviderInfoBitmap.decodeBool(registeredTokenIndex);
      }
  
-@@ -386,7 +387,7 @@
+@@ -386,7 +400,7 @@
       * exchanged, so the Vault's balance increases after joins and decreases after exits. If users call the regular
       * joins/exit functions, the totalSupply can change as BPT are minted for joins or burned for exits.
       */
@@ -6203,7 +6249,7 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
      using FixedPoint for uint256;
 diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance-scripts' pool-utils/contracts/rates/PriceRateCache.sol pool-utils/contracts/rates/PriceRateCache.sol
 --- pool-utils/contracts/rates/PriceRateCache.sol	2022-08-15 14:38:47.054850200 -0400
-+++ pool-utils/contracts/rates/PriceRateCache.sol	2022-09-16 15:31:21.842867000 -0400
++++ pool-utils/contracts/rates/PriceRateCache.sol	2022-09-22 22:48:46.071242400 -0400
 @@ -14,9 +14,9 @@
  
  pragma solidity ^0.7.0;
@@ -6216,6 +6262,31 @@ diff -ruN '--exclude=node_modules' '--exclude=deployments' '--exclude=governance
  
  /**
   * Price rate caches are used to avoid querying the price rate for a token every time we need to work with it. It is
+@@ -44,21 +44,21 @@
+     /**
+      * @dev Returns the current rate in the price rate cache.
+      */
+-    function getCurrentRate(bytes32 cache) internal pure returns (uint256) {
++    function getCurrentRate(bytes32 cache) public pure returns (uint256) {
+         return cache.decodeUint(_CURRENT_PRICE_RATE_OFFSET, _RATE_BIT_LENGTH);
+     }
+ 
+     /**
+      * @dev Returns the old rate in the price rate cache.
+      */
+-    function getOldRate(bytes32 cache) internal pure returns (uint256) {
++    function getOldRate(bytes32 cache) public pure returns (uint256) {
+         return cache.decodeUint(_OLD_PRICE_RATE_OFFSET, _RATE_BIT_LENGTH);
+     }
+ 
+     /**
+      * @dev Copies the current rate to the old rate.
+      */
+-    function updateOldRate(bytes32 cache) internal pure returns (bytes32) {
++    function updateOldRate(bytes32 cache) public pure returns (bytes32) {
+         return cache.insertUint(getCurrentRate(cache), _OLD_PRICE_RATE_OFFSET, _RATE_BIT_LENGTH);
+     }
+ 
 @@ -85,7 +85,7 @@
          bytes32 cache,
          uint256 rate,

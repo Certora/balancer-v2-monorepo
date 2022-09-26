@@ -62,7 +62,9 @@ methods {
     // canPerform(bytes32, address, address) returns (bool) => NONDET
 }
 
-
+/// @title: recoveryExitNoExternalCalls
+/// @notice: In recovery mode, exitPool must not call any external contracts
+/// @dev manually check for havocs and view
 rule recoveryExitNoExternalCalls() {
     require inRecoveryMode();
 

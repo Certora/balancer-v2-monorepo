@@ -13,7 +13,8 @@ import "../helpers/erc20.spec"
 methods {
     // ComposableStablePoolHarness
     totalTokensBalance(address) returns (uint256) envfree
-    getAdjustedBalances(uint256, bool) returns (uint256)
+    getBalance(uint256) returns (uint256)
+    getAdjustedBalance(uint256, uint256, bool) returns (uint256)
     // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
@@ -24,7 +25,7 @@ methods {
 
     // ComposableStablePool
     getSupplyAndFeesData(uint256) returns (uint256) envfree
-    getActualSupply() returns (uint256) envfree
+    getActualSupply() returns (uint256) 
     onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256) returns (uint256)
 
     // StableMathHarness
@@ -77,10 +78,10 @@ methods {
     isRecoveryModeExitKind(bytes) returns (bool) envfree
 
     // ProtocolFeePercentagesProvider
-    getFeeTypePercentage(uint256) returns (uint256) => NONDET
+    getFeeTypePercentage(uint256) returns (uint256) => DISPATCHER(true)
 
     // IRateProvider
-    getRate() returns (uint256) => NONDET    
+    getRate() returns (uint256) => DISPATCHER(true)    
 }
 
 
@@ -92,60 +93,13 @@ function getAmplificationFactor(env e) returns uint256 {
     return param;
 }
 
-
-////////////////////////////////////////////////////////////////////////////
-//                            Invariants                                  //
-////////////////////////////////////////////////////////////////////////////
-
-invariant amplificationFactorBounded(env e)
-    getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
-{ preserved {
-    // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() == DAY();
-    require AMP_PRECISION() == 1000;
-} }
-
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
 ////////////////////////////////////////////////////////////////////////////
-
-rule recoveryExitAll() {
-    env e;
-	calldataarg args;
-    require inRecoveryMode();
-    onExitPool(e, args);
-    assert(balanceOf(0)==0 && balanceOf(1)==0 && balanceOf(2)==0);
-}
-
-
-// Recovery and Paused Modes
-/// @title rule: noRevertOnRecoveryMode
-/// @notice: When in recovery mode the following operation must not revert
-/// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
-/// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-rule exitNonRevertingOnRecoveryMode(method f) {
-    env e; calldataarg args;
-    require e.msg.sender == getVault();
-    // require inRecoveryMode(e);
-    // f(e, args); // arbitrary f in case there is frontrunning
-    require inRecoveryMode(); // needs to stay in recovery mode
-    // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-    require e.msg.value == 0;
-    // setup();
-    bytes32 poolId; address sender; address recipient; uint256[] balances;
-    uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-    onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
-
-    assert !lastReverted, "recovery mode must not fail";
-}
-
  
-// Paused Mode:
-
-/// @rule: basicOperationsRevertOnPause
-/// @description: All basic operations must revert while in a paused state
-/// @notice: passes
+/// @title: basicOperationsRevertOnPause
+/// @notice: All basic operations must revert while in a paused state
+/// @notice: SUCCESS
 rule basicOperationsRevertOnPause(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -181,7 +135,7 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
 
 /// @title: rule: unpausedAfterBuffer
 /// @notice: After the buffer window finishes, the contract may not enter the paused state
-/// @notice: passes
+/// @notice: SUCCESS
 rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     // call some arbitrary function
@@ -195,23 +149,9 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
 
-
-// c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
-rule ZeroOwnerPercentageInRecovery() {
-    env e; 
-    calldataarg args;
-    require inRecoveryMode(); 
-    uint256 feePercentage;
-    uint256 totalGrowthInvariant;
-    feePercentage, totalGrowthInvariant = _getProtocolPoolOwnershipPercentage(e, args);
-    assert feePercentage==0;
-}
-
-
-
-/// @title rule: prOtherFunctionsAlwaysRevert
+/// @title: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
-/// @notice: passes
+/// @notice: SUCCESS
 rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -231,7 +171,7 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 
 /// @title: recoveryExitNoStableMath
 /// @notice: in recovery mode, exit never calls any simple math functions
-/// @notice: passes
+/// @notice: SUCCESS
 rule recoveryExitNoStableMath() {
 
     require inRecoveryMode();
@@ -251,80 +191,82 @@ rule recoveryExitNoStableMath() {
     assert !beenCalled();
 }
 
-invariant NoTokensExempt(uint256 index) 
-    _areNoTokensExempt()==true => _hasRateProvider(index) == false
-
-invariant AllTokensExample(uint256 index) 
-    _areAllTokensExempt()==true => _hasRateProvider(index) == true
-
-invariant ExamptRequiresRateProvider(uint index)
-    _isTokenExemptFromYieldProtocolFee(index) => _hasRateProvider(index)
-
-invariant isRateProviderSet()
-    _rateProvider0() == 0 <=> _hasRateProvider(0)==false
-
-rule AdjustedEqualToBalance() {
-    require _isTokenExemptFromYieldProtocolFee(0) => _hasRateProvider(0);
-    require getBptIndex()>0;
-    env e;
-    uint256 balance;
-    bool ignoreExemptFlags;
-    uint256 adjustedBalance = getAdjustedBalances(e, balance, ignoreExemptFlags);
-    assert !(_isTokenExemptFromYieldProtocolFee(0) || (ignoreExemptFlags && _hasRateProvider(0))) => balance==adjustedBalance;
+/// @title: ZeroOwnerPercentageInRecovery
+/// @notice _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
+/// @notice: SUCCESS
+rule ZeroOwnerPercentageInRecovery() {
+    env e; 
+    calldataarg args;
+    require inRecoveryMode(); 
+    uint256 feePercentage;
+    uint256 totalGrowthInvariant;
+    feePercentage, totalGrowthInvariant = _getProtocolPoolOwnershipPercentage(e, args);
+    assert feePercentage==0;
 }
 
-rule updateRate() {
+
+// will timeout in instate
+// invariant ExamptRequiresRateProvider(uint index)
+//     _isTokenExemptFromYieldProtocolFee(index) => _hasRateProvider(index)
+
+/// @title: DisableRecoveryModeChangesStates
+/// @notice disableRecoveryMode() should update lastJoinExitAmp, lastPostJoinExitInvariant, as well as rate cache if rateProvider has been set, so that balance always equals adjusted balance
+/// @notice: SUCCESS
+rule DisableRecoveryModeChangesStates() {
     env e;
-    uint256 index;
-    require index<3;
+    calldataarg args;
+    uint256 index=0;
+    require index!=getBptIndex();
     require index<getTotalTokens();
+    require getBptIndex()<getTotalTokens();
+    require getBptIndex()==1;
+    require getTotalTokens()==2;    
+    // requireInvariant ExamptRequiresRateProvider(0); // the invariant itsefl will timeout in instate, so using require directly
+    require _isTokenExemptFromYieldProtocolFee(0) => _hasRateProvider(0); // include bpt
+    require _isTokenExemptFromYieldProtocolFee(1) => _hasRateProvider(1);
+    // require _isTokenExemptFromYieldProtocolFee(2) => _hasRateProvider(2);    
+    
     uint256 currentAmp;
     uint256 currentInvariant;
     bool ignoreExemptFlags;
     currentAmp, currentInvariant = getCurrentAmpAndInvariant(e);
-    uint256 balance;
+    uint256 balance; // = getBalance(e, index); // use a random balance instead of from the pool, this is to avoid potential timeout
 
-    // _updateOldRate(e, index);
     disableRecoveryMode();
 
     uint256 lastJoinExitAmp;
     uint256 lastPostJoinExitInvariant;
     lastJoinExitAmp, lastPostJoinExitInvariant = getLastJoinExitData(e);
-    uint256 adjustedBalance = getAdjustedBalances(e, balance, ignoreExemptFlags);
+    uint256 adjustedBalance = getAdjustedBalance(e, index, balance, ignoreExemptFlags);
 
-    assert currentAmp == lastJoinExitAmp;
-    assert currentInvariant == lastPostJoinExitInvariant;
-    assert getOldRate(e, index) == getCurrentRate(e, index);
-    assert balance==adjustedBalance;
+    assert currentAmp == lastJoinExitAmp, "amp is not stored correctly by disableRecoveryMode()";
+    assert currentInvariant == lastPostJoinExitInvariant, "invariant is not stored correctly by disableRecoveryMode()";
+    assert _hasRateProvider(index)==true => getOldRate(e, index) == getCurrentRate(e, index), "currentRate should be stored in oldRate when rateProvider has been set by disableRecoveryMode()";
+    assert balance==adjustedBalance, "adjustedBalance should be the same as balance immediately after disableRecoveryMode()";
 }
 
-rule ZeroFeeWhenAllInvariantsAreSame() {
-    env e;
+/// @title: ZeroOwnerPercentageAfterDisablingRecovery
+/// @notice disableRecoveryMode() should not change virtualSupply. Immediately after disabling, _getProtocolPoolOwnershipPercentage should return 0 fee percentage. This assumes all invariants are the same, which is guaranteed by previous rule
+/// @notice: SUCCESS
+rule ZeroOwnerPercentageAfterDisablingRecovery() {    
+    env e; 
     calldataarg args;
-    uint256 feePercentage;
+    require getTotalTokens()==3; 
+    // require getBptIndex()==2;
+    require getBptIndex()<getTotalTokens();
+    require _isTokenExemptFromYieldProtocolFee(0) => _hasRateProvider(0);
+    require _isTokenExemptFromYieldProtocolFee(1) => _hasRateProvider(1);
+    require _isTokenExemptFromYieldProtocolFee(2) => _hasRateProvider(2);
+    uint256 _virtualSupply = totalSupply();
+    
+    // require inRecoveryMode(); 
+    disableRecoveryMode();
+
+    uint256 virtualSupply_ = totalSupply();
+    uint256 protocolPoolOwnershipPercentage;
     uint256 totalGrowthInvariant;
-    feePercentage, totalGrowthInvariant =  _getProtocolPoolOwnershipPercentage(e, args);
-    assert feePercentage==0;
+    protocolPoolOwnershipPercentage, totalGrowthInvariant = getProtocolPoolOwnershipPercentage(e, args);
+    assert protocolPoolOwnershipPercentage==0, "protocolPoolOwnershipPercentage should return 0 immediately after disableRecoveryMode()";
+    assert _virtualSupply == virtualSupply_, "disableRecoveryMode() should not change virtualSupply";
 }
 
-// d) disabling recovery mode causes no change in the return value of getRate() or getActualSupply()
-rule DisablingRMDoesNotChangeRateAndActualSupply() {
-    // uint _rate = getRate();
-    uint _actualSupply = getActualSupply();
-    disableRecoveryMode();
-    // uint rate_ = getRate();
-    uint actualSupply_ = getActualSupply();
-    // assert _rate == rate_;
-    assert _actualSupply == actualSupply_;
-}
-// // e) _getProtocolPoolOwnershipPercentage should return 0 immediately after disabling recovery mode
-// rule ZeroOwnerPercentageAfterDisablingRecovery() {
-//     env e; 
-//     calldataarg args;
-//     require inRecoveryMode(); 
-//     disableRecoveryMode();
-//     uint256 feePercentage;
-//     uint256 totalGrowthInvariant;
-//     feePercentage, totalGrowthInvariant = getProtocolPoolOwnershipPercentage(e, args);
-//     assert feePercentage==0;
-// }

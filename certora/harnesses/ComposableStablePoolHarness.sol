@@ -281,11 +281,11 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     function getProtocolPoolOwnershipPercentage(
         uint256[] memory balances
     ) public returns (uint256, uint256) {
+        // require(getTotalTokens() == 3);
         (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
         // _upscaleArray(registeredBalances, _scalingFactors());
-        // uint256[] memory balances = _dropBptItem(registeredBalances);
-        uint256[] memory balances = registeredBalances;
-
+        // uint256[] memory balances = registeredBalances;
+        uint256[] memory balances = _dropBptItem(registeredBalances);
         (uint256 lastJoinExitAmp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
         return _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
         // return (0, 0);
@@ -305,14 +305,24 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         if (idx == 3) return protocolFeeAmount_;
     }
 
-    function getAdjustedBalances(uint256 balance, bool ignoreExemptFlags)
+    function getBalance(uint index) public returns (uint256){
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        require(registeredBalances.length==getTotalTokens());
+        return registeredBalances[index];
+    }
+
+    function getAdjustedBalance(uint256 index, uint256 balance, bool ignoreExemptFlags)
         public       
         returns (uint256)
     {
-        uint256[] memory balances = new uint256[](1);
-        balances[0] = balance;        
+        index = index>getBptIndex() ? index - 1 : index;
+        // (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        // require(registeredBalances.length==getTotalTokens());
+        // uint256[] memory balances = _dropBptItem(registeredBalances);
+        uint256[] memory balances = new uint256[](getTotalTokens()-1);
+        balances[index] = balance;
         uint256[] memory adjustedBalances = _getAdjustedBalances(balances, ignoreExemptFlags);
-        return adjustedBalances[0];
+        return adjustedBalances[index];
     }
 
     function getCurrentRate(uint256 index) public returns(uint256) {
@@ -327,8 +337,8 @@ contract ComposableStablePoolHarness is ComposableStablePool {
 
     function getCurrentAmpAndInvariant() public returns(uint256, uint256) {        
         (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
-        // uint256[] memory balances = _dropBptItem(registeredBalances);
-        uint256[] memory balances = registeredBalances;
+        uint256[] memory balances = _dropBptItem(registeredBalances);
+        // uint256[] memory balances = registeredBalances;
 
         (uint256 currentAmp, ) = _getAmplificationParameter();
         uint256 currentInvariant = StableMath._calculateInvariant(currentAmp, balances);

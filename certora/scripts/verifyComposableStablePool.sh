@@ -17,18 +17,24 @@ certoraRun \
     --link ComposableStablePoolHarness:_token0=DummyERC20A \
     --link ComposableStablePoolHarness:_token1=DummyERC20B \
     --link ComposableStablePoolHarness:_token2=ComposableStablePoolHarness \
-    --staging \
+    --solc solc7.1 \
+    --solc_args "['--optimize', '--optimize-runs', '200']" \
     --optimistic_loop \
     --loop_iter 3 \
-    $RULE \
-    --send_only \
-    --msg "ComposableStablePool: $1 $2" \
     --settings -enableEqualitySaturation=false,-divideNoRemainder=true \
-    --settings -s=z3 \
-    --packages @balancer-labs=node_modules/@balancer-labs \
-    --solc_args "['--optimize', '--optimize-runs', '200']" \
     --path ./ \
-    --solc solc7.1
+    --packages @balancer-labs=node_modules/@balancer-labs \
+    --cache balancerComposable \
+    --staging \
+    --send_only \
+    $RULE \
+    --msg "ComposableStablePool: $1 $2" \
+    --rule_sanity
+
+
+
+ 
+    #  --settings -s=z3 \
     # --packages @balancer-labs=/mnt/c/Users/YufeiLi/Desktop/sms/certora/ComposableStablePool/node_modules/@balancer-labs
     # --packages_path node_modules
     # --packages_path /mnt/c/Users/YufeiLi/Desktop/sms/certora/ComposableStablePool/node_modules
