@@ -19,7 +19,6 @@ certoraRun \
     --cache balancer \
     --optimistic_loop \
     --loop_iter 2 \
-    --send_only \
     --solc solc7.1 \
     --msg "StablePool: $2" \
     # --rule_sanity \

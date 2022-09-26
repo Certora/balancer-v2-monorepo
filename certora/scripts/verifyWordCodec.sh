@@ -12,7 +12,6 @@ certoraRun \
     --cache balancer \
     --optimistic_loop \
     --loop_iter 3 \
-    --send_only \
     --cloud \
     --settings -useBitVectorTheory \
     $RULE \
