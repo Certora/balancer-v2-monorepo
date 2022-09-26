@@ -57,26 +57,11 @@ methods {
     onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256) returns (uint256)
 
     beenCalled() returns (bool) envfree // stableMath harness
-}
-
-// function setup() { 
-//     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4;
-//     require getTotalTokens()>1 && getTotalTokens()<6;
-// }
+} 
 
 ////////////////////////////////////////////////////////////////////////////
 //                    Ghosts, hooks and definitions                       //
 ////////////////////////////////////////////////////////////////////////////
-
-// assume sum of all balances initially equals 0
-// ghost sum_all_users_BPT() returns uint256 {
-//     init_state axiom sum_all_users_BPT() == 0;
-// }
-
-// // everytime `balances` is called, update `sum_all_users_BPT` by adding the new value and subtracting the old value
-// hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
-//   havoc sum_all_users_BPT assuming sum_all_users_BPT@new() == sum_all_users_BPT@old() + balance - old_balance;
-// }
 
 definition DAY() returns uint256 = 1531409238;
 
@@ -100,32 +85,10 @@ rule recoveryExitAll() {
 
 
 // // Recovery and Paused Modes
-// /// @title rule: noRevertOnRecoveryMode
-// /// @notice: When in recovery mode the following operation must not revert
-// /// onExitPool, but only when called by the Vault, and only when userData corresponds to a correct recovery mode call 
-// /// (that is, it is the abi encoding of the recovery exit enum and a bpt amount), and sender has sufficient bpt
-// rule exitNonRevertingOnRecoveryMode(method f) {
-//     env e; calldataarg args;
-//     require e.msg.sender == getVault();
-//     // require inRecoveryMode(e);
-//     // f(e, args); // arbitrary f in case there is frontrunning
-//     require inRecoveryMode(); // needs to stay in recovery mode
-//     // call exit with the proper variables. Need to use either the vault, or harnessing to directly call it
-//     require e.msg.value == 0;
-//     // setup();
-//     bytes32 poolId; address sender; address recipient; uint256[] balances;
-//     uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; bytes userData;
-//     onExitPool@withrevert(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData); // Harness's onExitPool
 
-//     assert !lastReverted, "recovery mode must not fail";
-// }
-
- 
-// Paused Mode:
-
-/// @rule: basicOperationsRevertOnPause
+/// @title: basicOperationsRevertOnPause
 /// @description: All basic operations must revert while in a paused state
-/// @notice: passes
+/// @dev: passes
 rule basicOperationsRevertOnPause(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -141,9 +104,9 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> (
     assert paused => lastReverted, "basic operations succeeded on pause";
 }
 
-/// @title rule: pauseStartOnlyPauseWindow
+/// @title pauseStartOnlyPauseWindow
 /// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow
-/// @notice passing 
+/// @dev passing 
 rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
     env e; calldataarg args;
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
@@ -175,8 +138,8 @@ rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
     assert e2.block.timestamp > bufferPeriodEndTime => !paused, "contract remained pauased after buffer period";
 }
 
-
-// c) _getProtocolPoolOwnershipPercentage should always return 0 if recovery mode is enabled
+/// @title: ZeroOwnerPercentageInRecovery
+/// @notice: _getProtocolPoolOwnershipPercentage must always return 0 if recovery mode is enabled
 rule ZeroOwnerPercentageInRecovery() {
     env e; 
     calldataarg args;
@@ -187,9 +150,9 @@ rule ZeroOwnerPercentageInRecovery() {
     assert feePercentage==0;
 }
 
-/// @title: rule: DisablingRMDoesNotChangeValues
-/// @notice: Disabling recovery mode should not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode
-/// @notice: passes
+/// @title: DisablingRMDoesNotChangeValues
+/// @notice: Disabling recovery mode must not change balances and virtualSupply. protocolFeeAmount should be reset to 0 by disableRecoveryMode
+/// @dev: passes
 rule DisablingRMDoesNotChangeValues() {
     uint256 _balance0 = getSupplyAndFeesData(0);
     uint256 _balance1 = getSupplyAndFeesData(1);
@@ -210,9 +173,9 @@ rule DisablingRMDoesNotChangeValues() {
     assert protocolFeeAmount_ == 0;
 }
 
-/// @title rule: prOtherFunctionsAlwaysRevert
+/// @title: prOtherFunctionsAlwaysRevert
 /// @notice If both paused and recovery mode is active, the set functions must always revert
-/// @notice: passes
+/// @dev: passes
 rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -230,18 +193,9 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
     assert lastReverted, "function did not revert";
 }
 
-// rule noFeeForRecoveryMode() {
-//     env e;
-// 	calldataarg args;
-//     uint256 _counter = payProtocolFreeCounter();
-//     require inRecoveryMode();
-//     onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes)
-//     uint256 counter_ = payProtocolFreeCounter();
-// }
-
 /// @title: recoveryExitNoStableMath
-/// @notice: in recovery mode, exit never calls any simple math functions
-/// @notice: passes
+/// @notice: in recovery mode, exit must never enter any of the functions in StableMath.sol
+/// @dev: passes
 rule recoveryExitNoStableMath() {
 
     require inRecoveryMode();

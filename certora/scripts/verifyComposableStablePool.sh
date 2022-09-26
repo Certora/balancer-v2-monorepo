@@ -21,7 +21,7 @@ certoraRun \
     --solc_args "['--optimize', '--optimize-runs', '200']" \
     --optimistic_loop \
     --loop_iter 3 \
-    --settings -enableEqualitySaturation=false,-divideNoRemainder=true \
+    --settings -enableEqualitySaturation=false,-divideNoRemainder=true,-t=600 \
     --path ./ \
     --packages @balancer-labs=node_modules/@balancer-labs \
     --cache balancerComposable \
