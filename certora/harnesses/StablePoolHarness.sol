@@ -39,11 +39,27 @@ contract StablePoolHarness is StablePool {
         return userData.joinKind();
     }
     
-    function getUintArrayIndex(uint256[] memory array, uint256 index) public pure returns(uint256) {
-        return array[index];
+    function requireNonzero(uint256[] memory array, uint256 index) public pure {
+        require(array[index] > 0);
+    }
+
+    function MIN_AMP() public pure returns (uint256) {
+        return StableMath._MIN_AMP;
+    }
+
+    function MAX_AMP() public pure returns (uint256) {
+        return StableMath._MAX_AMP;
+    }
+
+    function AMP_PRECISION() public pure returns (uint256) {
+        return StableMath._AMP_PRECISION;
+    }
+
+    function totalTokensBalance() public view returns (uint256 total) {        
+        total = _token0.balanceOf(address(this));
+        total = total.add(_token1.balanceOf(address(this)));
     }
     
-    // sets recovery mode on or off
     function setRecoveryMode(bool enabled) public {
         _setRecoveryMode(enabled);
     }
@@ -110,22 +126,5 @@ contract StablePoolHarness is StablePool {
         if (fee > 0) {
             collectedFees[id] += fee;
         }
-    }
-
-    function totalTokensBalance() public view returns (uint256 total) {        
-        total = _token0.balanceOf(address(this));
-        total = total.add(_token1.balanceOf(address(this)));
-    }
-
-    function MIN_AMP() public pure returns (uint256) {
-        return StableMath._MIN_AMP;
-    }
-
-    function MAX_AMP() public pure returns (uint256) {
-        return StableMath._MAX_AMP;
-    }
-
-    function AMP_PRECISION() public pure returns (uint256) {
-        return StableMath._AMP_PRECISION;
     }
 }
