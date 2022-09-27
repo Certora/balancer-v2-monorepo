@@ -135,15 +135,16 @@ methods {
     // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
     // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
 
-    insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
-    insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;
-    encodeUint(uint256,uint256,uint256) returns (bytes32) => NONDET;
-    encodeInt(int256,uint256,uint256) returns (bytes32) => NONDET;
-    decodeUint(bytes32,uint256,uint256) returns (uint256) => NONDET;
-    decodeInt(bytes32,uint256,uint256) returns (int256) => NONDET;
-    decodeBool(bytes32, uint256) returns (bool) => NONDET;
-    insertBits192(bytes32,bytes32,uint256) returns (bytes32) => NONDET;
-    insertBool(bytes32,bool,uint256) returns (bytes32) => NONDET;
+    // these need to be handled directly for amplfiication factor rules
+    // insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
+    // insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;
+    // encodeUint(uint256,uint256,uint256) returns (bytes32) => NONDET;
+    // encodeInt(int256,uint256,uint256) returns (bytes32) => NONDET;
+    // decodeUint(bytes32,uint256,uint256) returns (uint256) => NONDET;
+    // decodeInt(bytes32,uint256,uint256) returns (int256) => NONDET;
+    // decodeBool(bytes32, uint256) returns (bool) => NONDET;
+    // insertBits192(bytes32,bytes32,uint256) returns (bytes32) => NONDET;
+    // insertBool(bytes32,bool,uint256) returns (bytes32) => NONDET;
 }
 
 
@@ -305,9 +306,9 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
 definition DAY() returns uint256 = 1531409238;
 
 function ampSetup() {
-    // require _MIN_UPDATE_TIME() <= DAY();
-    // require _MIN_UPDATE_TIME() > 0;
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
+    // require _MIN_UPDATE_TIME() == DAY();
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _AMP_PRECISION() == 1000;
     require maxAmp() > minAmp();
@@ -325,10 +326,7 @@ invariant amplificationFactorBounded(env e)
     getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
 { preserved {
     // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _AMP_PRECISION() == 1000;
+    ampSetup();
     require !initialized() => getAmplificationFactor(e) == 0;
 } }
 
@@ -394,10 +392,7 @@ rule amplificationFactorNoMoreThanDoubleIncr(method f) {
 /// @descrption: if the amplification factor starts updating, then it must continue so for one day
 /// @notice: passes
 rule amplificationFactorUpdatingOneDay(method f) {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _AMP_PRECISION() == 1000;
+    ampSetup();
 
     env e_pre;
     uint256 endValue; uint256 endTime;
@@ -461,39 +456,11 @@ rule noDoubleUpdate() {
 
 /// @title: ampStoreAndReturn
 /// @notice: Storing a value with _setAmplificationData must always return the set value through getAmplificationFactor.
-rule ampStoreAndReturn() {
-    ampSetup();
+// rule ampStoreAndReturn() {
+//     ampSetup();
 
-    uint256 startValue;
-    uint256 endValue;
-    uint256 startTime;
-    uint256 endTime;
-    env e;
-
-// rule cantDoubleUpdate() {
+//     uint256 startValue;
+//     uint256 endValue;
+//     uint256 startTime;
+//     uint256 endTime;
 //     env e;
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-
-//     startValue, isUpdating = _getAmplificationParameter(e);
-//     require isUpdating;
-
-    env e;
-    uint256 startValue; bool isUpdating;
-    startValue, isUpdating = _getAmplificationParameter(e);
-    require !isUpdating;
-
-    uint256 endValue;
-    require endValue != startValue; // lets just check around this case
-    uint256 endTime;
-    require endTime > e.block.timestamp;
-    startAmplificationParameterUpdate(e, endValue, endTime);
-
-rule testingRequires() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2; // b
-    // require _AMP_PRECISION() == 1000; // c
-
-    assert _MIN_UPDATE_TIME() == DAY(), "explicit";
-}
