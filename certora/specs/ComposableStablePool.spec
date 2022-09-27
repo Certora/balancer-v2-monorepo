@@ -1,12 +1,20 @@
 /***
-### Assumptions and Simplifications
- #### TODO
+## Assumptions and Simplifications
+ComposableStablePool contract handles up to 6 tokens including its native BPT token. However, in order to avoid prover timing out, we need to limit totalTokens and loop iterations to 3, and, at times, even to 2, while fixing the non-bpt token to 1.
+
+For rules regarding the amplification factor we make the following assumptions about the state variables of the system:
+* The minimum update time is between 0 and 1 day (`_MIN_UPDATE_TIME`)
+* The amplification factor may not increase or decrease by a factor of 2 over a two day period (`_MAX_AMP_UPDATE_DAILY_RATE`)
+* The minimum amplification factor is greater than 0 (`_MIN_AMP`)
+* The maximum amplifcation factor is between the minimum amplification factor and 100000 (normally this is set to 5000) (`_MAX_AMP`)
+Note that many of these variables are hard coded as immutable constants, however the tool will assume any possible values for those constants unless otherwise constrained.    // require _MIN_UPDATE_TIME() <= DAY();
     
 #### Harnessing
- #### TODO
+We harnessed StableMath functions such as _calculateInvariant and _getTokenBalanceGivenInvariantAndAllOtherBalances to return arbitrary but deterministic value given fixed inputs. We also harnessed certain ComposableStablePool functions to expose certain variables that are otherwise non-accessible.
     
 #### Munging
-    
+To avoid timeouts, we munged certain functions in ComposableStablePool. For example, _getGrowthInvariants() may calculate invariants in different ways given specified inputs, balances or adjustedBalances. However, loops in _getAdjustedBalances() will timeout in most circumstances. We, therefore, munged the inputs to all use balances instead of adjustedBalances. We, then, prove the equivalence of balances and adjustedBalances in relevant conditions.
+
 #### Definitions
 
 */
@@ -215,7 +223,8 @@ rule onlyOnJoinPoolCanAndMustInitialize(method f) {
     assert f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector => balanceOf(zero) > 0, "zero address must be minted some tokens on initialization";
 }
 
-/// @title The zero address's BPT balance can never go from non-zero to zero.
+/// @title: cantBurnZerosBPT
+/// @notice: The zero address's BPT balance can never go from non-zero to zero.
 /// @dev passing with rule_sanity advanced
 rule cantBurnZerosBPT(method f) {
     address  zero = 0;
@@ -299,7 +308,7 @@ definition DAY() returns uint256 = 1531409238;
 function ampSetup() {
     // require _MIN_UPDATE_TIME() <= DAY();
     // require _MIN_UPDATE_TIME() > 0;
-    require _MIN_UPDATE_TIME == DAY();
+    require _MIN_UPDATE_TIME() == DAY();
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _AMP_PRECISION() == 1000;
     require maxAmp() > minAmp();
@@ -326,7 +335,7 @@ invariant amplificationFactorBounded(env e)
 
 /// @title: amplfiicationFactorFollowsEndTime
 /// @notice: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
-/// amplification factor must be less than or equal value set
+/// amplification factor must be less than or equal value set.
 /// @notice: We split this rule into two cases, amplification factor is increasing and it's decreasing, for the sake of timeouts
 /// @dev: passes
 rule amplificationFactorFollowsEndTimeDecr(method f) {
@@ -378,9 +387,9 @@ rule amplificationFactorFollowsEndTimeIncr(method f) {
 }
 
 /// @title: amplificationFactorNoMoreThanDouble
-/// @notice: The amplification factor may not increase by more than a factor of two in a given day
-/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts
-/// @notice: passes
+/// @notice: The amplification factor may not increase by more than a factor of two in a given day.
+/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts.
+/// @dev: passes
 rule amplificationFactorNoMoreThanDoubleIncr(method f) {
     ampSetup();
 
@@ -510,8 +519,9 @@ rule noDoubleUpdate() {
     assert lastReverted;
 }
 
-// passes
-rule storageCheck() {
+/// @title: ampStoreAndReturn
+/// @notice: Storing a value with _setAmplificationData must always return the set value through getAmplificationFactor.
+rule ampStoreAndReturn() {
     ampSetup();
 
     uint256 startValue;
@@ -540,6 +550,7 @@ rule storageCheck2() {
     require !isUpdating;
 
     uint256 endValue;
+    require endValue != startValue; // lets just check around this case
     uint256 endTime;
     require endTime > e.block.timestamp;
     startAmplificationParameterUpdate(e, endValue, endTime);
