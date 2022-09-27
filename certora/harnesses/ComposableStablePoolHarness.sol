@@ -10,6 +10,7 @@ import "../munged/pool-stable/contracts/ComposableStablePool.sol";
 contract ComposableStablePoolHarness is ComposableStablePool {
     using SafeMath for uint256;
     using StablePoolUserData for bytes;
+    using PriceRateCache for bytes32;
     enum SwapKind { GIVEN_IN, GIVEN_OUT }
 
     address sender;
@@ -162,40 +163,34 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         //     _token5.transfer(recipient, amount);
     }
 
-    function onSwap(
-        uint8 _kind, // 0: IVault.SwapKind.GIVEN_IN, 1: IVault.SwapKind.GIVEN_OUT, 
-        uint256 _amount, // used in both
-        bytes32 _poolId, // used in both            
-        uint256 indexIn,
-        uint256 indexOut
-    ) public returns (uint256) {
-        SwapRequest memory request;
-        uint256 amountGiven;
-        uint256 amountCalculated;
-        uint256 amountIn;
-        uint256 amountOut;
+    // function onSwap(
+    //     uint8 _kind, // 0: IVault.SwapKind.GIVEN_IN, 1: IVault.SwapKind.GIVEN_OUT, 
+    //     uint256 _amount, // used in both
+    //     bytes32 _poolId, // used in both            
+    //     uint256 indexIn,
+    //     uint256 indexOut
+    // ) public returns (uint256) {
+    //     SwapRequest memory request;
+    //     uint256 amountGiven;
+    //     uint256 amountCalculated;
+    //     uint256 amountIn;
+    //     uint256 amountOut;
 
-        request = SwapRequest({kind: IVault.SwapKind(_kind), tokenIn: IERC20(address(0)), tokenOut: IERC20(address(0)), amount: _amount, poolId: _poolId, lastChangeBlock: 0, from: address(0), to: address(0), userData: '0'});
-        uint256[] memory balances = new uint256[](_getTotalTokens());
-        balances[0] = balanceOf(0);
-        balances[1] = balanceOf(1);
-        balances[2] = balanceOf(2);
-        if (_getTotalTokens()>3)
-            balances[3] = balanceOf(3);
-        if (_getTotalTokens()>4)
-            balances[4] = balanceOf(4);
-        if (_getTotalTokens()>5)
-            balances[5] = balanceOf(5);
-        amountCalculated = super.onSwap(request, balances, indexIn, indexOut);
+    //     request = SwapRequest({kind: IVault.SwapKind(_kind), tokenIn: IERC20(address(0)), tokenOut: IERC20(address(0)), amount: _amount, poolId: _poolId, lastChangeBlock: 0, from: address(0), to: address(0), userData: '0'});
+    //     uint256[] memory balances = new uint256[](_getTotalTokens());
+    //     balances[0] = balanceOf(0);
+    //     balances[1] = balanceOf(1);
+    //     balances[2] = balanceOf(2);
+    //     amountCalculated = super.onSwap(request, balances, indexIn, indexOut);
 
-        if (SwapKind(_kind) == SwapKind.GIVEN_IN) {
-            (amountIn, amountOut) = (amountGiven, amountCalculated);
-        } else {
-            (amountIn, amountOut) = (amountCalculated, amountGiven);
-        }
-        _receiveAsset(indexIn, sender, amountIn);
-        _sendAsset(indexOut, recepient, amountOut);
-    }
+    //     if (SwapKind(_kind) == SwapKind.GIVEN_IN) {
+    //         (amountIn, amountOut) = (amountGiven, amountCalculated);
+    //     } else {
+    //         (amountIn, amountOut) = (amountCalculated, amountGiven);
+    //     }
+    //     _receiveAsset(indexIn, sender, amountIn);
+    //     _sendAsset(indexOut, recepient, amountOut);
+    // }
 
     function balanceOf(uint256 num) public returns (uint256) {        
         if (num==0)
@@ -286,11 +281,11 @@ contract ComposableStablePoolHarness is ComposableStablePool {
     function getProtocolPoolOwnershipPercentage(
         uint256[] memory balances
     ) public returns (uint256, uint256) {
+        // require(getTotalTokens() == 3);
         (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
         // _upscaleArray(registeredBalances, _scalingFactors());
-        // uint256[] memory balances = _dropBptItem(registeredBalances);
-        uint256[] memory balances = registeredBalances;
-
+        // uint256[] memory balances = registeredBalances;
+        uint256[] memory balances = _dropBptItem(registeredBalances);
         (uint256 lastJoinExitAmp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
         return _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
         // return (0, 0);
@@ -309,4 +304,49 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         if (idx == 2) return virtualSupply_;
         if (idx == 3) return protocolFeeAmount_;
     }
-}
+
+    function getBalance(uint index) public returns (uint256){
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        require(registeredBalances.length==getTotalTokens());
+        return registeredBalances[index];
+    }
+
+    function getAdjustedBalance(uint256 index, uint256 balance, bool ignoreExemptFlags)
+        public       
+        returns (uint256)
+    {
+        index = index>getBptIndex() ? index - 1 : index;
+        // (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        // require(registeredBalances.length==getTotalTokens());
+        // uint256[] memory balances = _dropBptItem(registeredBalances);
+        uint256[] memory balances = new uint256[](getTotalTokens()-1);
+        balances[index] = balance;
+        uint256[] memory adjustedBalances = _getAdjustedBalances(balances, ignoreExemptFlags);
+        return adjustedBalances[index];
+    }
+
+    function getCurrentRate(uint256 index) public returns(uint256) {
+        bytes32 cache = _tokenRateCaches[index];
+        return cache.getCurrentRate();
+    }
+
+    function getOldRate(uint256 index) public returns(uint256) {
+        bytes32 cache = _tokenRateCaches[index];
+        return cache.getOldRate();
+    }
+
+    function getCurrentAmpAndInvariant() public returns(uint256, uint256) {        
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        uint256[] memory balances = _dropBptItem(registeredBalances);
+        // uint256[] memory balances = registeredBalances;
+
+        (uint256 currentAmp, ) = _getAmplificationParameter();
+        uint256 currentInvariant = StableMath._calculateInvariant(currentAmp, balances);
+        return (currentAmp, currentInvariant);
+    }
+
+    function getVirtualSupply() public returns(uint256) {
+        (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
+        return totalSupply().sub(registeredBalances[getBptIndex()]);
+    }
+ }
