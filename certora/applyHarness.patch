@@ -1,70 +1,35 @@
 diff -ruN .gitignore .gitignore
---- .gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ .gitignore	2022-09-20 11:42:37.000000000 -0700
+--- .gitignore	1969-12-31 19:00:00.000000000 -0500
++++ .gitignore	2022-10-14 11:36:50.208765165 -0400
 @@ -0,0 +1,2 @@
 +*
 +!.gitignore
 \ No newline at end of file
 diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.sol
---- pool-stable/contracts/StableMath.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StableMath.sol	2022-09-21 15:18:01.000000000 -0700
-@@ -30,7 +30,7 @@
-     uint256 internal constant _AMP_PRECISION = 1e3;
- 
-     uint256 internal constant _MAX_STABLE_TOKENS = 5;
--
-+    
-     // Note on unchecked arithmetic:
-     // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
-     // loops. Since many of these operations are gas-sensitive (as they happen e.g. during a swap), it is important to
-@@ -49,7 +49,7 @@
-     // swap fees, it follows that (some) joins and exits should as well.
-     // On these operations, we split the token amounts in 'taxable' and 'non-taxable' portions, where the 'taxable' part
-     // is the one to which swap fees are applied.
--
-+    
-     // Computes the invariant given the current balances, using the Newton-Raphson approximation.
-     // The amplification parameter equals: A n^(n-1)
-     // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
-@@ -58,7 +58,8 @@
-         internal
+--- pool-stable/contracts/StableMath.sol	2022-09-16 14:56:19.188454137 -0400
++++ pool-stable/contracts/StableMath.sol	2022-10-14 11:38:25.908677998 -0400
+@@ -59,6 +59,8 @@
          pure
          returns (uint256)
--    {
-+    {   
+     {
 +        return calculateInvariant(balances[0], balances[1]);
++        /*
          /**********************************************************************************************
          // invariant                                                                                 //
          // D = invariant                                                  D^(n+1)                    //
-@@ -69,7 +70,6 @@
-         **********************************************************************************************/
+@@ -117,6 +119,11 @@
+         }
  
-         // Always round down, to match Vyper's arithmetic (which always truncates).
--
-         uint256 sum = 0; // S in the Curve version
-         uint256 numTokens = balances.length;
-         for (uint256 i = 0; i < numTokens; i++) {
-@@ -119,6 +119,10 @@
          _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
-     }
- 
-+    function calculateInvariant(uint256 balance1, uint256 balance2) public pure returns(uint256) {
-+        return balance1;
++        */
 +    }
 +
++    function calculateInvariant(uint256 balance1, uint256 balance2) public pure returns(uint256) {
++        return balance1;
+     }
+ 
      // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.
-     // The amplification parameter equals: A n^(n-1)
-     // The invariant should be rounded up.
-@@ -281,7 +285,7 @@
-             tokenIndex
-         );
-         uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
--
-+        
-         // First calculate the sum of all token balances, which will be used to calculate
-         // the current weight of each token
-         uint256 sumBalances = 0;
-@@ -469,6 +473,10 @@
+@@ -469,6 +476,10 @@
          return accumulatedTokenSwapFees.mulDown(protocolSwapFeePercentage);
      }
  
@@ -75,27 +40,26 @@ diff -ruN pool-stable/contracts/StableMath.sol pool-stable/contracts/StableMath.
      // This function calculates the balance of a given token (tokenIndex)
      // given all the other balances and the invariant
      function _getTokenBalanceGivenInvariantAndAllOtherBalances(
-@@ -477,8 +485,8 @@
+@@ -477,6 +488,8 @@
          uint256 invariant,
          uint256 tokenIndex
      ) internal pure returns (uint256) {
 +        return getTokenBal(balances[0], balances[1], invariant, tokenIndex);
++        /*
          // Rounds result up overall
--
-         uint256 ampTimesTotal = amplificationParameter * balances.length;
-         uint256 sum = balances[0];
-         uint256 P_D = balances[0] * balances.length;
-@@ -502,7 +510,6 @@
-         // We multiply the first iteration outside the loop with the invariant to set the value of the
-         // initial approximation.
-         uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
--
-         for (uint256 i = 0; i < 255; i++) {
-             prevTokenBalance = tokenBalance;
  
+         uint256 ampTimesTotal = amplificationParameter * balances.length;
+@@ -521,6 +534,7 @@
+         }
+ 
+         _revert(Errors.STABLE_GET_BALANCE_DIDNT_CONVERGE);
++        */
+     }
+ 
+     function _getRate(
 diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.sol
---- pool-stable/contracts/StablePool.sol	2022-09-14 21:18:07.000000000 -0700
-+++ pool-stable/contracts/StablePool.sol	2022-09-21 15:17:52.000000000 -0700
+--- pool-stable/contracts/StablePool.sol	2022-09-16 14:56:19.188454137 -0400
++++ pool-stable/contracts/StablePool.sol	2022-10-14 11:36:50.208765165 -0400
 @@ -302,7 +302,7 @@
          uint256[] memory dueProtocolFeeAmounts = _getDueProtocolFeeAmounts(balances, protocolSwapFeePercentage);
  
@@ -146,8 +110,8 @@ diff -ruN pool-stable/contracts/StablePool.sol pool-stable/contracts/StablePool.
      }
  
 diff -ruN solidity-utils/contracts/helpers/WordCodec.sol solidity-utils/contracts/helpers/WordCodec.sol
---- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-14 21:18:07.000000000 -0700
-+++ solidity-utils/contracts/helpers/WordCodec.sol	2022-09-20 11:42:37.000000000 -0700
+--- solidity-utils/contracts/helpers/WordCodec.sol	2022-09-16 14:56:19.192453952 -0400
++++ solidity-utils/contracts/helpers/WordCodec.sol	2022-10-14 11:36:50.208765165 -0400
 @@ -14,7 +14,7 @@
  
  pragma solidity ^0.7.0;
