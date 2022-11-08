@@ -35,6 +35,12 @@ methods {
     maxAmp() returns (uint256) envfree
     minAmp() returns (uint256) envfree
     initialized() returns (bool) envfree
+    _AMP_START_VALUE_OFFSET() returns (uint256) envfree
+    _AMP_END_VALUE_OFFSET() returns (uint256) envfree
+    _AMP_START_TIME_OFFSET() returns (uint256) envfree
+    _AMP_END_TIME_OFFSET() returns (uint256) envfree
+    _AMP_VALUE_BIT_LENGTH() returns (uint256) envfree
+    _AMP_TIMESTAMP_BIT_LENGTH() returns (uint256) envfree
 	// stable math
     // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
@@ -314,6 +320,12 @@ function ampSetup() {
     require maxAmp() > minAmp();
     require minAmp() > 0;
     require maxAmp() < 100000; // normally 5000 but lets scale it up for the sake of coverage
+    require _AMP_START_VALUE_OFFSET() == 0;
+    require _AMP_END_VALUE_OFFSET() == 64;
+    require _AMP_START_TIME_OFFSET() == 128;
+    require _AMP_END_TIME_OFFSET() == 192;
+    require _AMP_VALUE_BIT_LENGTH() == 64;
+    require _AMP_TIMESTAMP_BIT_LENGTH() == 64;
 }
 
 function getAmplificationFactor(env e) returns uint256 {
@@ -414,9 +426,7 @@ rule amplificationFactorUpdatingOneDay(method f) {
 }
 
 rule amplificationUpdateCanFinish() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    ampSetup();
 
     env _e;
     uint256 endValue; uint256 endTime;
@@ -456,11 +466,41 @@ rule noDoubleUpdate() {
 
 /// @title: ampStoreAndReturn
 /// @notice: Storing a value with _setAmplificationData must always return the set value through getAmplificationFactor.
-// rule ampStoreAndReturn() {
-//     ampSetup();
+rule ampStoreAndReturn() {
+    ampSetup();
 
-//     uint256 startValue;
-//     uint256 endValue;
-//     uint256 startTime;
-//     uint256 endTime;
-//     env e;
+    uint256 startValue;
+    uint256 endValue;
+    uint256 startTime;
+    uint256 endTime;
+    env e;
+    require endTime > startTime;
+
+    _setAmplificationData(e, startValue, endValue, startTime, endTime);
+
+    env e_;
+    require e_.block.timestamp >= endTime;
+
+    uint256 trueEndValue = getAmplificationFactor(e_);
+    
+    assert trueEndValue == endValue;
+}
+
+rule startUpdateSetsValue() {
+    ampSetup();
+    env e;
+
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
+    require !isUpdating;
+
+    uint256 endValue; uint256 endTime;
+    require endTime > e.block.timestamp;
+    startAmplificationParameterUpdate(e, endValue, endTime);
+
+    env e_;
+    require e_.block.timestamp >= endTime;
+    uint256 trueEndValue = getAmplificationFactor(e_);
+
+    assert trueEndValue == endValue;
+}
