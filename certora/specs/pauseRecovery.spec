@@ -1,34 +1,10 @@
-/***
-### Assumptions and Simplifications
- #### TODO
-    
-#### Harnessing
- #### TODO
-    
-#### Munging
-    
-#### Definitions
-
-*/
-
 import "../helpers/erc20.spec"
-
-// using DummyERC20A as _token0
-// using DummyERC20B as _token1
-// using DummyERC20C as _token2
-// using DummyERC20D as _token3
-// using DummyERC20E as _token4
-
-////////////////////////////////////////////////////////////////////////////
-//                      Methods                                           //
-////////////////////////////////////////////////////////////////////////////
 
 methods {
     // ComposableStablePoolHarness
     totalTokensBalance(address) returns (uint256) envfree
     getBalance(uint256) returns (uint256)
     getAdjustedBalance(uint256, uint256, bool) returns (uint256)
-    // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
     AMP_PRECISION() envfree
@@ -85,7 +61,7 @@ methods {
     canPerform(bytes32, address, address) returns (bool) => NONDET
 
     // RecoveryMode
-    disableRecoveryMode() envfree
+    disableRecoveryMode()
 
     // BasePoolUserData
     isRecoveryModeExitKind(bytes) returns (bool) envfree
@@ -131,13 +107,12 @@ rule basicOperationsRevertOnPause(method f) filtered {f -> (
 /// @title rule: pauseStartOnlyPauseWindow
 /// @notice If a function sets the contract into pause mode, it must only be during the pauseWindow
 /// @notice passing 
-rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
+rule pauseStartOnlyPauseWindow(method f) filtered {f -> (!f.isView && f.selector != updateProtocolFeePercentageCache().selector)} {
     env e; calldataarg args;
     bool paused_; uint256 pauseWindowEndTime; uint256 bufferPeriodEndTime;
     paused_, pauseWindowEndTime, bufferPeriodEndTime = getPausedState(e);
     require !paused_; // start in an unpaused state
 
-    // call any function
     f(e, args);
 
     bool _paused; uint256 dc1; uint256 dc2;
@@ -149,9 +124,9 @@ rule pauseStartOnlyPauseWindow(method f) filtered {f -> !f.isView} {
 /// @title: rule: unpausedAfterBuffer
 /// @notice: After the buffer window finishes, the contract may not enter the paused state
 /// @notice: SUCCESS
-rule unpausedAfterBuffer(method f) filtered {f -> !f.isView} {
+rule unpausedAfterBuffer(method f) filtered {f -> (!f.isView && f.selector != updateProtocolFeePercentageCache().selector)} {
     env e; calldataarg args;
-    // call some arbitrary function
+
     f(e, args);
 
     env e2;
@@ -217,11 +192,6 @@ rule ZeroOwnerPercentageInRecovery() {
     assert feePercentage==0;
 }
 
-
-// will timeout in instate
-// invariant ExamptRequiresRateProvider(uint index)
-//     _isTokenExemptFromYieldProtocolFee(index) => _hasRateProvider(index)
-
 /// @title: DisableRecoveryModeChangesStates
 /// @notice: disableRecoveryMode() should update lastJoinExitAmp, lastPostJoinExitInvariant, as well as rate cache if rateProvider has been set, so that balance always equals adjusted balance
 /// @notice: SUCCESS
@@ -245,7 +215,7 @@ rule DisableRecoveryModeChangesStates() {
     currentAmp, currentInvariant = getCurrentAmpAndInvariant(e);
     uint256 balance; // = getBalance(e, index); // use a random balance instead of from the pool, this is to avoid potential timeout
 
-    disableRecoveryMode();
+    disableRecoveryMode(e);
 
     uint256 lastJoinExitAmp;
     uint256 lastPostJoinExitInvariant;
@@ -273,7 +243,7 @@ rule ZeroOwnerPercentageAfterDisablingRecovery() {
     uint256 _virtualSupply = totalSupply();
     
     // require inRecoveryMode(); 
-    disableRecoveryMode();
+    disableRecoveryMode(e);
 
     uint256 virtualSupply_ = totalSupply();
     uint256 protocolPoolOwnershipPercentage;

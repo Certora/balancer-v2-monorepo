@@ -30,3 +30,6 @@ resource_errors.json
 *.json
 munged/
 
+# Forge
+forge-artifacts/
+forge-cache/

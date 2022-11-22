@@ -89,7 +89,10 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
             owner,
             false
         )
-        ProtocolFeeCache(protocolFeeProvider, ProtocolFeeCache.DELEGATE_PROTOCOL_SWAP_FEES_SENTINEL)
+        ProtocolFeeCache(
+            protocolFeeProvider,
+            ProviderFeeIDs({ swap: ProtocolFeeType.SWAP, yield: ProtocolFeeType.YIELD, aum: ProtocolFeeType.AUM })
+        )
         WeightedPoolProtocolFees(params.tokens.length, params.rateProviders)
     {
         uint256 numTokens = params.tokens.length;
@@ -239,7 +242,7 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
         internal
         virtual
         override
-        returns (uint256)
+        returns (uint256, uint256)
     {
         uint256 supplyBeforeFeeCollection = totalSupply();
         uint256 invariant = WeightedMath._calculateInvariant(normalizedWeights, preBalances);
@@ -255,13 +258,13 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
             _updateATHRateProduct(athRateProduct);
         }
 
-        if (protocolFeesToBeMinted > 0) {
-            _payProtocolFees(protocolFeesToBeMinted);
-        }
-        return supplyBeforeFeeCollection.add(protocolFeesToBeMinted);
+        _payProtocolFees(protocolFeesToBeMinted);
+
+        return (supplyBeforeFeeCollection.add(protocolFeesToBeMinted), invariant);
     }
 
     function _afterJoinExit(
+        uint256 preJoinExitInvariant,
         uint256[] memory preBalances,
         uint256[] memory balanceDeltas,
         uint256[] memory normalizedWeights,
@@ -269,6 +272,7 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
         uint256 postJoinExitSupply
     ) internal virtual override {
         uint256 protocolFeesToBeMinted = _getPostJoinExitProtocolFees(
+            preJoinExitInvariant,
             preBalances,
             balanceDeltas,
             normalizedWeights,
@@ -276,9 +280,7 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
             postJoinExitSupply
         );
 
-        if (protocolFeesToBeMinted > 0) {
-            _payProtocolFees(protocolFeesToBeMinted);
-        }
+        _payProtocolFees(protocolFeesToBeMinted);
     }
 
     function _updatePostJoinExit(uint256 postJoinExitInvariant)
@@ -309,9 +311,7 @@ contract WeightedPool is BaseWeightedPool, WeightedPoolProtocolFees {
             totalSupply()
         );
 
-        if (protocolFeesToBeMinted > 0) {
-            _payProtocolFees(protocolFeesToBeMinted);
-        }
+        _payProtocolFees(protocolFeesToBeMinted);
 
         // With the fees paid, we now store the current invariant and update the ATH rate product (if necessary),
         // marking the Pool as free of protocol debt.

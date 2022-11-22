@@ -35,39 +35,15 @@ methods {
     maxAmp() returns (uint256) envfree
     minAmp() returns (uint256) envfree
     initialized() returns (bool) envfree
-	// stable math
-    // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
-    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256,uint256)returns (uint256) => DISPATCHER(true)
-    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _getRate(uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
-
-    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
-    //     uint256 tokenIndexIn,
-    //     uint256 tokenIndexOut,
-    //     uint256 tokenAmountIn,
-    //     uint256 invariant) returns (uint256) 
-    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
-	// stable pool
+    _AMP_START_VALUE_OFFSET() returns (uint256) envfree
+    _AMP_END_VALUE_OFFSET() returns (uint256) envfree
+    _AMP_START_TIME_OFFSET() returns (uint256) envfree
+    _AMP_END_TIME_OFFSET() returns (uint256) envfree
+    _AMP_VALUE_BIT_LENGTH() returns (uint256) envfree
+    _AMP_TIMESTAMP_BIT_LENGTH() returns (uint256) envfree
+    _setAmplificationData(uint256, uint256, uint256, uint256) envfree
     getBptIndex() returns (uint256) envfree
 	_getAmplificationParameter() returns (uint256,bool)
-
-    // _calcTokenInGivenExactBptOut(
-    //     uint256 amp,
-    //     uint256[] balances,
-    //     uint256 tokenIndex,
-    //     uint256 bptAmountOut,
-    //     uint256 bptTotalSupply,
-    //     uint256 swapFeePercentage) returns (uint256)
-    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
-
-    // vault 
-    // getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
-    // getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
     getAuthorizor() returns(address)=> NONDET
     registerPool(uint8 specialization) returns (bytes32) => NONDET
@@ -76,33 +52,14 @@ methods {
     getPoolTokens(bytes32) returns (address[], uint256[], uint256) => NONDET;
     getProtocolFeesCollector() returns (address) => NONDET;
 
-    // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
-    // _onInitializePool(bytes32,address,address,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-
-    // _onJoinPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-    // _mintPoolTokens(address, uint256) => NONDET;
     _upscaleArray(uint256[], uint256[]) => NONDET;
     _downscaleUp(uint256, uint256) => NONDET;
     _downscaleUpArray(uint256[], uint256[]) => NONDET;
     _downscaleDownArray(uint256[], uint256[]) => NONDET;
 
-    // _payProtocolFeesBeforeJoinExit(uint256[]) returns (uint256, uint256[]) => NONDET;
-    // _getAmplificationParameter() returns (uint256, bool) => NONDET; 
-    // _doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-
     _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
-    // onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
-    // _doRecoveryModeExit(uint256[],uint256,bytes) returns (uint256, uint256[]) => NONDET;
-
-    // _beforeSwapJoinExit() => NONDET;
-    // _scalingFactors() returns (uint256[]) => NONDET;
-    // _onExitPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-    // _downscaleDownArray(uint256[], uint256[]) => NONDET;
-    // _burnPoolTokens(address, uint256) => NONDET;
-
-    // _doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
@@ -111,39 +68,12 @@ methods {
 
     // IRateProvider
     getRate() returns (uint256) => NONDET
-    // _getAuthorizor() returns address => DISPATCHER(true)
-    // _canPerform(bytes32, address) returns (bool) => NONDET
-    // canPerform(bytes32, address, address) returns (bool) => NONDET
+    canPerform(bytes32, address, address) returns (bool) => ALWAYS(true) // will always approve
     // // harness functions
-    // setRecoveryMode(bool)
-
-    // balanceOf(address) returns(uint256) envfree => DISPATCHER(true)
-    // _token0.balanceOf(address) returns(uint256) envfree
-    // _token1.balanceOf(address) returns(uint256) envfree
-    // // _token2.balanceOf(address) returns(uint256) envfree
-    // _token3.balanceOf(address) returns(uint256) envfree
-    // _token4.balanceOf(address) returns(uint256) envfree
-    // _token5.balanceOf(address) returns(uint256) envfree
 
     getToken(uint256 num) returns(address) envfree
     getTotalTokens() returns (uint256) envfree
-
-    // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // div(uint256 x, uint256 y) => ghost_division(x, y);
-    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
-    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
-
-    insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
-    insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;
-    encodeUint(uint256,uint256,uint256) returns (bytes32) => NONDET;
-    encodeInt(int256,uint256,uint256) returns (bytes32) => NONDET;
-    decodeUint(bytes32,uint256,uint256) returns (uint256) => NONDET;
-    decodeInt(bytes32,uint256,uint256) returns (int256) => NONDET;
-    decodeBool(bytes32, uint256) returns (bool) => NONDET;
-    insertBits192(bytes32,bytes32,uint256) returns (bytes32) => NONDET;
-    insertBool(bytes32,bool,uint256) returns (bytes32) => NONDET;
+    day() returns (uint256) envfree
 }
 
 
@@ -266,14 +196,7 @@ rule noFreeMinting(method f) {
 //                            Helper Functions                            //
 ////////////////////////////////////////////////////////////////////////////
 
-function setup(env e) { 
-    // require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
-    // require currentContract == getToken(getBptIndex());
-    // require e.msg.sender < _token0;
-    //require getTotalTokens()>2 && getTotalTokens()<7;
-    // require getBptIndex() < getTotalTokens();
-    //requireOrder(e.msg.sender);
-}
+
 
 // invariant must be greater than the sum of pool's token balances and less than the product 
 function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
@@ -305,14 +228,20 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
 definition DAY() returns uint256 = 1531409238;
 
 function ampSetup() {
-    // require _MIN_UPDATE_TIME() <= DAY();
-    // require _MIN_UPDATE_TIME() > 0;
-    require _MIN_UPDATE_TIME() == DAY();
+    require _MIN_UPDATE_TIME() <= DAY();
+    require _MIN_UPDATE_TIME() > 0;
+    // require _MIN_UPDATE_TIME() == DAY();
     require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
     require _AMP_PRECISION() == 1000;
     require maxAmp() > minAmp();
     require minAmp() > 0;
-    require maxAmp() < 100000; // normally 5000 but lets scale it up for the sake of coverage
+    require maxAmp() < 100000; // normally 5000 
+    require _AMP_START_VALUE_OFFSET() == 0;
+    require _AMP_END_VALUE_OFFSET() == 64;
+    require _AMP_START_TIME_OFFSET() == 128;
+    require _AMP_END_TIME_OFFSET() == 192;
+    require _AMP_VALUE_BIT_LENGTH() == 64;
+    require _AMP_TIMESTAMP_BIT_LENGTH() == 64;
 }
 
 function getAmplificationFactor(env e) returns uint256 {
@@ -325,17 +254,14 @@ invariant amplificationFactorBounded(env e)
     getAmplificationFactor(e) <= maxAmp() && getAmplificationFactor(e) >= minAmp()
 { preserved {
     // require !initialized() => getAmplificationFactor(e) == 0; // amplification factor is 0 before initialization
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _AMP_PRECISION() == 1000;
+    ampSetup();
     require !initialized() => getAmplificationFactor(e) == 0;
 } }
 
 
 /// @title: amplfiicationFactorFollowsEndTime
 /// @notice: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
-/// amplification factor must be less than or equal value set.
+/// amplification factor must be between the start value and target end value.
 /// @notice: We split this rule into two cases, amplification factor is increasing and it's decreasing, for the sake of timeouts
 /// @dev: passes
 rule amplificationFactorFollowsEndTimeDecr(method f) {
@@ -345,10 +271,38 @@ rule amplificationFactorFollowsEndTimeDecr(method f) {
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
+    require endValue * _AMP_PRECISION() < startValue;
 
-    inRecoveryMode();
+    // inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
-    f(e, args); // call some arbitrary function
+    // f(e, args); // call some arbitrary function
+
+    env e_post;
+    require e_post.block.timestamp > e.block.timestamp;
+    require e_post.block.timestamp < endTime;
+
+    uint256 currentParam;
+    currentParam, isUpdating = _getAmplificationParameter(e_post);
+
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_post);
+
+    assert isUpdating, "is still updating";
+    assert actualEndValue <= startValue && actualEndValue >= endValue * _AMP_PRECISION(), "not within proper range";
+}
+
+rule amplificationFactorFollowsEndTimeIncr(method f) {
+    ampSetup();
+
+    env e; calldataarg args;
+    uint256 endValue; uint256 endTime;
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
+    require endValue * _AMP_PRECISION() > startValue;
+
+    // inRecoveryMode();
+    startAmplificationParameterUpdate(e, endValue, endTime);
+    // f(e, args); // call some arbitrary function
 
     env e_post;
     require e_post.block.timestamp > e.block.timestamp;
@@ -356,19 +310,14 @@ rule amplificationFactorFollowsEndTimeDecr(method f) {
     uint256 currentParam;
     currentParam, isUpdating = _getAmplificationParameter(e_post);
 
-    if (endValue > startValue) {
-        assert currentParam < endValue, "getter: parameter increased too fast";
-        assert currentParam > startValue, "amplification did not increase";
-    } else {
-        assert currentParam > endValue, "getter: parameter decreased too fast";
-        assert currentParam < startValue, "amplification did not decrease";
-    }
+    require e_post.block.timestamp <= e.block.timestamp + _MIN_UPDATE_TIME();
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_post);
+
+    assert isUpdating, "is still updating";
+    assert actualEndValue >= startValue && actualEndValue <= endValue * _AMP_PRECISION(), "not within proper range";
 }
 
-/// @title: amplificationFactorNoMoreThanDouble
-/// @notice: The amplification factor may not increase by more than a factor of two in a given day.
-/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts.
-/// @dev: passes
 rule amplificationFactorNoMoreThanDoubleIncr(method f) {
     ampSetup();
 
@@ -380,30 +329,51 @@ rule amplificationFactorNoMoreThanDoubleIncr(method f) {
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     calldataarg args; env e_f;
-    f(e_f, args);
+    // f(e_f, args);
 
     env e_incr;
-    require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
+    require e_incr.block.timestamp == e.block.timestamp + day();
+    require e_incr.block.timestamp <= max_uint256;
     uint256 actualEndValue;
     actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
 
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
 }
 
+/// @title: amplificationFactorNoMoreThanDouble
+/// @notice: The amplification factor may not increase by more than a factor of two in a given day.
+/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts.
+/// @dev: passes
+rule amplificationFactorNoMoreThanDoubleDecr(method f) {
+    ampSetup();
+
+    env e; 
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
+
+    uint256 endValue; uint256 endTime;
+    startAmplificationParameterUpdate(e, endValue, endTime);
+
+    calldataarg args; env e_f;
+    f(e_f, args);
+
+    env e_incr;
+    require e_incr.block.timestamp == e.block.timestamp + day();
+    uint256 actualEndValue;
+    actualEndValue, _ = _getAmplificationParameter(e_incr);
+
+    assert actualEndValue >= startValue / 2, "amplification factor more than halved";
+}
+
 /// @rule: amplificationFactorUpdatingOneDay
 /// @descrption: if the amplification factor starts updating, then it must continue so for one day
 /// @notice: passes
 rule amplificationFactorUpdatingOneDay(method f) {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
-    require _AMP_PRECISION() == 1000;
+    ampSetup();
 
     env e_pre;
     uint256 endValue; uint256 endTime;
-    
-    // require endValue >= minAmp();
-    // require endValue <= maxAmp();
+    require endTime > e_pre.block.timestamp;
 
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e_pre);
@@ -412,16 +382,18 @@ rule amplificationFactorUpdatingOneDay(method f) {
     startAmplificationParameterUpdate(e_pre, endValue, endTime);
 
     env e_post;
-    require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + DAY());
+    require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + _MIN_UPDATE_TIME());
     uint256 actualEndValue; bool isUpdating_;
     actualEndValue, isUpdating_ = _getAmplificationParameter(e_post);
     assert isUpdating_, "must still be updating";
 }
 
+
+/// @rule: amplificationUpdateCanFinish
+/// @description: tests to see if it's possible for an amplification factor that will never realistically finish to exist
+/// @dev: Fails with reason
 rule amplificationUpdateCanFinish() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    require _MAX_AMP_UPDATE_DAILY_RATE() == 2;
+    ampSetup();
 
     env _e;
     uint256 endValue; uint256 endTime;
@@ -468,32 +440,72 @@ rule ampStoreAndReturn() {
     uint256 endValue;
     uint256 startTime;
     uint256 endTime;
-    env e;
+    require endTime > startTime;
 
-// rule cantDoubleUpdate() {
-//     env e;
-//     uint256 endValue; uint256 endTime;
-//     uint256 startValue; bool isUpdating;
-
-//     startValue, isUpdating = _getAmplificationParameter(e);
-//     require isUpdating;
+    _setAmplificationData(startValue, endValue, startTime, endTime);
 
     env e;
+    require e.block.timestamp > endTime;
+
+    uint256 trueEndValue = getAmplificationFactor(e);
+    
+    assert trueEndValue == endValue;
+}
+
+// helper rule to test that starting an amp update will then later give you the set value
+rule startUpdateSetsValue() {
+    ampSetup();
+    env e;
+
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
     require !isUpdating;
 
-    uint256 endValue;
-    require endValue != startValue; // lets just check around this case
-    uint256 endTime;
-    require endTime > e.block.timestamp;
+    uint256 endValue; uint256 endTime;
+    require endTime > e.block.timestamp + _MIN_UPDATE_TIME();
     startAmplificationParameterUpdate(e, endValue, endTime);
 
-rule testingRequires() {
-    require _MIN_UPDATE_TIME() <= DAY();
-    require _MIN_UPDATE_TIME() > 0;
-    // require _MAX_AMP_UPDATE_DAILY_RATE() == 2; // b
-    // require _AMP_PRECISION() == 1000; // c
+    env e_;
+    require e_.block.timestamp > endTime;
+    uint256 trueEndValue; bool isStillUpdating; 
+    trueEndValue, isStillUpdating = _getAmplificationParameter(e_);
 
-    assert _MIN_UPDATE_TIME() == DAY(), "explicit";
+    assert !isStillUpdating, "still updating";
+    assert trueEndValue == endValue * _AMP_PRECISION(), "wrong value";
 }
+
+
+// deprecated
+    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
+    //     uint256 tokenIndexIn,
+    //     uint256 tokenIndexOut,
+    //     uint256 tokenAmountIn,
+    //     uint256 invariant) returns (uint256) 
+    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
+	// stable pool
+
+
+        // _calcTokenInGivenExactBptOut(
+    //     uint256 amp,
+    //     uint256[] balances,
+    //     uint256 tokenIndex,
+    //     uint256 bptAmountOut,
+    //     uint256 bptTotalSupply,
+    //     uint256 swapFeePercentage) returns (uint256)
+    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
+
+        // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // div(uint256 x, uint256 y) => ghost_division(x, y);
+    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
+    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
+
+    // function setup(env e) { 
+//     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
+//     require currentContract == getToken(getBptIndex());
+//     require e.msg.sender < _token0;
+//     require getTotalTokens()>2 && getTotalTokens()<7;
+//     require getBptIndex() < getTotalTokens();
+//     requireOrder(e.msg.sender);
+// }

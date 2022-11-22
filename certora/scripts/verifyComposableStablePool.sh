@@ -21,14 +21,14 @@ certoraRun \
     --solc_args "['--optimize', '--optimize-runs', '200']" \
     --optimistic_loop \
     --loop_iter 3 \
-    --settings -enableEqualitySaturation=false,-divideNoRemainder=true \
+    --settings -enableEqualitySaturation=false,-divideNoRemainder=true,-simplificationDepth=10,-s=z3\
     --path ./ \
     --packages @balancer-labs=node_modules/@balancer-labs \
     --cache balancerComposable \
-    --staging \
     --send_only \
     $RULE \
     --msg "ComposableStablePool: $1 $2" \
+    --staging \
     --rule_sanity
 
 
