@@ -42,39 +42,8 @@ methods {
     _AMP_VALUE_BIT_LENGTH() returns (uint256) envfree
     _AMP_TIMESTAMP_BIT_LENGTH() returns (uint256) envfree
     _setAmplificationData(uint256, uint256, uint256, uint256) envfree
-	// stable math
-    // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
-    // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcInGivenOut(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcBptOutGivenExactTokensIn(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcTokenInGivenExactBptOut(uint256,uint256[],uint256,uint256,uint256,uint256,uint256)returns (uint256) => DISPATCHER(true)
-    // _calcBptInGivenExactTokensOut(uint256,uint256[],uint256[],uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _calcTokenOutGivenExactBptIn(uint256,uint256[],uint256,uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _getTokenBalanceGivenInvariantAndAllOtherBalances(uint256,uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
-    // _getRate(uint256[],uint256,uint256) returns (uint256) => DISPATCHER(true)
-
-    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
-    //     uint256 tokenIndexIn,
-    //     uint256 tokenIndexOut,
-    //     uint256 tokenAmountIn,
-    //     uint256 invariant) returns (uint256) 
-    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
-	// stable pool
     getBptIndex() returns (uint256) envfree
 	_getAmplificationParameter() returns (uint256,bool)
-
-    // _calcTokenInGivenExactBptOut(
-    //     uint256 amp,
-    //     uint256[] balances,
-    //     uint256 tokenIndex,
-    //     uint256 bptAmountOut,
-    //     uint256 bptTotalSupply,
-    //     uint256 swapFeePercentage) returns (uint256)
-    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
-
-    // vault 
-    // getPoolTokens(bytes32) returns (address[], uint256[]) => NONDET
-    // getPoolTokenInfo(bytes32,address) returns (uint256,uint256,uint256,address) => NONDET
     getVault() returns address envfree;
     getAuthorizor() returns(address)=> NONDET
     registerPool(uint8 specialization) returns (bytes32) => NONDET
@@ -83,33 +52,14 @@ methods {
     getPoolTokens(bytes32) returns (address[], uint256[], uint256) => NONDET;
     getProtocolFeesCollector() returns (address) => NONDET;
 
-    // onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
-    // _onInitializePool(bytes32,address,address,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-
-    // _onJoinPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-    // _mintPoolTokens(address, uint256) => NONDET;
     _upscaleArray(uint256[], uint256[]) => NONDET;
     _downscaleUp(uint256, uint256) => NONDET;
     _downscaleUpArray(uint256[], uint256[]) => NONDET;
     _downscaleDownArray(uint256[], uint256[]) => NONDET;
 
-    // _payProtocolFeesBeforeJoinExit(uint256[]) returns (uint256, uint256[]) => NONDET;
-    // _getAmplificationParameter() returns (uint256, bool) => NONDET; 
-    // _doJoin(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
-
     _joinExactTokensInForBPTOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _joinTokenInForExactBPTOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
-    // onExitPool(bytes32,address,address,uint256[],uint256,uint256,bytes) returns (uint256[], uint256[]) => NONDET;
-    // _doRecoveryModeExit(uint256[],uint256,bytes) returns (uint256, uint256[]) => NONDET;
-
-    // _beforeSwapJoinExit() => NONDET;
-    // _scalingFactors() returns (uint256[]) => NONDET;
-    // _onExitPool(bytes32,address,address,uint256[],uint256,uint256,uint256[],bytes) returns (uint256, uint256[]) => NONDET;
-    // _downscaleDownArray(uint256[], uint256[]) => NONDET;
-    // _burnPoolTokens(address, uint256) => NONDET;
-
-    // _doExit(uint256[], uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _exitBPTInForExactTokensOut(uint256, uint256, uint256, uint256[], uint256[], bytes) returns (uint256, uint256[]) => NONDET;
     _exitExactBPTInForTokenOut(uint256, uint256, uint256, uint256[], bytes) returns (uint256, uint256[]) => NONDET;
 
@@ -118,41 +68,12 @@ methods {
 
     // IRateProvider
     getRate() returns (uint256) => NONDET
-    // _getAuthorizor() returns address => DISPATCHER(true)
-    // _canPerform(bytes32, address) returns (bool) => NONDET
     canPerform(bytes32, address, address) returns (bool) => ALWAYS(true) // will always approve
     // // harness functions
-    // setRecoveryMode(bool)
-
-    // balanceOf(address) returns(uint256) envfree => DISPATCHER(true)
-    // _token0.balanceOf(address) returns(uint256) envfree
-    // _token1.balanceOf(address) returns(uint256) envfree
-    // // _token2.balanceOf(address) returns(uint256) envfree
-    // _token3.balanceOf(address) returns(uint256) envfree
-    // _token4.balanceOf(address) returns(uint256) envfree
-    // _token5.balanceOf(address) returns(uint256) envfree
 
     getToken(uint256 num) returns(address) envfree
     getTotalTokens() returns (uint256) envfree
     day() returns (uint256) envfree
-
-    // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
-    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
-    // div(uint256 x, uint256 y) => ghost_division(x, y);
-    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
-    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
-
-    // these need to be handled directly for amplfiication factor rules
-    // insertUint(bytes32,uint256,uint256,uint256) returns (bytes32) => NONDET;
-    // insertInt(bytes32,int256,uint256,uint256) returns (bytes32) => NONDET;
-    // encodeUint(uint256,uint256,uint256) returns (bytes32) => NONDET;
-    // encodeInt(int256,uint256,uint256) returns (bytes32) => NONDET;
-    // decodeUint(bytes32,uint256,uint256) returns (uint256) => NONDET;
-    // decodeInt(bytes32,uint256,uint256) returns (int256) => NONDET;
-    // decodeBool(bytes32, uint256) returns (bool) => NONDET;
-    // insertBits192(bytes32,bytes32,uint256) returns (bytes32) => NONDET;
-    // insertBool(bytes32,bool,uint256) returns (bytes32) => NONDET;
 }
 
 
@@ -210,8 +131,8 @@ ghost ghost_division_round(uint256,uint256) returns uint256 {
 ////////////////////////////////////////////////////////////////////////////
 
 /// @title Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
-// invariant solvency()
-//     totalSupply() >= sum_all_users_BPT()
+invariant solvency()
+    totalSupply() >= sum_all_users_BPT()
 
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
@@ -275,14 +196,7 @@ rule noFreeMinting(method f) {
 //                            Helper Functions                            //
 ////////////////////////////////////////////////////////////////////////////
 
-function setup(env e) { 
-    // require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
-    // require currentContract == getToken(getBptIndex());
-    // require e.msg.sender < _token0;
-    //require getTotalTokens()>2 && getTotalTokens()<7;
-    // require getBptIndex() < getTotalTokens();
-    //requireOrder(e.msg.sender);
-}
+
 
 // invariant must be greater than the sum of pool's token balances and less than the product 
 function newCalcInvar(uint256 balance1, uint256 balance2) returns uint256 {
@@ -440,8 +354,8 @@ rule amplificationFactorNoMoreThanDoubleDecr(method f) {
     uint256 endValue; uint256 endTime;
     startAmplificationParameterUpdate(e, endValue, endTime);
 
-    // calldataarg args; env e_f;
-    // f(e_f, args);
+    calldataarg args; env e_f;
+    f(e_f, args);
 
     env e_incr;
     require e_incr.block.timestamp == e.block.timestamp + day();
@@ -460,9 +374,6 @@ rule amplificationFactorUpdatingOneDay(method f) {
     env e_pre;
     uint256 endValue; uint256 endTime;
     require endTime > e_pre.block.timestamp;
-    
-    // require endValue >= minAmp();
-    // require endValue <= maxAmp();
 
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e_pre);
@@ -541,6 +452,7 @@ rule ampStoreAndReturn() {
     assert trueEndValue == endValue;
 }
 
+// helper rule to test that starting an amp update will then later give you the set value
 rule startUpdateSetsValue() {
     ampSetup();
     env e;
@@ -561,3 +473,39 @@ rule startUpdateSetsValue() {
     assert !isStillUpdating, "still updating";
     assert trueEndValue == endValue * _AMP_PRECISION(), "wrong value";
 }
+
+
+// deprecated
+    // _calcOutGivenIn(uint256 amplificationParameter, uint256[] balances,
+    //     uint256 tokenIndexIn,
+    //     uint256 tokenIndexOut,
+    //     uint256 tokenAmountIn,
+    //     uint256 invariant) returns (uint256) 
+    //     => ghost_calcOutGivenIn(amplificationParameter, balances, tokenIndexIn, tokenIndexOut, tokenAmountIn, invariant);
+	// stable pool
+
+
+        // _calcTokenInGivenExactBptOut(
+    //     uint256 amp,
+    //     uint256[] balances,
+    //     uint256 tokenIndex,
+    //     uint256 bptAmountOut,
+    //     uint256 bptTotalSupply,
+    //     uint256 swapFeePercentage) returns (uint256)
+    //     => ghost_calcTokenInGivenExactBptOut(amp, balances, tokenIndex, bptAmountOut, bptTotalSupply, swapFeePercentage);
+
+        // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
+    // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // mulDown(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
+    // div(uint256 x, uint256 y) => ghost_division(x, y);
+    // divUp(uint256 x, uint256 y) => ghost_division_round(x, y);
+    // divDown(uint256 x, uint256 y) => ghost_division_round(x, y);
+
+    // function setup(env e) { 
+//     require _token0<_token1 && _token1<_token2 && _token2<_token3 && _token3<_token4 && _token4<_token5;
+//     require currentContract == getToken(getBptIndex());
+//     require e.msg.sender < _token0;
+//     require getTotalTokens()>2 && getTotalTokens()<7;
+//     require getBptIndex() < getTotalTokens();
+//     requireOrder(e.msg.sender);
+// }

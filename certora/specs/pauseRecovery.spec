@@ -5,7 +5,6 @@ methods {
     totalTokensBalance(address) returns (uint256) envfree
     getBalance(uint256) returns (uint256)
     getAdjustedBalance(uint256, uint256, bool) returns (uint256)
-    // setRecoveryMode(bool) envfree
     minAmp() returns(uint256) envfree
     maxAmp() returns(uint256) envfree
     AMP_PRECISION() envfree
