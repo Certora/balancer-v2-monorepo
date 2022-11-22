@@ -138,8 +138,8 @@ rule unpausedAfterBuffer(method f) filtered {f -> (!f.isView && f.selector != up
 }
 
 /// @title: prOtherFunctionsAlwaysRevert
-/// @notice If both paused and recovery mode is active, the set functions must always revert.
-/// @dev: passes
+/// @notice: If both paused and recovery mode is active, the set functions must always revert
+/// @notice: SUCCESS
 rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> ( 
         f.selector == onSwap((uint8,address,address,uint256,bytes32,uint256,address,address,bytes),uint256[],uint256,uint256).selector ||
         f.selector == setSwapFeePercentage(uint256).selector ||
@@ -159,7 +159,7 @@ rule prOtherFunctionsAlwaysRevert(method f) filtered {f -> (
 
 /// @title: recoveryExitNoStableMath
 /// @notice: In recovery mode, exit must never enter any of the functions in StableMath.sol.
-/// @dev: passes
+/// @notice: SUCCESS
 rule recoveryExitNoStableMath() {
 
     require inRecoveryMode();
@@ -193,7 +193,7 @@ rule ZeroOwnerPercentageInRecovery() {
 }
 
 /// @title: DisableRecoveryModeChangesStates
-/// @notice disableRecoveryMode() should update lastJoinExitAmp, lastPostJoinExitInvariant, as well as rate cache if rateProvider has been set, so that balance always equals adjusted balance
+/// @notice: disableRecoveryMode() should update lastJoinExitAmp, lastPostJoinExitInvariant, as well as rate cache if rateProvider has been set, so that balance always equals adjusted balance
 /// @notice: SUCCESS
 rule DisableRecoveryModeChangesStates() {
     env e;
@@ -229,7 +229,7 @@ rule DisableRecoveryModeChangesStates() {
 }
 
 /// @title: ZeroOwnerPercentageAfterDisablingRecovery
-/// @notice disableRecoveryMode() should not change virtualSupply. Immediately after disabling, _getProtocolPoolOwnershipPercentage should return 0 fee percentage. This assumes all invariants are the same, which is guaranteed by previous rule
+/// @notice disableRecoveryMode() should not change virtualSupply. Immediately after disabling, _getProtocolPoolOwnershipPercentage should return 0 fee percentage. This assumes all invariants are the same, which is guaranteed by previous rule.
 /// @notice: SUCCESS
 rule ZeroOwnerPercentageAfterDisablingRecovery() {    
     env e; 
