@@ -349,4 +349,8 @@ contract ComposableStablePoolHarness is ComposableStablePool {
         (, uint256[] memory registeredBalances, ) = getVault().getPoolTokens(getPoolId());
         return totalSupply().sub(registeredBalances[getBptIndex()]);
     }
+
+    function day() public returns(uint256) {
+        return 1 days; 
+    }
  }

@@ -41,6 +41,7 @@ methods {
     _AMP_END_TIME_OFFSET() returns (uint256) envfree
     _AMP_VALUE_BIT_LENGTH() returns (uint256) envfree
     _AMP_TIMESTAMP_BIT_LENGTH() returns (uint256) envfree
+    _setAmplificationData(uint256, uint256, uint256, uint256) envfree
 	// stable math
     // _calculateInvariant(uint256,uint256[]) returns (uint256) => DISPATCHER(true)
     // _calcOutGivenIn(uint256,uint256[],uint256,uint256,uint256,uint256) returns (uint256) => DISPATCHER(true)
@@ -119,7 +120,7 @@ methods {
     getRate() returns (uint256) => NONDET
     // _getAuthorizor() returns address => DISPATCHER(true)
     // _canPerform(bytes32, address) returns (bool) => NONDET
-    // canPerform(bytes32, address, address) returns (bool) => NONDET
+    canPerform(bytes32, address, address) returns (bool) => ALWAYS(true) // will always approve
     // // harness functions
     // setRecoveryMode(bool)
 
@@ -133,6 +134,7 @@ methods {
 
     getToken(uint256 num) returns(address) envfree
     getTotalTokens() returns (uint256) envfree
+    day() returns (uint256) envfree
 
     // mul(uint256 x, uint256 y) => ghost_multiplication(x, y);
     // mulUp(uint256 x, uint256 y) => ghost_multiplication_round(x, y);
@@ -208,8 +210,8 @@ ghost ghost_division_round(uint256,uint256) returns uint256 {
 ////////////////////////////////////////////////////////////////////////////
 
 /// @title Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`
-invariant solvency()
-    totalSupply() >= sum_all_users_BPT()
+// invariant solvency()
+//     totalSupply() >= sum_all_users_BPT()
 
 ////////////////////////////////////////////////////////////////////////////
 //                               Rule                                     //
@@ -319,7 +321,7 @@ function ampSetup() {
     require _AMP_PRECISION() == 1000;
     require maxAmp() > minAmp();
     require minAmp() > 0;
-    require maxAmp() < 100000; // normally 5000 but lets scale it up for the sake of coverage
+    require maxAmp() < 100000; // normally 5000 
     require _AMP_START_VALUE_OFFSET() == 0;
     require _AMP_END_VALUE_OFFSET() == 64;
     require _AMP_START_TIME_OFFSET() == 128;
@@ -345,7 +347,7 @@ invariant amplificationFactorBounded(env e)
 
 /// @title: amplfiicationFactorFollowsEndTime
 /// @notice: After starting an amplification factor increase and calling an artbirary function, for some e later than initial increase
-/// amplification factor must be less than or equal value set.
+/// amplification factor must be between the start value and target end value.
 /// @notice: We split this rule into two cases, amplification factor is increasing and it's decreasing, for the sake of timeouts
 /// @dev: passes
 rule amplificationFactorFollowsEndTimeDecr(method f) {
@@ -355,10 +357,38 @@ rule amplificationFactorFollowsEndTimeDecr(method f) {
     uint256 endValue; uint256 endTime;
     uint256 startValue; bool isUpdating;
     startValue, isUpdating = _getAmplificationParameter(e);
+    require endValue * _AMP_PRECISION() < startValue;
 
-    inRecoveryMode();
+    // inRecoveryMode();
     startAmplificationParameterUpdate(e, endValue, endTime);
-    f(e, args); // call some arbitrary function
+    // f(e, args); // call some arbitrary function
+
+    env e_post;
+    require e_post.block.timestamp > e.block.timestamp;
+    require e_post.block.timestamp < endTime;
+
+    uint256 currentParam;
+    currentParam, isUpdating = _getAmplificationParameter(e_post);
+
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_post);
+
+    assert isUpdating, "is still updating";
+    assert actualEndValue <= startValue && actualEndValue >= endValue * _AMP_PRECISION(), "not within proper range";
+}
+
+rule amplificationFactorFollowsEndTimeIncr(method f) {
+    ampSetup();
+
+    env e; calldataarg args;
+    uint256 endValue; uint256 endTime;
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
+    require endValue * _AMP_PRECISION() > startValue;
+
+    // inRecoveryMode();
+    startAmplificationParameterUpdate(e, endValue, endTime);
+    // f(e, args); // call some arbitrary function
 
     env e_post;
     require e_post.block.timestamp > e.block.timestamp;
@@ -366,19 +396,14 @@ rule amplificationFactorFollowsEndTimeDecr(method f) {
     uint256 currentParam;
     currentParam, isUpdating = _getAmplificationParameter(e_post);
 
-    if (endValue > startValue) {
-        assert currentParam < endValue, "getter: parameter increased too fast";
-        assert currentParam > startValue, "amplification did not increase";
-    } else {
-        assert currentParam > endValue, "getter: parameter decreased too fast";
-        assert currentParam < startValue, "amplification did not decrease";
-    }
+    require e_post.block.timestamp <= e.block.timestamp + _MIN_UPDATE_TIME();
+    uint256 actualEndValue;
+    actualEndValue, isUpdating = _getAmplificationParameter(e_post);
+
+    assert isUpdating, "is still updating";
+    assert actualEndValue >= startValue && actualEndValue <= endValue * _AMP_PRECISION(), "not within proper range";
 }
 
-/// @title: amplificationFactorNoMoreThanDouble
-/// @notice: The amplification factor may not increase by more than a factor of two in a given day.
-/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts.
-/// @dev: passes
 rule amplificationFactorNoMoreThanDoubleIncr(method f) {
     ampSetup();
 
@@ -390,14 +415,40 @@ rule amplificationFactorNoMoreThanDoubleIncr(method f) {
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     calldataarg args; env e_f;
-    f(e_f, args);
+    // f(e_f, args);
 
     env e_incr;
-    require e_incr.block.timestamp <= e.block.timestamp + (2 * DAY());
+    require e_incr.block.timestamp == e.block.timestamp + day();
+    require e_incr.block.timestamp <= max_uint256;
     uint256 actualEndValue;
     actualEndValue, isUpdating = _getAmplificationParameter(e_incr);
 
     assert actualEndValue <= startValue * 2, "amplification factor more than doubled";
+}
+
+/// @title: amplificationFactorNoMoreThanDouble
+/// @notice: The amplification factor may not increase by more than a factor of two in a given day.
+/// @notice: This rule has been split into two cases, increasing and decreasing, for the sake of handling timeouts.
+/// @dev: passes
+rule amplificationFactorNoMoreThanDoubleDecr(method f) {
+    ampSetup();
+
+    env e; 
+    uint256 startValue; bool isUpdating;
+    startValue, isUpdating = _getAmplificationParameter(e);
+
+    uint256 endValue; uint256 endTime;
+    startAmplificationParameterUpdate(e, endValue, endTime);
+
+    // calldataarg args; env e_f;
+    // f(e_f, args);
+
+    env e_incr;
+    require e_incr.block.timestamp == e.block.timestamp + day();
+    uint256 actualEndValue;
+    actualEndValue, _ = _getAmplificationParameter(e_incr);
+
+    assert actualEndValue >= startValue / 2, "amplification factor more than halved";
 }
 
 /// @rule: amplificationFactorUpdatingOneDay
@@ -408,6 +459,7 @@ rule amplificationFactorUpdatingOneDay(method f) {
 
     env e_pre;
     uint256 endValue; uint256 endTime;
+    require endTime > e_pre.block.timestamp;
     
     // require endValue >= minAmp();
     // require endValue <= maxAmp();
@@ -419,12 +471,16 @@ rule amplificationFactorUpdatingOneDay(method f) {
     startAmplificationParameterUpdate(e_pre, endValue, endTime);
 
     env e_post;
-    require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + DAY());
+    require (e_post.block.timestamp >= e_pre.block.timestamp) && (e_post.block.timestamp < e_pre.block.timestamp + _MIN_UPDATE_TIME());
     uint256 actualEndValue; bool isUpdating_;
     actualEndValue, isUpdating_ = _getAmplificationParameter(e_post);
     assert isUpdating_, "must still be updating";
 }
 
+
+/// @rule: amplificationUpdateCanFinish
+/// @description: tests to see if it's possible for an amplification factor that will never realistically finish to exist
+/// @dev: Fails with reason
 rule amplificationUpdateCanFinish() {
     ampSetup();
 
@@ -473,15 +529,14 @@ rule ampStoreAndReturn() {
     uint256 endValue;
     uint256 startTime;
     uint256 endTime;
-    env e;
     require endTime > startTime;
 
-    _setAmplificationData(e, startValue, endValue, startTime, endTime);
+    _setAmplificationData(startValue, endValue, startTime, endTime);
 
-    env e_;
-    require e_.block.timestamp >= endTime;
+    env e;
+    require e.block.timestamp > endTime;
 
-    uint256 trueEndValue = getAmplificationFactor(e_);
+    uint256 trueEndValue = getAmplificationFactor(e);
     
     assert trueEndValue == endValue;
 }
@@ -495,12 +550,14 @@ rule startUpdateSetsValue() {
     require !isUpdating;
 
     uint256 endValue; uint256 endTime;
-    require endTime > e.block.timestamp;
+    require endTime > e.block.timestamp + _MIN_UPDATE_TIME();
     startAmplificationParameterUpdate(e, endValue, endTime);
 
     env e_;
-    require e_.block.timestamp >= endTime;
-    uint256 trueEndValue = getAmplificationFactor(e_);
+    require e_.block.timestamp > endTime;
+    uint256 trueEndValue; bool isStillUpdating; 
+    trueEndValue, isStillUpdating = _getAmplificationParameter(e_);
 
-    assert trueEndValue == endValue;
+    assert !isStillUpdating, "still updating";
+    assert trueEndValue == endValue * _AMP_PRECISION(), "wrong value";
 }
