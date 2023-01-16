@@ -15,7 +15,7 @@ certoraRun  certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol \
     --verify TimelockAuthorizer:certora/spec/timelockAuthorizer.spec \
     --link TimelockAuthorizer:_vault=MockVault \
             TimelockAuthorizer:_executor=TimelockExecutor \
-    --solc solc7.6 \
+    --solc solc7.1 \
     --staging master \
     --optimistic_loop \
     --send_only \

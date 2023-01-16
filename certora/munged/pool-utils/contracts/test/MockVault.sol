@@ -88,7 +88,6 @@ contract MockVault is IPoolSwapStructs {
     {
         Pool storage pool = pools[poolId];
         cash = pool.balances[token];
-        return (cash, 0, 0, address(0));        // HARNESS
     }
 
     function registerPool(IVault.PoolSpecialization) external view returns (bytes32) {

@@ -126,10 +126,9 @@ library Address {
      *
      * _Available since v4.3._
      */
-    function verifyCallResult(bool success, bytes memory returndata) internal pure returns (bytes memory findRerurn) {  // HARNESS: findRerurn
+    function verifyCallResult(bool success, bytes memory returndata) internal pure returns (bytes memory) {
         if (success) {
-            findRerurn = returndata;
-            return findRerurn;
+            return returndata;
         } else {
             // Look for revert reason and bubble it up if present
             if (returndata.length > 0) {
