@@ -18,6 +18,7 @@ certoraRun  certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol \
     --solc solc7.1 \
     --staging master \
     --optimistic_loop \
+    --loop_iter 3 \
     --send_only \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
