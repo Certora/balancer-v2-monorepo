@@ -11,6 +11,8 @@ fi
 certoraRun  certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol \
     certora/munged/vault/contracts/authorizer/TimelockExecutor.sol \
     certora/munged/pool-utils/contracts/test/MockVault.sol \
+    certora/munged/vault/contracts/Vault.sol \
+    certora/harness/AuthenticationHarness.sol \
     certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol \
     --verify TimelockAuthorizer:certora/spec/timelockAuthorizer.spec \
     --link TimelockAuthorizer:_vault=MockVault \

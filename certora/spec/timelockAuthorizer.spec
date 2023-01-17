@@ -1,5 +1,8 @@
 import "erc20.spec"
 
+using MockVault as MockVault
+using Vault as Vault
+
 methods {
     execute(address, bytes) returns(bytes) => DISPATCHER(true)
     getActionId(bytes4) returns(bytes32) => DISPATCHER(true)        // what is the "target/where" in cancel()? "where" in schedule?   setDelay()

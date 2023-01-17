@@ -782,16 +782,16 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
         uint256 executableAt = block.timestamp + delay;
         bool protected = executors.length > 0;
 
-        _scheduledExecutions.push(
-            ScheduledExecution({
-                where: where,
-                data: data,
-                executed: false,
-                cancelled: false,
-                protected: protected,
-                executableAt: executableAt
-            })
-        );
+        // _scheduledExecutions.push(
+        //     ScheduledExecution({
+        //         where: where,
+        //         data: data,
+        //         executed: false,
+        //         cancelled: false,
+        //         protected: protected,
+        //         executableAt: executableAt
+        //     })
+        // );
 
         bytes32 executeActionId = getExecuteExecutionActionId(scheduledExecutionId);
         for (uint256 i = 0; i < executors.length; i++) {
