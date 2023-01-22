@@ -71,9 +71,27 @@
 
 ***Variable transition*** - When `schedule` is called with where other than `address(this)` and `address(_executor)` and sender has permissions, a new action is scheduled.
 
-***High-level*** - Solvency - Total supply of tokens is greater or equal to the sum of balances of all users. The system has enough tokens to pay everyone what the deserve.
+***High-level*** - After a root change to a different root, the previous root cannot do things, which only root can.
 
-***Unit tests*** -
+***Variable transition*** - If root has been changed, it was after calling claimRoot.
+
+***Variable transition*** - manageGranter works:
+If msg.sender == root then calling manageGranter results in allowed==isGranter(actionId, account, where).
+If msg.sender != root and allowed is set, function does not do anything (fails)
+If !allowed && isGranter(actionId, msg.sender, where), then after the call assert(!isGranter(actionId, account, where)).
+
+***Variable transition*** - If manageRevoker makes somebody a revoker for some action, then isRevoker and canRovoke methods return true.
+If msg.sender == root then calling manageRevoker results in allowed==isRevoker(actionId, account, where).
+If msg.sender != root and allowed is set, function does not do anything (fails)
+If !allowed && isRevoker(actionId, msg.sender, where), then after the call assert(!isRevoker(actionId, account, where)).
+
+***Variable transition*** - If manageRevoker makes somebody NOT revoker for some action, then isRevoker and canRovoke methods return false.
+
+***Variable transition*** - Maybe `renouncePermissions` should not be called with `where=TimelockAuthorizer`. I am not sure if we want root/executor to be able to renounce all their permissions.
+
+***Unit tests*** - For permissions that have a delay when granting, `canRevoke` will return false.
+
+***Unit tests*** - After calling grantPermissions with array actionIds larger than array where, the function should not do anything.
 ***Unit tests*** - 
 
 </br>
