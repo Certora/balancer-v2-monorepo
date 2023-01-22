@@ -20,7 +20,7 @@ import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/ReentrancyGuard.
 import "./TimelockAuthorizer.sol";
 
 contract TimelockExecutor is ReentrancyGuard {
-    TimelockAuthorizer public immutable authorizer;
+    TimelockAuthorizer public authorizer; // HARNESS: removed immutable
 
     constructor() {
         authorizer = TimelockAuthorizer(msg.sender);

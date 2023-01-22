@@ -16,8 +16,9 @@ certoraRun  certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol \
     --verify TimelockAuthorizer:certora/spec/timelockAuthorizer.spec \
     --link TimelockAuthorizer:_vault=Vault \
             TimelockAuthorizer:_executor=TimelockExecutor \
+            TimelockExecutor:authorizer=TimelockAuthorizer \
     --solc solc7.1 \
-    --staging bgreenwald/cert-740 \
+    --staging EyalH/ShowCallTraceWrongIndex \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
@@ -25,3 +26,6 @@ certoraRun  certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
     --msg "TimelockAuthorizer: $RULE $MSG"
+
+
+    # --staging bgreenwald/cert-740 \
