@@ -7,11 +7,13 @@ methods {
     execute(address, bytes) returns(bytes) => DISPATCHER(true)
     getActionId(bytes4) returns(bytes32) => DISPATCHER(true)        // what is the "target/where" in cancel()? "where" in schedule?   setDelay()
 
-    // unresolved calls
-    // execute() - dispatcher doesn't work, don't know why
-    // cancel() - solved
-    // schedule() - solved
-    // setDelay() - dispatcher doesn't work, don't know why
+    getSchedExeWhere(uint256) returns(address) envfree
+    getSchedExeData(uint256) returns(bytes) envfree
+    getSchedExeExecuted(uint256) returns(bool) envfree
+    getSchedExeCancelled(uint256) returns(bool) envfree
+    getSchedExeProtected(uint256) returns(bool) envfree
+    getSchedExeExecutableAt(uint256) returns(uint256) envfree
+    getSchedExeLength() returns(uint256) envfree
 }
 
 rule sanity(env e, method f) {
@@ -20,7 +22,9 @@ rule sanity(env e, method f) {
     assert false;
 }
 
-// STATUS - in progress
+
+// STATUS - verified with workarounds explained on confluence
+// Checking that hashing produces different outputs for different inputs
 rule permissionCheck(env e, env e2) {
     bytes32 actionId1;
     address account1;
@@ -40,20 +44,19 @@ rule permissionCheck(env e, env e2) {
 }
 
 
+// STATUS - in progress
+// executableAt is immutable
+rule immutableExecuteAt(env e, method f) {
+    uint256 actionIndex;
 
-// rule whoChangedBalanceOf(env eB, env eF, method f) {
-//     address u;
-//     calldataarg args;
-//     uint256 before = execu(eB, u);
-//     f(eF, args);
-//     assert balanceOf(eB, u) == before, "balanceOf changed";
-// }
+    // require actionIndex < getSchedExeLength();
 
+    uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
 
-// LiquidStakingManager - blocked by bytes array issue
-// SaveEthVault - blocked by bytes array issue
-// StakingFundsVault - blocked by several issues
+    calldataarg args;
+    f(e, args);
 
+    uint256 executableAtAfter = getSchedExeExecutableAt(actionIndex);
 
-
-
+    assert executableAtBefore == executableAtAfter;
+}
