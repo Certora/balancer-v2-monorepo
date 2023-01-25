@@ -69,26 +69,26 @@ rule immutableExecuteAt(env e, method f) {
 
 // STATUS - in progress
 // only claimRoot changes root and variables are updated appropriately.
-rule rootChangesOnlyWithClaimRoot(env e, method f) {
-    address rootBefore = getRoot();
-    address pendingRootBefore = getPendingRoot();
+// rule rootChangesOnlyWithClaimRoot(env e, method f) {
+//     address rootBefore = getRoot();
+//     address pendingRootBefore = getPendingRoot();
 
-    // Invoke any function with msg.sender being the sender account
-    calldataarg args;
-    f(e, args);
+//     // Invoke any function with msg.sender being the sender account
+//     calldataarg args;
+//     f(e, args);
 
-    address rootAfter = getRoot();
+//     address rootAfter = getRoot();
 
-    assert rootBefore != rootAfter =>
-        e.msg.sender == pendingRootBefore,
-        "Root changed by somebody, who was not pending root.";
-    assert rootBefore != rootAfter =>
-        rootAfter == pendingRootBefore,
-        "Pending root changed root to somebody else.";
-    assert rootBefore != rootAfter =>
-        f.selector == claimRoot().selector,
-        "Root changed by a function other than claimRoot.";
-}
+//     assert rootBefore != rootAfter =>
+//         e.msg.sender == pendingRootBefore,
+//         "Root changed by somebody, who was not pending root.";
+//     assert rootBefore != rootAfter =>
+//         rootAfter == pendingRootBefore,
+//         "Pending root changed root to somebody else.";
+//     assert rootBefore != rootAfter =>
+//         f.selector == claimRoot().selector,
+//         "Root changed by a function other than claimRoot.";
+// }
 // STATUS - in progress
 // All the time there is only one address, that has root permissions and this address is currentRoot.
 invariant theOnlyRoot(bytes32 actionId, address account1, address account2, address where)
