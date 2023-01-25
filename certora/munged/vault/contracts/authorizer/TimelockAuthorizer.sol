@@ -111,10 +111,10 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
     IAuthorizerAdaptor private immutable _authorizerAdaptor;
     uint256 private immutable _rootTransferDelay;
 
-    address private _root;
+    address public _root;  // HARNESS: private -> public
     address private _pendingRoot;
     ScheduledExecution[] internal _scheduledExecutions;  // HARNESS: private -> internal
-    mapping(bytes32 => bool) private _isPermissionGranted;
+    mapping(bytes32 => bool) public _isPermissionGranted;  // HARNESS: private -> public
     mapping(bytes32 => uint256) private _delaysPerActionId;
 
     /**
@@ -880,6 +880,8 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
         if (data.length < 4) return bytes4(0);
         return bytes4(data[0]) | (bytes4(data[1]) >> 8) | (bytes4(data[2]) >> 16) | (bytes4(data[3]) >> 24);
     }
+
+    // mapping(bytes => bytes4) selectors; possible harnesses
 
     function _ar(bytes32 item) private pure returns (bytes32[] memory result) {
         result = new bytes32[](1);

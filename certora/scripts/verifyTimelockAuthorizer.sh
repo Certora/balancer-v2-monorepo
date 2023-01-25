@@ -18,7 +18,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockAuthorizerHarness:_executor=TimelockExecutor \
             TimelockExecutor:authorizer=TimelockAuthorizerHarness \
     --solc solc7.1 \
-    --staging EyalH/ShowCallTraceWrongIndex \
+    --staging master \
     --optimistic_loop \
     --loop_iter 3 \
     --send_only \
