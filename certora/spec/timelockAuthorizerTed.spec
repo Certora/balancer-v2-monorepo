@@ -5,19 +5,19 @@ import "timelockAuthorizerMain.spec"
 // STATUS - in progress
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
-rule rootChangesOnlyWithClaimRoot(env e, method f) {
-    address rootBefore = getRoot(e);
-    address pendingRootBefore = getPendingRoot(e);
+rule rootChangesOnlyWithClaimRoot(env eForGetters, env eForPayableFunctions, method f) {
+    address rootBefore = getRoot(eForGetters);
+    address pendingRootBefore = getPendingRoot(eForGetters);
 
     // Invoke any function
     calldataarg args;
-    f(e, args);
+    f(eForPayableFunctions, args);
 
-    address rootAfter = getRoot(e);
+    address rootAfter = getRoot(eForGetters);
 
     // if the function changed the root, the sender was pendingRoot
     assert rootBefore != rootAfter =>
-        e.msg.sender == pendingRootBefore,
+        eForPayableFunctions.msg.sender == pendingRootBefore,
         "Root changed by somebody, who was not pending root.";
     // if the function changed the root, the new root is old pendingRoot
     assert rootBefore != rootAfter =>
