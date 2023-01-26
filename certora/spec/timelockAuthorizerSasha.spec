@@ -49,7 +49,7 @@ invariant theOnlyRoot(bytes32 actionId, address account1, address account2, addr
         && _isPermissionGranted(getPermissionId(actionId, account2, where)))
     => account1 == account2 && account1 == _root()
 
-
+use rule sanity
 
 
 // fucntion cancel can be called by root, then msg.sender is a root.

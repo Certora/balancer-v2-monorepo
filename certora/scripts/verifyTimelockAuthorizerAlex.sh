@@ -12,6 +12,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     certora/munged/vault/contracts/authorizer/TimelockExecutor.sol \
     certora/munged/vault/contracts/Vault.sol \
     certora/harness/AuthenticationHarness.sol \
+    certora/helpers/Receiver.sol \
     certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol \
     --verify TimelockAuthorizerHarness:certora/spec/timelockAuthorizerAlex.spec \
     --link TimelockAuthorizerHarness:_vault=Vault \

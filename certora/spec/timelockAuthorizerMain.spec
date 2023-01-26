@@ -6,6 +6,7 @@ using Vault as Vault
 methods {
     execute(address, bytes) returns(bytes) => DISPATCHER(true)
     getActionId(bytes4) returns(bytes32) => DISPATCHER(true)        // what is the "target/where" in cancel()? "where" in schedule?   setDelay()
+    sendTo() returns(bool, bytes) => DISPATCHER(true)
 
     getSchedExeWhere(uint256) returns(address) envfree
     getSchedExeData(uint256) returns(bytes) envfree
