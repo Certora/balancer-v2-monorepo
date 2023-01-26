@@ -57,10 +57,10 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
-    require(delayAfter != delayBefore);
-
-    assert f.selector == setDelay(bytes32, uint256).selector;
-    assert delayAfter == delayArg;
+    assert delayAfter != delayBefore =>
+        f.selector == setDelay(bytes32, uint256).selector;
+    assert delayAfter != delayBefore =>
+        delayAfter == delayArg;
 }
 
 

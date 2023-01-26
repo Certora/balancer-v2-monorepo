@@ -22,8 +22,8 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --staging master \
     --optimistic_loop \
     --loop_iter 3 \
-    --send_only \
     --rule_sanity basic \
+    --send_only \
     --settings -optimisticUnboundedHashing=true \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
