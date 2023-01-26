@@ -46,3 +46,30 @@ rule scheduledExecutionCanCancelOrScheduleOnlyOnce(env e, method f, uint256 inde
         || f.selector == execute(uint256).selector
         => isReverted;
 }
+
+
+// When a delay is changed, it is because setDelay is executed with the parameter being the new delay.
+rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
+    uint256 delayBefore = getActionIdDelay(actionId);
+
+    uint256 delayArg;
+    helperSetDelay(e, f, actionId, delayArg);
+
+    uint256 delayAfter = getActionIdDelay(actionId);
+
+    require(delayAfter != delayBefore);
+
+    assert f.selector == setDelay(bytes32, uint256).selector;
+    assert delayAfter == delayArg;
+}
+
+
+function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
+    if (f.selector == setDelay(bytes32, uint256).selector) {
+        setDelay(e, actionId, delayArg);
+    } else {
+        calldataarg args;
+        env e2
+        f(e2, args);
+    }
+}
