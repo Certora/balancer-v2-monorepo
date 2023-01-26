@@ -16,6 +16,7 @@ methods {
     getSchedExeLength() returns(uint256) envfree
 
     EVERYWHERE() returns(address) envfree
+    getActionIdDelay(bytes32) returns(uint256) envfree
     _isPermissionGranted(bytes32) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
     _root() returns(address) envfree
