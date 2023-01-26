@@ -69,7 +69,7 @@ function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
         setDelay(e, actionId, delayArg);
     } else {
         calldataarg args;
-        env e2
+        env e2;
         f(e2, args);
     }
 }
