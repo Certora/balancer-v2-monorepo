@@ -28,3 +28,21 @@ rule rootChangesOnlyWithClaimRoot(env e, method f) {
         f.selector == claimRoot().selector,
         "Root changed by a function other than claimRoot.";
 }
+
+
+// ScheduledExecution that has already been cancelled or executed
+// cannot be executed nor canceled again.
+rule scheduledExecutionCanCancelOrScheduleOnlyOnce(env e, method f, uint256 index) {
+    bool canceled_before = getSchedExeCancelled(index);
+    bool executed_before = getSchedExeExecuted(index);
+
+    // require(canceled_before && !executed_before || !canceled_before && executed_before);
+    require(canceled_before || executed_before);
+
+    calldataarg args;
+    f@withrevert(e, args);
+    bool isReverted = lastReverted; // lastReverted is bool, true iff the last function call was reverted
+    assert f.selector == cancel(uint256).selector
+        || f.selector == execute(uint256).selector
+        => isReverted;
+}
