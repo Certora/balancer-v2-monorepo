@@ -75,6 +75,25 @@ function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
 }
 
 
+// Delays of actions are less or equal to MAX_DELAY.
+rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
+    uint256 delayBefore = getActionIdDelay(actionId);
+    uint256 maximal_delay = MAX_DELAY();
+
+    require(delayBefore <= maximal_delay);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 delayAfter = getActionIdDelay(actionId);
+
+    // If the number of scheduled executions changed, it was increased by one.
+    assert delayAfter <= maximal_delay,
+        "Delay of an action is greater than MAX_DELAY.";
+}
+
+
 // The array _scheduledExecution is never shortened.
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
