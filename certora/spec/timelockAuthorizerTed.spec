@@ -73,3 +73,22 @@ function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
         f(e2, args);
     }
 }
+
+
+// The array _scheduledExecution is never shortened.
+rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
+    uint256 lengthBefore = getSchedExeLength();
+
+    require(lengthBefore + 1 > lengthBefore);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 lengthAfter = getSchedExeLength();
+
+    // If the number of scheduled executions changed, it was increased by one.
+    assert lengthBefore != lengthAfter =>
+        lengthBefore + 1 == lengthAfter,
+        "Number of scheduled executions changed and did not increase by one.";
+}
