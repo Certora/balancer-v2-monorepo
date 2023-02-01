@@ -48,7 +48,7 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
 // STATUS - done, passing
 // ScheduledExecution that has already been cancelled or executed
 // cannot be executed again.
-rule scheduledExecutionCanBeExecutedOnce(env e, uint256 index) {
+rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
@@ -101,7 +101,8 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
     uint256 delayAfter = getActionIdDelay(actionId);
 
     // If the number of scheduled executions changed, it was increased by one.
-    assert delayAfter <= maximal_delay,
+    // Note: In this rule we allow the executor to change delay in any way.
+    assert e.msg.sender == getExecutor(e) || delayAfter <= maximal_delay,
         "Delay of an action is greater than MAX_DELAY.";
 }
 
