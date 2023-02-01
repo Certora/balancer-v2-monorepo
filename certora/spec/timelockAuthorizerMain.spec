@@ -23,6 +23,7 @@ methods {
     _isPermissionGranted(bytes32) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
     _root() returns(address) envfree
+    getExecuteExecutionActionId(uint256) returns(bytes32) envfree
 }
 
 rule sanity(env e, method f) {

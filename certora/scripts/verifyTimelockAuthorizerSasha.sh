@@ -19,9 +19,9 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockAuthorizerHarness:_executor=TimelockExecutor \
             TimelockExecutor:authorizer=TimelockAuthorizerHarness \
     --solc solc7.1 \
-    --staging master \
+    --staging bgreenwald/cert-740 \
     --optimistic_loop \
-    --loop_iter 3 \
+    --loop_iter 8 \
     --send_only \
     --rule_sanity basic \
     --settings -optimisticUnboundedHashing=true \
