@@ -124,3 +124,28 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
         lengthBefore + 1 == lengthAfter,
         "Number of scheduled executions changed and did not increase by one.";
 }
+
+
+rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
+
+    uint256 delayBefore = getActionIdDelay(actionId);
+    uint256 newDelay;
+    address[] executors;
+    uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
+    require(delayBefore + delayBefore >= delayBefore);
+    require(delayBefore <= MAX_DELAY());
+    require(newDelay <= delayBefore);
+    require(newDelay >= MIN_DELAY());
+    require(numberOfScheduledExecutionsBefore + 1 >= numberOfScheduledExecutionsBefore);
+
+    uint256 timestampBefore = e.block.timestamp;
+    scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
+
+    uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
+    assert numberOfScheduledExecutionsAfter == numberOfScheduledExecutionsBefore + 1;
+    //TODO: assert, that getSchedExeExecutableAt(numberOfScheduledExecutionsBefore)
+
+    uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
+    assert executableAt >= timestampBefore;
+    assert executableAt + newDelay >= timestampBefore + delayBefore;
+}
