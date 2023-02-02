@@ -103,8 +103,8 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
 
     // These action ids do not need to be used by external actors as the action ids above do.
     // Instead they're saved just for gas savings so we can keep them private.
-    bytes32 private immutable _GENERAL_GRANT_ACTION_ID;
-    bytes32 private immutable _GENERAL_REVOKE_ACTION_ID;
+    bytes32 public immutable _GENERAL_GRANT_ACTION_ID;      // HARNESS: private -> public
+    bytes32 public immutable _GENERAL_REVOKE_ACTION_ID;     // HARNESS: private -> public
 
     TimelockExecutor private _executor;     // HARNESS: removed immutable
     IAuthentication private _vault;         // HARNESS: removed immutable
@@ -116,7 +116,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
     address private _pendingRoot;
     ScheduledExecution[] internal _scheduledExecutions;  // HARNESS: private -> internal
     mapping(bytes32 => bool) public _isPermissionGranted;  // HARNESS: private -> public
-    mapping(bytes32 => uint256) private _delaysPerActionId;
+    mapping(bytes32 => uint256) public _delaysPerActionId; // HARNESS: private -> public
 
     /**
      * @notice Emitted when a new execution `scheduledExecutionId` is scheduled.
@@ -760,7 +760,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
         }
     }
 
-    // function scheduleTest(uint256 index) external { _scheduledExecutions[index].executableAt -= 5; }
+    function scheduleTest(uint256 index) external { _scheduledExecutions[index].executableAt -= 5; }
 
     function _schedule(
         bytes32 actionId,

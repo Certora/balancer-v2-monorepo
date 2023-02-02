@@ -19,7 +19,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockAuthorizerHarness:_executor=TimelockExecutor \
             TimelockExecutor:authorizer=TimelockAuthorizerHarness \
     --solc solc7.1 \
-    --staging bgreenwald/cert-740 \
+    --staging master \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \
@@ -30,5 +30,4 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --msg "TimelockAuthorizer: $RULE $MSG"
 
 
-    # --staging bgreenwald/cert-740 \
     # --staging EyalH/ShowCallTraceWrongIndex \

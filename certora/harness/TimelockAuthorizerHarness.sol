@@ -39,4 +39,12 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return _scheduledExecutions.length;
     }
 
+    function getGrantActionId() external view returns (bytes4) {
+        return TimelockAuthorizer.grantPermissions.selector;
+    }
+
+    function getRevokeActionId() external view returns (bytes4) {
+        return TimelockAuthorizer.revokePermissions.selector;
+    }
+
 }

@@ -15,15 +15,23 @@ methods {
     getSchedExeProtected(uint256) returns(bool) envfree
     getSchedExeExecutableAt(uint256) returns(uint256) envfree
     getSchedExeLength() returns(uint256) envfree
+    getGrantActionId() returns (bytes4) envfree
+    getRevokeActionId() returns (bytes4) envfree
 
     EVERYWHERE() returns(address) envfree
     MIN_DELAY() returns(uint256) envfree
     MAX_DELAY() returns(uint256) envfree
+    GENERAL_PERMISSION_SPECIFIER() returns(bytes32) envfree
+    _GENERAL_GRANT_ACTION_ID() returns(bytes32) envfree
+    _GENERAL_REVOKE_ACTION_ID() returns(bytes32) envfree
+
     getActionIdDelay(bytes32) returns(uint256) envfree
+    getActionId(bytes4) returns (bytes32) envfree
     _isPermissionGranted(bytes32) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
     _root() returns(address) envfree
     getExecuteExecutionActionId(uint256) returns(bytes32) envfree
+    getExtendedActionId(bytes32, bytes32) returns(bytes32) envfree
 }
 
 rule sanity(env e, method f) {
