@@ -127,7 +127,6 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 
 
 rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
-
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
     address[] executors;
@@ -143,7 +142,6 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 
     uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
     assert numberOfScheduledExecutionsAfter == numberOfScheduledExecutionsBefore + 1;
-    //TODO: assert, that getSchedExeExecutableAt(numberOfScheduledExecutionsBefore)
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
     assert executableAt >= timestampBefore;
