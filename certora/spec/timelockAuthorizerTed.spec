@@ -137,6 +137,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 timestampBefore = eForPayableFunctions.block.timestamp;
+    require(timestampBefore + timestampBefore > timestampBefore);
     require(timestampBefore + newDelay + newDelay < max_uint256);
     scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
 
