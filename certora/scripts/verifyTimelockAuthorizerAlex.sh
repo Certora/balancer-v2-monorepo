@@ -21,7 +21,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --solc solc7.1 \
     --staging master \
     --optimistic_loop \
-    --loop_iter 3 \
+    --loop_iter 8 \
     --send_only \
     --rule_sanity basic \
     --settings -optimisticUnboundedHashing=true \

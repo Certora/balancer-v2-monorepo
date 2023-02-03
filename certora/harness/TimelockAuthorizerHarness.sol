@@ -47,4 +47,10 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return TimelockAuthorizer.revokePermissions.selector;
     }
 
+    function getActionIdHelper(uint256 index) external returns(bytes32){
+        ScheduledExecution storage scheduledExecution = _scheduledExecutions[index];
+        IAuthentication target = IAuthentication(scheduledExecution.where);
+        bytes32 actionId = target.getActionId(_decodeSelector(scheduledExecution.data));
+        return actionId;
+    }
 }

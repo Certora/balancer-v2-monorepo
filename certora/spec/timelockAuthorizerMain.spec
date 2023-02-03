@@ -32,6 +32,11 @@ methods {
     _root() returns(address) envfree
     getExecuteExecutionActionId(uint256) returns(bytes32) envfree
     getExtendedActionId(bytes32, bytes32) returns(bytes32) envfree
+    _executor() returns(address) envfree
+    getPendingRoot() returns(address) envfree
+    hasPermission(bytes32, address, address) returns (bool) envfree
+    getActionIdHelper(uint256) returns (bytes32) envfree
+    isRoot(address) returns (bool) envfree
 }
 
 rule sanity(env e, method f) {
