@@ -19,7 +19,7 @@ import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "./Authentication.sol";
 
 abstract contract SingletonAuthentication is Authentication {
-    IVault private immutable _vault;
+    IVault private _vault;  // HARNESS: removed immutable
 
     // Use the contract's own address to disambiguate action identifiers
     constructor(IVault vault) Authentication(bytes32(uint256(address(this)))) {

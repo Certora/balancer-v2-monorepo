@@ -1,35 +1,8 @@
 import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
-rule sanity(env e, method f) {
-    calldataarg args;
-    f(e, args);
-    assert false;
-}
 
-
-// STATUS - verified with workarounds explained on confluence
-// Checking that hashing produces different outputs for different inputs
-rule permissionCheck(env e, env e2) {
-    bytes32 actionId1;
-    address account1;
-    address where1;
-
-    bytes32 actionId2;
-    address account2;
-    address where2;
-
-    bytes32 permission1;
-    bytes32 permission2;
-
-    permission1 = getPermissionId(actionId1, account1, where1);
-    permission2 = getPermissionId(actionId2, account2, where2);
-
-    assert (actionId1 != actionId2 || account1 != account2 || where1 != where2) => permission1 != permission2;
-}
-
-
-// STATUS - in progress (strange storage results: https://vaas-stg.certora.com/output/3106/57a10f4e5c1b41c5b1de883de54516a9/?anonymousKey=07ae614ca13ed4cffad1d6b423149c57f2c08814)
+// STATUS - in progress (strange storage results: https://vaas-stg.certora.com/output/3106/188ba27f84ac4b9286b6d3df5efb6623/?anonymousKey=85ca8fd3448f6f49e55502ed3dda9cac9689ced7)
 // executableAt is immutable
 rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
@@ -44,14 +17,37 @@ rule immutableExecuteAt(env e, method f) {
     assert executableAtBefore == executableAtAfter;
 }
 
+
+// STATUS - verified
+// (Helper) ensure that two ways to get ID mathc each other (saw before that it didn't, needed to check)
+invariant matchingGenralActionIds()
+    _GENERAL_GRANT_ACTION_ID() == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
+    && _GENERAL_REVOKE_ACTION_ID() == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER())
+
+
+// STATUS - in progress (`getActionIdFromArrayIndex` doesn't return differnt values for different indexes, meaybe because of broken encodePacked. Waiting for fix.)
+// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
+invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
+    (indexLow < indexHigh
+        && getActionIdFromArrayIndex(indexLow) == getActionIdFromArrayIndex(indexHigh)) // always return the same even for different indexes
+    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
+
+rule checkGetActionId(env e, method f) {
+    uint256 indexLow; uint256 indexHigh;
+    calldataarg args;
+    f(e, args);
+    assert getActionIdFromArrayIndex(indexLow) != getActionIdFromArrayIndex(indexHigh), "Remember, with great power comes great responsibility.";
+}
+
 // STATUS - in progress
 // All the time there is only one address, that has root permissions and this address is currentRoot.
 invariant theOnlyRoot(bytes32 actionId, address account1, address account2)
     (actionId == _GENERAL_GRANT_ACTION_ID()
         || actionId == _GENERAL_REVOKE_ACTION_ID())
     //     && _isPermissionGranted(getPermissionId(actionId, account1, EVERYWHERE())))
+    //      && _isPermissionGranted(getPermissionId(actionId, account2, EVERYWHERE())))
     // => account1 == _root()
-    => _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()))
+    // => _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()))
 
     {
         preserved {
@@ -59,45 +55,69 @@ invariant theOnlyRoot(bytes32 actionId, address account1, address account2)
         }
     }
 
-    // ((actionId == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
-    //         || actionId == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER()))
-    //     && _isPermissionGranted(getPermissionId(actionId, account1, EVERYWHERE())) 
-    //     && _isPermissionGranted(getPermissionId(actionId, account2, EVERYWHERE())))
-    // => account1 == account2 && account1 == _root()
+
+// STATUS - in progress
+// Only root has root permissions
+rule rootRights(env e, method f) {
+    bytes32 actionId;
+    address accountRand;
+
+    bool isGrantedRootBefore = _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
+    bool isGrantedRandBefore = _isPermissionGranted(getPermissionId(actionId, accountRand, EVERYWHERE()));
+
+    require e.msg.sender != _root(); // CAUTION!!!!!! Added for testing. need to check if it's correct
+    require currentContract != EVERYWHERE();
+    require accountRand != _root();
+    require accountRand != _pendingRoot();
+    require actionId == _GENERAL_GRANT_ACTION_ID()
+            || actionId == _GENERAL_REVOKE_ACTION_ID();
+    require isGrantedRootBefore && !isGrantedRandBefore;
+
+    grantpermissionHelper(f, e);
+
+    bool isGrantedRootAfter = _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
+    bool isGrantedRandAfter = _isPermissionGranted(getPermissionId(actionId, accountRand, EVERYWHERE()));
+
+    assert !isGrantedRandAfter, "Remember, with great power comes great responsibility.";
+}   
+
+function grantpermissionHelper(method f, env e){
+    if (f.selector == grantPermissions(bytes32[], address, address[]).selector){
+        bytes32[] actionIds;
+        address account;
+        address[] where;
+
+        require actionIds[0] != _executor();
+
+        grantPermissions(e, actionIds, account, where);
+    } else {
+        calldataarg args;
+        f(e, args);
+    }
+} 
+
 
 // STATUS - in progress / verified / error / timeout / etc.
-// TODO: rule description
-rule basicFRule(env e, method f) {
-    bytes32 actionId;
+// only one flag executed/cancelled can be changed at a time
+rule executeCancelOnlyOne(env e, method f) {
+    uint256 actionIndex1; uint256 actionIndex2;
+    bool isExecuted1Before = getSchedExeExecuted(actionIndex1);
+    bool isExecuted2Before = getSchedExeExecuted(actionIndex2);
+    bool isCancelled1Before = getSchedExeCancelled(actionIndex1);
+    bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
 
-    require actionId == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
-                => _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
+    require actionIndex1 != actionIndex2;
 
     calldataarg args;
     f(e, args);
 
-    assert actionId == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
-                => _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
-}
+    bool isExecuted1After = getSchedExeExecuted(actionIndex1);
+    bool isExecuted2After = getSchedExeExecuted(actionIndex2);
+    bool isCancelled1After = getSchedExeCancelled(actionIndex1);
+    bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-// STATUS - verified
-// ensure that two ways to get ID mathc each other (saw before that it doesn't, needed to check)
-invariant matchingGenralActionIds()
-    _GENERAL_GRANT_ACTION_ID() == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
-    && _GENERAL_REVOKE_ACTION_ID() == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER())
-
-// STATUS - in progress
-// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
-// failing vacuous check: https://vaas-stg.certora.com/output/3106/19d7372700ca453f9d70f075ee13a73c/?anonymousKey=41665649305352d1003f370a810592b2a6d93bf9
-invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
-    indexLow < indexHigh && indexHigh < getSchedExeLength()
-        // && getExecuteExecutionActionId(indexLow) == getExecuteExecutionActionId(indexHigh)
-    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
-
-rule whoChangedBalanceOf(env eB, env eF, method f) {
-    bytes32 actionId;
-    calldataarg args;
-    uint256 before = _delaysPerActionId(eB, actionId);
-    f(eF, args);
-    assert _delaysPerActionId(eF, actionId) == before, "balanceOf changed";
+    assert isExecuted1Before != isExecuted1After => isExecuted2Before == isExecuted2After && isCancelled1Before == isCancelled1After && isCancelled2Before == isCancelled2After;
+    assert isCancelled1Before != isCancelled1After => isExecuted1Before == isExecuted1After && isExecuted2Before == isExecuted2After && isCancelled2Before == isCancelled2After;
+    assert isExecuted2Before != isExecuted2After => isExecuted1Before == isExecuted1After && isCancelled1Before == isCancelled1After && isCancelled2Before == isCancelled2After;
+    assert isCancelled2Before != isCancelled2After => isExecuted1Before == isExecuted1After && isExecuted2Before == isExecuted2After && isCancelled1Before == isCancelled1After;
 }

@@ -106,14 +106,14 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
     bytes32 public immutable _GENERAL_GRANT_ACTION_ID;      // HARNESS: private -> public
     bytes32 public immutable _GENERAL_REVOKE_ACTION_ID;     // HARNESS: private -> public
 
-    TimelockExecutor private _executor;     // HARNESS: removed immutable
+    TimelockExecutor public _executor;     // HARNESS: removed immutable, private -> public
     IAuthentication private _vault;         // HARNESS: removed immutable
     IAuthorizerAdaptorEntrypoint private immutable _authorizerAdaptorEntrypoint;
     IAuthorizerAdaptor private immutable _authorizerAdaptor;
     uint256 private immutable _rootTransferDelay;
 
     address public _root;  // HARNESS: private -> public
-    address private _pendingRoot;
+    address public _pendingRoot;   // HARNESS: private -> public
     ScheduledExecution[] internal _scheduledExecutions;  // HARNESS: private -> internal
     mapping(bytes32 => bool) public _isPermissionGranted;  // HARNESS: private -> public
     mapping(bytes32 => uint256) public _delaysPerActionId; // HARNESS: private -> public
@@ -884,7 +884,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
         return bytes4(data[0]) | (bytes4(data[1]) >> 8) | (bytes4(data[2]) >> 16) | (bytes4(data[3]) >> 24);
     }
 
-    // mapping(bytes => bytes4) selectors; possible harnesses
+    // mapping(bytes => bytes4) selectors; // possible harnesses
 
     function _ar(bytes32 item) private pure returns (bytes32[] memory result) {
         result = new bytes32[](1);
