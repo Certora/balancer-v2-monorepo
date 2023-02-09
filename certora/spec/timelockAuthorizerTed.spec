@@ -137,19 +137,22 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     address[] executors;
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
     require(delayBefore <= MAX_DELAY());
-    require(newDelay <= delayBefore);
     require(newDelay >= MIN_DELAY());
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 timestampBefore = eForPayableFunctions.block.timestamp;
-    require(timestampBefore + timestampBefore > timestampBefore);
-    require(timestampBefore + newDelay + newDelay < max_uint256);
+
+    require(to_uint256(timestampBefore + timestampBefore) > timestampBefore);
+
     scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
 
     uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
     assert numberOfScheduledExecutionsAfter == numberOfScheduledExecutionsBefore + 1;
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
-    assert executableAt >= timestampBefore;
-    assert executableAt + newDelay >= timestampBefore + delayBefore;
+
+    assert executableAt >= timestampBefore + MIN_DELAY();
+    assert newDelay <= delayBefore =>
+        executableAt - timestampBefore >= delayBefore - newDelay;
+    assert false;
 }
