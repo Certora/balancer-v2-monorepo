@@ -169,13 +169,17 @@ rule scheduleRootChangeCreatesSE(env e) {
     require(numberOfSchedExeBefore < 1000000);
 
     scheduleRootChange@withrevert(e, newRoot, executors);
-    assert e.msg.sender != rootBefore => lastReverted;
+
+    bool reverted = lastReverted;
+    bool shouldRevert = e.msg.value != 0 || e.msg.sender != rootBefore;
+
+    assert shouldRevert => reverted;
+    assert reverted => shouldRevert;
 
     uint256 numberOfSchedExeAfter = getSchedExeLength();
-    assert e.msg.sender != rootBefore => numberOfSchedExeAfter == numberOfSchedExeBefore;
+    assert shouldRevert => numberOfSchedExeAfter == numberOfSchedExeBefore;
 
-    assert e.msg.sender == rootBefore => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
-    assert false;
+    assert !shouldRevert => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
 }
 
 
