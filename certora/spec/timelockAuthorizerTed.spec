@@ -2,18 +2,18 @@ import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
 
-// STATUS - done
+// STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
-rule rootChangesOnlyWithClaimRoot(env eForGetters, env eForPayableFunctions, method f) {
-    address rootBefore = getRoot(eForGetters);
-    address pendingRootBefore = getPendingRoot(eForGetters);
+rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
+    address rootBefore = _root();
+    address pendingRootBefore = getPendingRoot();
 
     // Invoke any function
     calldataarg args;
     f(eForPayableFunctions, args);
 
-    address rootAfter = getRoot(eForGetters);
+    address rootAfter = _root();
 
     // if the function changed the root, the sender was pendingRoot
     assert rootBefore != rootAfter =>
@@ -30,7 +30,7 @@ rule rootChangesOnlyWithClaimRoot(env eForGetters, env eForPayableFunctions, met
 }
 
 
-// STATUS - done, passing
+// STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be canceled again.
 rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
@@ -45,7 +45,7 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
 }
 
 
-// STATUS - done, passing
+// STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be executed again.
 rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
@@ -59,7 +59,7 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     assert lastReverted;
 }
 
-
+// STATUS - verified
 // When a delay is changed, it is because setDelay is executed with the parameter being the new delay.
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
@@ -87,6 +87,7 @@ function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
 }
 
 
+// STATUS - verified
 // Delays of actions are less or equal to MAX_DELAY.
 rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
@@ -126,6 +127,10 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 }
 
 
+// Done: Also check that when delay is increased, the newly created ScheduledExecution has proper executableAt.
+// Note: Make it universal for any function (setDelay, scheduleDelayChange can modify, but make it universal)
+// Hint: Use implication.
+// We need to harness execute.
 rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
