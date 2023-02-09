@@ -2,33 +2,6 @@ import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
 
-/**
- * This rule checks that if the cancelled or executed flag for a scheduled execution changed
- * due to a function call, then the called must have had the permission to do so.
- * cancelled: caller must be the root or hasPermission(actionID, msg.sender, scheduledExecution.where)
- * executed: hasPermission(executeScheduledActionId, msg.sender, address(this))
- */
-
-//  rule checkPermissionForCancellingExecuting(method f, env e){
-
-//     // scheduling and action
-
-//     // there is a scheduled execution with a state before
-//     uint256 index;
-//     bool _cancelled = getSchedExeCancelled(index);
-//     bool _executed = getSchedExeExecuted(index);
-//     address where = getSchedExeWhere(index);
-
-//     bool isRoot = e.msg.sender == _root();
-//     bytes32 actionId = where.getActionId(_decodeSelector(getSchedExeData(index)));
-    
-//     f(e, args);
-    
-//     bool cancelled_ = getSchedExeCancelled(index);
-//     bool executed_ = getSchedExeExecuted(index);
-
-//     assert 
-//  }
 
 /**
  * Rule to check that the _pendingRoot can be changed only by the executor
@@ -156,6 +129,7 @@ rule schExExecutionCheck(method f, env e){
  * Rule to check only the executor can change delays.
  */
 // STATUS: Verified
+// https://vaas-stg.certora.com/output/11775/b4275f9fd1a4d31dc76e/?anonymousKey=0418a2c8f8a9f36046b64e2ce34dec49c1808120
 rule delayPerActionIdChangeAccess(method f, env e){
     bytes32 actionID;
     uint256 _delay = getActionIdDelay(actionID);
@@ -169,6 +143,47 @@ rule delayPerActionIdChangeAccess(method f, env e){
     // assert _delay == delay_;
     assert delay_ != _delay => e.msg.sender == executor,"only executor should be able to change delaysPerActionID";
 }
+
+/**
+ * A scheduled execution cannot be executed before the executableAt time
+ */
+// STATUS: Verified
+// https://vaas-stg.certora.com/output/11775/a9fcc103e081a3c63600/?anonymousKey=6daa0dd98a2b7c92f20b1f2e3cd0cc0bdeed483d
+rule schExeNotExecutedBeforeTime(method f, env e){
+    uint256 index;
+    uint256 executableAt = getSchedExeExecutableAt(index);
+    uint256 length = getSchedExeLength();
+    bool _executed = getSchedExeExecuted(index);
+    require index < length;
+
+    calldataarg args;
+    f(e, args);
+
+    bool executed_ = getSchedExeExecuted(index);
+
+    assert !_executed && executed_ => e.block.timestamp >= executableAt,
+        "cannot execute and execution before executableAt time";
+}
+
+/**
+ * A rule to check that only pendingRoot can become the new Root
+ */
+// STATUS: Verified
+// https://vaas-stg.certora.com/output/11775/d9fddcc284739529e05d/?anonymousKey=3848d16e8c96553a5e8faf7ca9a4b3fb134bb058
+rule onlyPendingRootCanBecomeNewRoot(method f, env e){
+    address _pendingRoot = _pendingRoot();
+    address _root = _root();
+
+    calldataarg args;
+    f(e, args);
+
+    address root_ = _root();
+    
+    assert root_ == _root,
+    // assert root_ == _root || root_ == _pendingRoot,
+        "root can either remain unchanged or change to the pendingRoot";
+}
+
 
 rule whoChangedDelay(method f, env e){
     bytes32 actionID;
@@ -192,11 +207,18 @@ rule WhoChangedRoot(method f, env e){
     assert _root == root_;
 }
 
-rule delayedActionExecutionOnlyByExecutor(method f, env e){
-    // there is an execution with an actionID that has a delay
+rule whoChangedPermission(method f, env e){
+    bytes32 permissionID;
+    bool _allowed = _isPermissionGranted(permissionID);
+    bool isExecutor = e.msg.sender == _executor();
+    bool isRoot = isRoot(e.msg.sender);
+    bool isPendingRoot = e.msg.sender == _pendingRoot();
+    bool isAuthAdapEntryPoint = e.msg.sender == _authorizerAdaptorEntrypoint();
+    bool isAuthAdaptor = e.msg.sender == _authorizerAdaptor();
 
-    // f
+    calldataarg args;
+    f(e, args);
 
-    // execution is executed
-
+    bool allowed_ = _isPermissionGranted(permissionID);
+    assert allowed_ != _allowed;
 }

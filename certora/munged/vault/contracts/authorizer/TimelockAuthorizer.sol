@@ -108,8 +108,8 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
 
     TimelockExecutor public _executor;     // HARNESS: removed immutable, private -> public
     IAuthentication private _vault;         // HARNESS: removed immutable
-    IAuthorizerAdaptorEntrypoint private immutable _authorizerAdaptorEntrypoint;
-    IAuthorizerAdaptor private immutable _authorizerAdaptor;
+    IAuthorizerAdaptorEntrypoint public immutable _authorizerAdaptorEntrypoint;     //HARNESS: private -> public
+    IAuthorizerAdaptor public immutable _authorizerAdaptor;     //HARNESS: private -> public
     uint256 private immutable _rootTransferDelay;
 
     address public _root;  // HARNESS: private -> public

@@ -42,6 +42,8 @@ methods {
     getPendingRoot() returns(address) envfree
     hasPermission(bytes32, address, address) returns (bool) envfree
     isRoot(address) returns (bool) envfree
+    _authorizerAdaptorEntrypoint() returns (address) envfree
+    _authorizerAdaptor() returns (address) envfree
 }
 
 rule sanity(env e, method f) {
