@@ -2,10 +2,31 @@ import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
 
-// STATUS - in progress (strange storage results: https://vaas-stg.certora.com/output/3106/188ba27f84ac4b9286b6d3df5efb6623/?anonymousKey=85ca8fd3448f6f49e55502ed3dda9cac9689ced7)
+/**************************************************
+ *             VERIFIED INVARIANTS                *
+ **************************************************/
+
+
+// STATUS - verified
+// (Helper) ensure that two ways to get ID mathc each other (saw before that it didn't, needed to check)
+invariant matchingGenralActionIds()
+    _GENERAL_GRANT_ACTION_ID() == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
+    && _GENERAL_REVOKE_ACTION_ID() == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER())
+
+
+
+/**************************************************
+ *                  VERIFIED RULES                *
+ **************************************************/
+
+
+// STATUS - verified
 // executableAt is immutable
 rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
+
+    require getSchedExeLength() < max_uint / 4;
+    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
 
@@ -17,89 +38,64 @@ rule immutableExecuteAt(env e, method f) {
     assert executableAtBefore == executableAtAfter;
 }
 
+// STATUS - in progress
+// where is immutable
+rule immutableWhere(env e, method f) {
+    uint256 actionIndex;
 
-// STATUS - verified
-// (Helper) ensure that two ways to get ID mathc each other (saw before that it didn't, needed to check)
-invariant matchingGenralActionIds()
-    _GENERAL_GRANT_ACTION_ID() == getExtendedActionId(getActionId(getGrantActionId()), GENERAL_PERMISSION_SPECIFIER())
-    && _GENERAL_REVOKE_ACTION_ID() == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER())
+    require getSchedExeLength() < max_uint / 4;
+    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
+    address whereBefore = getSchedExeWhere(actionIndex);
 
-// STATUS - in progress (`getActionIdFromArrayIndex` doesn't return differnt values for different indexes, meaybe because of broken encodePacked. Waiting for fix.)
-// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
-invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
-    (indexLow < indexHigh
-        && getActionIdFromArrayIndex(indexLow) == getActionIdFromArrayIndex(indexHigh)) // always return the same even for different indexes
-    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
-
-rule checkGetActionId(env e, method f) {
-    uint256 indexLow; uint256 indexHigh;
     calldataarg args;
     f(e, args);
-    assert getActionIdFromArrayIndex(indexLow) != getActionIdFromArrayIndex(indexHigh), "Remember, with great power comes great responsibility.";
+
+    address whereAtAfter = getSchedExeWhere(actionIndex);
+
+    assert whereBefore == whereAtAfter;
 }
 
-// STATUS - in progress
-// All the time there is only one address, that has root permissions and this address is currentRoot.
-invariant theOnlyRoot(bytes32 actionId, address account1, address account2)
-    (actionId == _GENERAL_GRANT_ACTION_ID()
-        || actionId == _GENERAL_REVOKE_ACTION_ID())
-    //     && _isPermissionGranted(getPermissionId(actionId, account1, EVERYWHERE())))
-    //      && _isPermissionGranted(getPermissionId(actionId, account2, EVERYWHERE())))
-    // => account1 == _root()
-    // => _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()))
+// STATUS - verified
+// data is immutable
+// rule immutableData(env e, method f) {
+//     uint256 actionIndex;
 
-    {
-        preserved {
-            requireInvariant matchingGenralActionIds();
-        }
-    }
+//     require getSchedExeLength() < max_uint / 4;
+//     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
+//     bytes dataBefore = getSchedExeData(actionIndex);
 
-// STATUS - in progress
-// Only root has root permissions
-rule rootRights(env e, method f) {
-    bytes32 actionId;
-    address accountRand;
+//     calldataarg args;
+//     f(e, args);
 
-    bool isGrantedRootBefore = _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
-    bool isGrantedRandBefore = _isPermissionGranted(getPermissionId(actionId, accountRand, EVERYWHERE()));
+//     bytes dataAfter = getSchedExeData(actionIndex);
 
-    require e.msg.sender != _root(); // CAUTION!!!!!! Added for testing. need to check if it's correct
-    require currentContract != EVERYWHERE();
-    require accountRand != _root();
-    require accountRand != _pendingRoot();
-    require actionId == _GENERAL_GRANT_ACTION_ID()
-            || actionId == _GENERAL_REVOKE_ACTION_ID();
-    require isGrantedRootBefore && !isGrantedRandBefore;
+//     assert dataBefore == dataAfter;
+// }
 
-    grantpermissionHelper(f, e);
+// STATUS - verified
+// protected is immutable
+rule immutableProtected(env e, method f) {
+    uint256 actionIndex;
 
-    bool isGrantedRootAfter = _isPermissionGranted(getPermissionId(actionId, _root(), EVERYWHERE()));
-    bool isGrantedRandAfter = _isPermissionGranted(getPermissionId(actionId, accountRand, EVERYWHERE()));
+    require getSchedExeLength() < max_uint / 4;
+    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
-    assert !isGrantedRandAfter, "Remember, with great power comes great responsibility.";
-}   
+    bool protectedBefore = getSchedExeProtected(actionIndex);
 
-function grantpermissionHelper(method f, env e){
-    if (f.selector == grantPermissions(bytes32[], address, address[]).selector){
-        bytes32[] actionIds;
-        address account;
-        address[] where;
+    calldataarg args;
+    f(e, args);
 
-        require actionIds[0] != _executor();
+    bool protectedAfter = getSchedExeProtected(actionIndex);
 
-        grantPermissions(e, actionIds, account, where);
-    } else {
-        calldataarg args;
-        f(e, args);
-    }
-} 
+    assert protectedBefore == protectedAfter;
+}
 
 
-// STATUS - in progress / verified / error / timeout / etc.
-// only one flag executed/cancelled can be changed at a time
-rule executeCancelOnlyOne(env e, method f) {
+// STATUS - verified
+// Only one flag executed/cancelled can be changed at a time
+rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
     uint256 actionIndex1; uint256 actionIndex2;
     bool isExecuted1Before = getSchedExeExecuted(actionIndex1);
     bool isExecuted2Before = getSchedExeExecuted(actionIndex2);
@@ -107,6 +103,7 @@ rule executeCancelOnlyOne(env e, method f) {
     bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
 
     require actionIndex1 != actionIndex2;
+    require getSchedExeLength() < max_uint / 4;
 
     calldataarg args;
     f(e, args);
@@ -116,8 +113,109 @@ rule executeCancelOnlyOne(env e, method f) {
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
     bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-    assert isExecuted1Before != isExecuted1After => isExecuted2Before == isExecuted2After && isCancelled1Before == isCancelled1After && isCancelled2Before == isCancelled2After;
-    assert isCancelled1Before != isCancelled1After => isExecuted1Before == isExecuted1After && isExecuted2Before == isExecuted2After && isCancelled2Before == isCancelled2After;
-    assert isExecuted2Before != isExecuted2After => isExecuted1Before == isExecuted1After && isCancelled1Before == isCancelled1After && isCancelled2Before == isCancelled2After;
-    assert isCancelled2Before != isCancelled2After => isExecuted1Before == isExecuted1After && isExecuted2Before == isExecuted2After && isCancelled1Before == isCancelled1After;
+    assert isExecuted1Before != isExecuted1After 
+                => (isExecuted2Before == isExecuted2After 
+                    && isCancelled1Before == isCancelled1After 
+                    && isCancelled2Before == isCancelled2After)
+                    && !isExecuted1Before;
+    assert isCancelled1Before != isCancelled1After 
+                => (isExecuted1Before == isExecuted1After 
+                    && isExecuted2Before == isExecuted2After 
+                    && isCancelled2Before == isCancelled2After)
+                    && !isCancelled1Before;
+    assert isExecuted2Before != isExecuted2After 
+                => (isExecuted1Before == isExecuted1After 
+                    && isCancelled1Before == isCancelled1After 
+                    && isCancelled2Before == isCancelled2After)
+                    && !isExecuted2Before;
+    assert isCancelled2Before != isCancelled2After 
+                => (isExecuted1Before == isExecuted1After 
+                    && isExecuted2Before == isExecuted2After 
+                    && isCancelled1Before == isCancelled1After)
+                    && !isCancelled2Before;
 }
+
+// STATUS - verified
+// Flag was changed by correct function. ("only one flag can be changed at a time" was checked above)
+rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
+    uint256 actionIndex1; uint256 actionIndex2;
+    bool isExecuted1Before = getSchedExeExecuted(actionIndex1);
+    bool isExecuted2Before = getSchedExeExecuted(actionIndex2);
+    bool isCancelled1Before = getSchedExeCancelled(actionIndex1);
+    bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
+
+    require actionIndex1 != actionIndex2;
+    require limitArrayLength();
+
+    calldataarg args;
+    f(e, args);
+
+    bool isExecuted1After = getSchedExeExecuted(actionIndex1);
+    bool isExecuted2After = getSchedExeExecuted(actionIndex2);
+    bool isCancelled1After = getSchedExeCancelled(actionIndex1);
+    bool isCancelled2After = getSchedExeCancelled(actionIndex2);
+
+    assert (isExecuted1Before != isExecuted1After 
+                || isExecuted2Before != isExecuted2After)
+            => f.selector == execute(uint256).selector;
+    assert (isCancelled1Before != isCancelled1After 
+                || isCancelled2Before != isCancelled2After)
+            => f.selector == cancel(uint256).selector;
+}
+
+
+
+/**************************************************
+ *                   IN PROGRESS                  *
+ **************************************************/
+
+
+// STATUS - in progress / verified / error / timeout / etc.
+// Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
+invariant notFarFuture(env e, uint256 actionIndex)
+    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
+    {
+        preserved with (env e2) {
+            require e.block.timestamp == e2.block.timestamp;
+            requireInvariant notGreaterThanMax(e2, getActionIdHelper(actionIndex));
+        }
+        preserved schedule(address where, bytes data, address[] executors) with (env e3) {
+            require e.block.timestamp == e3.block.timestamp;
+            require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
+            requireInvariant notGreaterThanMax(e3, getActionIdHelper(actionIndex));
+        }
+    }
+
+
+// STATUS - in progress
+// TODO: invariant description
+invariant notGreaterThanMax(env e, bytes32 actionId)
+    _delaysPerActionId(actionId) <= MAX_DELAY()
+    {
+        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
+            require actionId == actionId1;
+            require delay <= MAX_DELAY();
+        }
+    }
+
+
+
+/**************************************************
+ *                     BLOCKED                    *
+ **************************************************/
+
+
+// STATUS - in progress (`getActionIdHelper` doesn't return differnt values for different indexes, meaybe because of broken encodePacked. Waiting for fix.)
+// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
+invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
+    (indexLow < indexHigh
+        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
+    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
+
+rule checkGetActionId(env e, method f) {
+    uint256 indexLow; uint256 indexHigh;
+    calldataarg args;
+    f(e, args);
+    assert getActionIdHelper(indexLow) != getActionIdHelper(indexHigh), "Remember, with great power comes great responsibility.";
+}
+

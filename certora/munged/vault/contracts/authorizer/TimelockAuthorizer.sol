@@ -248,7 +248,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
      * @notice Returns the action ID for function selector `selector`.
      */
     function getActionId(bytes4 selector) public view override returns (bytes32) {
-        return keccak256(abi.encode(bytes32(uint256(address(this))), selector));    // HARNESS: encodePacked -> encode
+        return keccak256(abi.encodePacked(bytes32(uint256(address(this))), selector));
     }
 
     /**
@@ -283,7 +283,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
      * @notice Returns the extended action ID for base action ID `baseActionId` with specific params `specifier`.
      */
     function getExtendedActionId(bytes32 baseActionId, bytes32 specifier) public pure returns (bytes32) {
-        return keccak256(abi.encode(baseActionId, specifier));    // HARNESS: encodePacked -> encode  
+        return keccak256(abi.encodePacked(baseActionId, specifier)); 
     }
 
     /**
@@ -301,7 +301,7 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
         address account,
         address where
     ) public pure returns (bytes32) {
-        return keccak256(abi.encode(actionId, account, where));         // HARNESS: encodePacked -> encode
+        return keccak256(abi.encodePacked(actionId, account, where));         
     }
 
     /**
@@ -759,8 +759,6 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
             emit PermissionRevoked(actionId, account, where);
         }
     }
-
-    function scheduleTest(uint256 index) external { _scheduledExecutions[index].executableAt -= 5; }
 
     function _schedule(
         bytes32 actionId,

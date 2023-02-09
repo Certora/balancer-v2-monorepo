@@ -20,12 +20,14 @@ methods {
     getGrantActionId() returns(bytes4) envfree
     getRevokeActionId() returns(bytes4) envfree
     getActionIdHelper(uint256) returns (bytes32) envfree
+    getActionIdFromDataAndWhere(bytes, address) returns(bytes32) envfree
 
     // TimelockAuthorizer.sol constants
     EVERYWHERE() returns(address) envfree
     MIN_DELAY() returns(uint256) envfree
     MAX_DELAY() returns(uint256) envfree
     GENERAL_PERMISSION_SPECIFIER() returns(bytes32) envfree
+    GRANT_ACTION_ID() returns(bytes32) envfree
     _GENERAL_GRANT_ACTION_ID() returns(bytes32) envfree
     _GENERAL_REVOKE_ACTION_ID() returns(bytes32) envfree
 
@@ -44,7 +46,11 @@ methods {
     isRoot(address) returns (bool) envfree
     _authorizerAdaptorEntrypoint() returns (address) envfree
     _authorizerAdaptor() returns (address) envfree
+    _delaysPerActionId(bytes32) returns(uint256) envfree
+    getExecutor() returns(address) envfree
 }
+
+definition limitArrayLength() returns bool = getSchedExeLength() < max_uint / 4;
 
 rule sanity(env e, method f) {
     calldataarg args;

@@ -53,4 +53,10 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         bytes32 actionId = target.getActionId(_decodeSelector(scheduledExecution.data));
         return actionId;
     }
+
+    function getActionIdFromDataAndWhere(bytes memory data, address where) external returns(bytes32){
+        IAuthentication target = IAuthentication(where);
+        bytes32 actionId = target.getActionId(_decodeSelector(data));
+        return actionId;
+    }
 }
