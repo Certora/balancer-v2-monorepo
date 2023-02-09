@@ -156,3 +156,41 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
         executableAt - timestampBefore >= delayBefore - newDelay;
     assert false;
 }
+
+
+rule scheduleRootChangeCreatesSE(env e) {
+    address rootBefore = _root();
+    address pendingRootBefore = getPendingRoot();
+    uint256 numberOfSchedExeBefore = getSchedExeLength();
+
+    address newRoot;
+    address[] executors;
+    require newRoot != rootBefore;
+    require(numberOfSchedExeBefore < 1000000);
+
+    scheduleRootChange@withrevert(e, newRoot, executors);
+    assert e.msg.sender != rootBefore => lastReverted;
+
+    uint256 numberOfSchedExeAfter = getSchedExeLength();
+    assert e.msg.sender != rootBefore => numberOfSchedExeAfter == numberOfSchedExeBefore;
+
+    assert e.msg.sender == rootBefore => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
+    assert false;
+}
+
+
+//rule loweringDelayRequiresProperWaitingTime(env e) {
+    // In this rule we would like to execute any function (parametrical) and say, that if delay of action was lowered,
+    // it happened by calling the execute function with scheduledExecution,
+    // which has been scheduled before long-enough period of time.
+
+    // This has two problems:
+    // 1. We do not have harness for execute
+    // 2. We do not store timestamp capturing time, when a ScheduledExecution has been created.
+
+    // This is why I propose to change the way we check this to:
+    // 1.
+    // 2. Check, that scheduleDelayChange creates execution with correct executableAt. (Done)
+    // 3. Check, that when ScheduledExecution is scheduled, it is impossible to execute it before the executableAt time
+    //
+//}
