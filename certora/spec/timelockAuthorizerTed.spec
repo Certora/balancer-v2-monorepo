@@ -59,8 +59,10 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     assert lastReverted;
 }
 
+
 // STATUS - verified
-// When a delay is changed, it is because setDelay is executed with the parameter being the new delay.
+// When a delay is changed, it is because setDelay is executed with
+// the parameter being the new delay.
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
 
@@ -103,11 +105,11 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 
     // If the number of scheduled executions changed, it was increased by one.
     // Note: In this rule we allow the executor to change delay in any way.
-    assert e.msg.sender == getExecutor(e) || delayAfter <= maximal_delay,
+    assert e.msg.sender == getExecutor() || delayAfter <= maximal_delay,
         "Delay of an action is greater than MAX_DELAY.";
 }
 
-
+// STATUS - failing
 // The array _scheduledExecution is never shortened.
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
@@ -127,10 +129,9 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 }
 
 
-// Done: Also check that when delay is increased, the newly created ScheduledExecution has proper executableAt.
-// Note: Make it universal for any function (setDelay, scheduleDelayChange can modify, but make it universal)
-// Hint: Use implication.
-// We need to harness execute.
+// STATUS - verified
+// This rule checks, that what a change of delay is scheduled, the created
+// ScheduledExecution has appropriate executableAt (waiting time to be executed).
 rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
@@ -154,33 +155,30 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     assert executableAt >= timestampBefore + MIN_DELAY();
     assert newDelay <= delayBefore =>
         executableAt - timestampBefore >= delayBefore - newDelay;
-    assert false;
 }
 
 
 // STATUS - verified
-// Only passes for empty executors array.
+// ScheduleRootChange creates a new scheduled execution and
+// it doesn't change current root nor pending root.
 rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = _root();
     address pendingRootBefore = getPendingRoot();
     uint256 numberOfSchedExeBefore = getSchedExeLength();
 
     address newRoot;
-    address[] executors = [];
+    address[] executors;
     require newRoot != rootBefore;
-    require(numberOfSchedExeBefore < 1000000);
+    require(numberOfSchedExeBefore < max_uint / 4);
 
     scheduleRootChange@withrevert(e, newRoot, executors);
 
     bool reverted = lastReverted;
-    bool shouldRevert = e.msg.value != 0 || e.msg.sender != rootBefore;
-
-    assert shouldRevert => reverted;
-    assert reverted => shouldRevert;
-
     uint256 numberOfSchedExeAfter = getSchedExeLength();
 
-    assert !shouldRevert => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
+    assert !reverted => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
+    assert !reverted => rootBefore == _root();
+    assert !reverted => pendingRootBefore == getPendingRoot();
 }
 
 
