@@ -59,4 +59,8 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         bytes32 actionId = target.getActionId(_decodeSelector(data));
         return actionId;
     }
+
+    function returnDataForScheduleGrantPermission(bytes32 actionId, address account, address where) external view returns (bytes memory data) {
+        data = abi.encodeWithSelector(this.grantPermissions.selector, _ar(actionId), account, _ar(where));
+    }
 }

@@ -884,12 +884,12 @@ contract TimelockAuthorizer is IAuthorizer, IAuthentication, ReentrancyGuard {
 
     // mapping(bytes => bytes4) selectors; // possible harnesses
 
-    function _ar(bytes32 item) private pure returns (bytes32[] memory result) {
+    function _ar(bytes32 item) internal pure returns (bytes32[] memory result) {     // HARNESS: private -> internal
         result = new bytes32[](1);
         result[0] = item;
     }
 
-    function _ar(address item) private pure returns (address[] memory result) {
+    function _ar(address item) internal pure returns (address[] memory result) {      // HARNESS: private -> internal
         result = new address[](1);
         result[0] = item;
     }

@@ -22,6 +22,8 @@ methods {
     getActionIdHelper(uint256) returns (bytes32) envfree
     getActionIdFromDataAndWhere(bytes, address) returns(bytes32) envfree
 
+    returnDataForScheduleGrantPermission(bytes32, address, address) returns(bytes) envfree
+
     // TimelockAuthorizer.sol constants
     EVERYWHERE() returns(address) envfree
     MIN_DELAY() returns(uint256) envfree

@@ -14,6 +14,17 @@ invariant matchingGenralActionIds()
     && _GENERAL_REVOKE_ACTION_ID() == getExtendedActionId(getActionId(getRevokeActionId()), GENERAL_PERMISSION_SPECIFIER())
 
 
+// STATUS - verified
+// all _delaysPerActionId are less or equal than MAX_DELAY
+invariant notGreaterThanMax(env e, bytes32 actionId)
+    _delaysPerActionId(actionId) <= MAX_DELAY()
+    {
+        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
+            require actionId == actionId1;
+            require delay <= MAX_DELAY();
+        }
+    }
+
 
 /**************************************************
  *                  VERIFIED RULES                *
@@ -25,7 +36,7 @@ invariant matchingGenralActionIds()
 rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
 
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();  
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
@@ -38,12 +49,12 @@ rule immutableExecuteAt(env e, method f) {
     assert executableAtBefore == executableAtAfter;
 }
 
-// STATUS - in progress
+// STATUS - verified
 // where is immutable
 rule immutableWhere(env e, method f) {
     uint256 actionIndex;
 
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();  
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     address whereBefore = getSchedExeWhere(actionIndex);
@@ -56,30 +67,13 @@ rule immutableWhere(env e, method f) {
     assert whereBefore == whereAtAfter;
 }
 
-// STATUS - verified
-// data is immutable
-// rule immutableData(env e, method f) {
-//     uint256 actionIndex;
-
-//     require getSchedExeLength() < max_uint / 4;
-//     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
-
-//     bytes dataBefore = getSchedExeData(actionIndex);
-
-//     calldataarg args;
-//     f(e, args);
-
-//     bytes dataAfter = getSchedExeData(actionIndex);
-
-//     assert dataBefore == dataAfter;
-// }
 
 // STATUS - verified
 // protected is immutable
 rule immutableProtected(env e, method f) {
     uint256 actionIndex;
 
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();  
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     bool protectedBefore = getSchedExeProtected(actionIndex);
@@ -170,7 +164,26 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
  **************************************************/
 
 
-// STATUS - in progress / verified / error / timeout / etc.
+// STATUS - in progress (cannot return bytes. it's considered as an array)
+// data is immutable
+// rule immutableData(env e, method f) {
+//     uint256 actionIndex;
+
+//     require getSchedExeLength() < max_uint / 4;
+//     require limitArrayLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+
+//     bytes dataBefore = getSchedExeData(actionIndex);
+
+//     calldataarg args;
+//     f(e, args);
+
+//     bytes dataAfter = getSchedExeData(actionIndex);
+
+//     assert dataBefore == dataAfter;
+// }
+
+
+// STATUS - in progress
 // Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
 invariant notFarFuture(env e, uint256 actionIndex)
     getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
@@ -183,20 +196,36 @@ invariant notFarFuture(env e, uint256 actionIndex)
             require e.block.timestamp == e3.block.timestamp;
             require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
             requireInvariant notGreaterThanMax(e3, getActionIdHelper(actionIndex));
+            require limitArrayLength();
         }
+        preserved scheduleGrantPermission(bytes32 actionId, address account, address where, address[] executors) with (env e4) {
+            require e.block.timestamp == e4.block.timestamp;
+            bytes data;
+            require data == returnDataForScheduleGrantPermission(actionId, account, where);
+            require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
+            requireInvariant notGreaterThanMax(e4, getActionIdHelper(actionIndex));
+            require limitArrayLength();
+        }
+        // preserved scheduleDelayChange(bytes32 actionId, uint256 newDelay, address[] executors) with (env e5) {
+        //     require e.block.timestamp == e5.block.timestamp;
+        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
+        //     requireInvariant notGreaterThanMax(e5, getActionIdHelper(actionIndex));
+        //     require limitArrayLength();
+        // }
+        // preserved scheduleRootChange(address newRoot, address[] executors) with (env e6) {
+        //     require e.block.timestamp == e6.block.timestamp;
+        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
+        //     requireInvariant notGreaterThanMax(e6, getActionIdHelper(actionIndex));
+        //     require limitArrayLength();
+        // }
+        // preserved scheduleRevokePermission(bytes32 actionId, address account, address where, address[] executors) with (env e7) {
+        //     require e.block.timestamp == e7.block.timestamp;
+        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
+        //     requireInvariant notGreaterThanMax(e7, getActionIdHelper(actionIndex));
+        //     require limitArrayLength();
+        // }
     }
 
-
-// STATUS - in progress
-// TODO: invariant description
-invariant notGreaterThanMax(env e, bytes32 actionId)
-    _delaysPerActionId(actionId) <= MAX_DELAY()
-    {
-        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
-            require actionId == actionId1;
-            require delay <= MAX_DELAY();
-        }
-    }
 
 
 
@@ -205,17 +234,16 @@ invariant notGreaterThanMax(env e, bytes32 actionId)
  **************************************************/
 
 
-// STATUS - in progress (`getActionIdHelper` doesn't return differnt values for different indexes, meaybe because of broken encodePacked. Waiting for fix.)
+// STATUS - in progress
 // go over array, two the same action IDs, id with lower index should have lower or equal executableAt
 invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
     (indexLow < indexHigh
         && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
     => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
+    {
+        preserved {
+            require limitArrayLength();
+        }
+    }
 
-rule checkGetActionId(env e, method f) {
-    uint256 indexLow; uint256 indexHigh;
-    calldataarg args;
-    f(e, args);
-    assert getActionIdHelper(indexLow) != getActionIdHelper(indexHigh), "Remember, with great power comes great responsibility.";
-}
 
