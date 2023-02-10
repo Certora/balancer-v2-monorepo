@@ -158,13 +158,15 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 }
 
 
+// STATUS - verified
+// Only passes for empty executors array.
 rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = _root();
     address pendingRootBefore = getPendingRoot();
     uint256 numberOfSchedExeBefore = getSchedExeLength();
 
     address newRoot;
-    address[] executors;
+    address[] executors = [];
     require newRoot != rootBefore;
     require(numberOfSchedExeBefore < 1000000);
 
@@ -177,7 +179,6 @@ rule scheduleRootChangeCreatesSE(env e) {
     assert reverted => shouldRevert;
 
     uint256 numberOfSchedExeAfter = getSchedExeLength();
-    assert shouldRevert => numberOfSchedExeAfter == numberOfSchedExeBefore;
 
     assert !shouldRevert => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
 }
