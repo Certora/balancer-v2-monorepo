@@ -109,12 +109,13 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
         "Delay of an action is greater than MAX_DELAY.";
 }
 
-// STATUS - failing
+
+// STATUS - verified
 // The array _scheduledExecution is never shortened.
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
-    require(lengthBefore + 1 > lengthBefore);
+    require(to_uint256(lengthBefore + 1) > lengthBefore);
 
     // Invoke any function
     calldataarg args;
