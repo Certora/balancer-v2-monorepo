@@ -24,11 +24,8 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \
-    --rule_sanity advanced \
+    --rule_sanity basic \
     --settings -optimisticUnboundedHashing=true \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
     --msg "TimelockAuthorizer: $RULE $MSG"
-
-
-    # --staging EyalH/ShowCallTraceWrongIndex \

@@ -21,6 +21,7 @@ methods {
     getRevokeActionId() returns(bytes4) envfree
     getActionIdHelper(uint256) returns (bytes32) envfree
     getActionIdFromDataAndWhere(bytes, address) returns(bytes32) envfree
+    returnGetActionIdOfSetPendingRoot() returns(bytes32) envfree
 
     returnDataForScheduleGrantPermission(bytes32, address, address) returns(bytes) envfree
 

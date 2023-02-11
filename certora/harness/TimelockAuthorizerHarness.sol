@@ -47,7 +47,7 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return TimelockAuthorizer.revokePermissions.selector;
     }
 
-    function getActionIdHelper(uint256 index) external returns(bytes32){
+    function getActionIdHelper(uint256 index) external returns(bytes32) {
         ScheduledExecution storage scheduledExecution = _scheduledExecutions[index];
         IAuthentication target = IAuthentication(scheduledExecution.where);
         bytes32 actionId = target.getActionId(_decodeSelector(scheduledExecution.data));
@@ -60,7 +60,7 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return actionId;
     }
 
-    function returnDataForScheduleGrantPermission(bytes32 actionId, address account, address where) external view returns (bytes memory data) {
-        data = abi.encodeWithSelector(this.grantPermissions.selector, _ar(actionId), account, _ar(where));
+    function returnGetActionIdOfSetPendingRoot() external returns(bytes32) {
+        return getActionId(this.setPendingRoot.selector);
     }
 }

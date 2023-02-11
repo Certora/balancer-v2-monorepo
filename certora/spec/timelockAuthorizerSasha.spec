@@ -26,6 +26,33 @@ invariant notGreaterThanMax(env e, bytes32 actionId)
     }
 
 
+// STATUS - verified
+// Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
+invariant notFarFuture(env e, uint256 actionIndex)
+    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
+    {
+        preserved with (env e2) {
+            require e.block.timestamp == e2.block.timestamp;
+            requireInvariant notGreaterThanMax(e2, getActionIdHelper(actionIndex));
+            require limitArrayLength();
+        }
+    }
+
+
+// STATUS - verified
+// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
+invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
+    (indexLow < indexHigh
+        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
+    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
+    {
+        preserved {
+            require limitArrayLength();
+        }
+    }
+
+
+
 /**************************************************
  *                  VERIFIED RULES                *
  **************************************************/
@@ -48,6 +75,7 @@ rule immutableExecuteAt(env e, method f) {
 
     assert executableAtBefore == executableAtAfter;
 }
+
 
 // STATUS - verified
 // where is immutable
@@ -129,6 +157,7 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
                     && !isCancelled2Before;
 }
 
+
 // STATUS - verified
 // Flag was changed by correct function. ("only one flag can be changed at a time" was checked above)
 rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
@@ -181,69 +210,3 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 
 //     assert dataBefore == dataAfter;
 // }
-
-
-// STATUS - in progress
-// Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
-invariant notFarFuture(env e, uint256 actionIndex)
-    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
-    {
-        preserved with (env e2) {
-            require e.block.timestamp == e2.block.timestamp;
-            requireInvariant notGreaterThanMax(e2, getActionIdHelper(actionIndex));
-        }
-        preserved schedule(address where, bytes data, address[] executors) with (env e3) {
-            require e.block.timestamp == e3.block.timestamp;
-            require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
-            requireInvariant notGreaterThanMax(e3, getActionIdHelper(actionIndex));
-            require limitArrayLength();
-        }
-        preserved scheduleGrantPermission(bytes32 actionId, address account, address where, address[] executors) with (env e4) {
-            require e.block.timestamp == e4.block.timestamp;
-            bytes data;
-            require data == returnDataForScheduleGrantPermission(actionId, account, where);
-            require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
-            requireInvariant notGreaterThanMax(e4, getActionIdHelper(actionIndex));
-            require limitArrayLength();
-        }
-        // preserved scheduleDelayChange(bytes32 actionId, uint256 newDelay, address[] executors) with (env e5) {
-        //     require e.block.timestamp == e5.block.timestamp;
-        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
-        //     requireInvariant notGreaterThanMax(e5, getActionIdHelper(actionIndex));
-        //     require limitArrayLength();
-        // }
-        // preserved scheduleRootChange(address newRoot, address[] executors) with (env e6) {
-        //     require e.block.timestamp == e6.block.timestamp;
-        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
-        //     requireInvariant notGreaterThanMax(e6, getActionIdHelper(actionIndex));
-        //     require limitArrayLength();
-        // }
-        // preserved scheduleRevokePermission(bytes32 actionId, address account, address where, address[] executors) with (env e7) {
-        //     require e.block.timestamp == e7.block.timestamp;
-        //     require getActionIdHelper(actionIndex) == getActionIdFromDataAndWhere(data, where);
-        //     requireInvariant notGreaterThanMax(e7, getActionIdHelper(actionIndex));
-        //     require limitArrayLength();
-        // }
-    }
-
-
-
-
-/**************************************************
- *                     BLOCKED                    *
- **************************************************/
-
-
-// STATUS - in progress
-// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
-invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
-    (indexLow < indexHigh
-        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
-    => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
-    {
-        preserved {
-            require limitArrayLength();
-        }
-    }
-
-
