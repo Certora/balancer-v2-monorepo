@@ -179,8 +179,8 @@ rule onlyPendingRootCanBecomeNewRoot(method f, env e){
 
     address root_ = _root();
     
-    assert root_ == _root,
-    // assert root_ == _root || root_ == _pendingRoot,
+    // assert root_ == _root,
+    assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
 }
 
