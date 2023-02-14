@@ -6,6 +6,7 @@ import "timelockAuthorizerMain.spec"
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
 rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
+    //why eForPayableFunctions? 
     address rootBefore = _root();
     address pendingRootBefore = getPendingRoot();
 
@@ -37,11 +38,14 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
-    // require(canceled_before && !executed_before || !canceled_before && executed_before);
+    // require(canceled_before && !executed_before || !canceled_before && executed_before); <== needed?
     require(canceled_before || executed_before);
 
     cancel@withrevert(e, index);
     assert lastReverted;
+    assert ( canceled_before || executed_before ) => lastReverted; 
+
+    // what's the difference? when to use what ?
 }
 
 
@@ -67,14 +71,23 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
 
     uint256 delayArg;
-    helperSetDelay(e, f, actionId, delayArg);
+    helperSetDelay(e, f, actionId2, delayArg);
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
     assert delayAfter != delayBefore =>
-        f.selector == setDelay(bytes32, uint256).selector;
+        ( f.selector == setDelay(bytes32, uint256).selector && actionId2 == actiondId );
     assert delayAfter != delayBefore =>
         delayAfter == delayArg;
+
+    // one assert better - the shorter the more elegant 
+     assert delayAfter != delayBefore =>
+        ( f.selector == setDelay(bytes32, uint256).selector && actionId2 == actiondId  && delayAfter == delayArg );
+
+    // what about the other direction?
+     assert ( delayAfter != delayBefore && delayArg != delayBefore) <=>
+        ( f.selector == setDelay(bytes32, uint256).selector && actionId2 == actiondId  && delayAfter == delayArg );
+
 }
 
 
@@ -104,6 +117,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
     uint256 delayAfter = getActionIdDelay(actionId);
 
     // If the number of scheduled executions changed, it was increased by one.
+    // I don't see a check for this +1 
     // Note: In this rule we allow the executor to change delay in any way.
     assert e.msg.sender == getExecutor() || delayAfter <= maximal_delay,
         "Delay of an action is greater than MAX_DELAY.";
@@ -115,7 +129,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
-    require(to_uint256(lengthBefore + 1) > lengthBefore);
+    require(to_uint256(lengthBefore + 1) > lengthBefore); //not maxuint ? is this needed ?
 
     // Invoke any function
     calldataarg args;
@@ -131,7 +145,7 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 
 
 // STATUS - verified
-// This rule checks, that what a change of delay is scheduled, the created
+// This rule checks, that when a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
 rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
@@ -173,7 +187,7 @@ rule scheduleRootChangeCreatesSE(env e) {
     require(numberOfSchedExeBefore < max_uint / 4);
 
     scheduleRootChange@withrevert(e, newRoot, executors);
-
+// isn't the withrevert redundant here? 
     bool reverted = lastReverted;
     uint256 numberOfSchedExeAfter = getSchedExeLength();
 

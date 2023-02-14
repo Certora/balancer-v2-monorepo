@@ -16,23 +16,23 @@ invariant matchingGenralActionIds()
 
 // STATUS - verified
 // all _delaysPerActionId are less or equal than MAX_DELAY
-invariant notGreaterThanMax(env e, bytes32 actionId)
+invariant notGreaterThanMax( bytes32 actionId)
     _delaysPerActionId(actionId) <= MAX_DELAY()
     {
-        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
+        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) { //e2 needed? 
             require actionId == actionId1;
-            require delay <= MAX_DELAY();
+            require delay <= MAX_DELAY(); // is this needed - the code does not enforce this? 
         }
     }
 
 
 // STATUS - verified
 // Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
-invariant notFarFuture(env e, uint256 actionIndex)
-    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
+invariant notFarFuture(uint timestamp , uint256 actionIndex) // I prefer just timestamp since e is not used.
+    getSchedExeExecutableAt(actionIndex) <= timestamp + MAX_DELAY()
     {
         preserved with (env e2) {
-            require e.block.timestamp == e2.block.timestamp;
+            require timestamp == e2.block.timestamp;
             requireInvariant notGreaterThanMax(e2, getActionIdHelper(actionIndex));
             require limitArrayLength();
         }
@@ -64,7 +64,7 @@ rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
 
     require limitArrayLength();  
-    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+    require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
 
@@ -180,10 +180,10 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 
     assert (isExecuted1Before != isExecuted1After 
                 || isExecuted2Before != isExecuted2After)
-            => f.selector == execute(uint256).selector;
+            <=> f.selector == execute(uint256).selector;
     assert (isCancelled1Before != isCancelled1After 
                 || isCancelled2Before != isCancelled2After)
-            => f.selector == cancel(uint256).selector;
+         /*can we make it stronger? */  <=> f.selector == cancel(uint256).selector;
 }
 
 

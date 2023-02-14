@@ -69,7 +69,7 @@ rule monotonicIncreaseOfScheduledExecutionLength(method f, env e){
     f(e, args);
 
     uint256 length_ = getSchedExeLength();
-
+    // overlap scheduledExecutionsArrayIsNeverShortened? which is stronger? 
     assert length_ >= _length,"scheduled execution length cannot decrease";
 }
 
@@ -97,6 +97,7 @@ rule whoCanCancelExecution(method f, env e){
 
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
+    // can someone uncancel? _cancelled == true && cancelled_==false ? if not then lets make this stronger 
 }
 
 /**
@@ -154,7 +155,7 @@ rule schExeNotExecutedBeforeTime(method f, env e){
     uint256 executableAt = getSchedExeExecutableAt(index);
     uint256 length = getSchedExeLength();
     bool _executed = getSchedExeExecuted(index);
-    require index < length;
+    require index < length; // is this needed ? 
 
     calldataarg args;
     f(e, args);
@@ -179,12 +180,12 @@ rule onlyPendingRootCanBecomeNewRoot(method f, env e){
 
     address root_ = _root();
     
-    assert root_ == _root,
+    assert root_ == _root,    // this is verified ?  can't root change? 
     // assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
 }
 
-
+// sanity rules from here, right? you can remove or move th the main spec and document that it is sanity 
 rule whoChangedDelay(method f, env e){
     bytes32 actionID;
     uint256 _delay = getActionIdDelay(actionID);
