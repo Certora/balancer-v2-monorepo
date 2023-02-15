@@ -95,6 +95,7 @@ rule whoCanCancelExecution(method f, env e){
     
     bool cancelled_     = getSchedExeCancelled(index);
 
+    // assert !executed_ => !_executed,"execution cannot be reversed";
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
 }
@@ -154,7 +155,7 @@ rule schExeNotExecutedBeforeTime(method f, env e){
     uint256 executableAt = getSchedExeExecutableAt(index);
     uint256 length = getSchedExeLength();
     bool _executed = getSchedExeExecuted(index);
-    require index < length;
+    // require index < length;
 
     calldataarg args;
     f(e, args);

@@ -16,12 +16,12 @@ invariant matchingGenralActionIds()
 
 // STATUS - verified
 // all _delaysPerActionId are less or equal than MAX_DELAY
-invariant notGreaterThanMax(env e, bytes32 actionId)
-    _delaysPerActionId(actionId) <= MAX_DELAY()
+invariant notGreaterThanMax(bytes32 actionId)
+    _delaysPerActionId(actionId) <= MAX_DELAY() // _vault.getActionId(IVault.setAuthorizer.selector)
     {
         preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
             require actionId == actionId1;
-            require delay <= MAX_DELAY();
+            // require delay <= MAX_DELAY();
         }
     }
 
@@ -29,11 +29,11 @@ invariant notGreaterThanMax(env e, bytes32 actionId)
 // STATUS - verified
 // Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
 invariant notFarFuture(env e, uint256 actionIndex)
-    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()
+    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()     // uint256 timestamp
     {
         preserved with (env e2) {
             require e.block.timestamp == e2.block.timestamp;
-            requireInvariant notGreaterThanMax(e2, getActionIdHelper(actionIndex));
+            requireInvariant notGreaterThanMax(getActionIdHelper(actionIndex));
             require limitArrayLength();
         }
     }
@@ -64,7 +64,7 @@ rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
 
     require limitArrayLength();  
-    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+    require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
 
@@ -163,9 +163,7 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
 rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
     uint256 actionIndex1; uint256 actionIndex2;
     bool isExecuted1Before = getSchedExeExecuted(actionIndex1);
-    bool isExecuted2Before = getSchedExeExecuted(actionIndex2);
     bool isCancelled1Before = getSchedExeCancelled(actionIndex1);
-    bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
 
     require actionIndex1 != actionIndex2;
     require limitArrayLength();
@@ -174,15 +172,11 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
     f(e, args);
 
     bool isExecuted1After = getSchedExeExecuted(actionIndex1);
-    bool isExecuted2After = getSchedExeExecuted(actionIndex2);
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
-    bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-    assert (isExecuted1Before != isExecuted1After 
-                || isExecuted2Before != isExecuted2After)
+    assert (isExecuted1Before != isExecuted1After)
             => f.selector == execute(uint256).selector;
-    assert (isCancelled1Before != isCancelled1After 
-                || isCancelled2Before != isCancelled2After)
+    assert (isCancelled1Before != isCancelled1After)
             => f.selector == cancel(uint256).selector;
 }
 

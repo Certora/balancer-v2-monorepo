@@ -38,10 +38,10 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool executed_before = getSchedExeExecuted(index);
 
     // require(canceled_before && !executed_before || !canceled_before && executed_before);
-    require(canceled_before || executed_before);
+    // require(canceled_before || executed_before);
 
     cancel@withrevert(e, index);
-    assert lastReverted;
+    assert (canceled_before || executed_before) => lastReverted;
 }
 
 
@@ -63,16 +63,16 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 // STATUS - verified
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
-rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId) {
+rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
 
     uint256 delayArg;
-    helperSetDelay(e, f, actionId, delayArg);
+    helperSetDelay(e, f, actionId2, delayArg);
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
     assert delayAfter != delayBefore =>
-        f.selector == setDelay(bytes32, uint256).selector;
+        (f.selector == setDelay(bytes32, uint256).selector && actionId2 == actiondId);
     assert delayAfter != delayBefore =>
         delayAfter == delayArg;
 }
@@ -103,7 +103,6 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
-    // If the number of scheduled executions changed, it was increased by one.
     // Note: In this rule we allow the executor to change delay in any way.
     assert e.msg.sender == getExecutor() || delayAfter <= maximal_delay,
         "Delay of an action is greater than MAX_DELAY.";
@@ -115,7 +114,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
-    require(to_uint256(lengthBefore + 1) > lengthBefore);
+    require(to_uint256(lengthBefore + 1) > lengthBefore);   // limit to maxuint 
 
     // Invoke any function
     calldataarg args;
@@ -172,14 +171,13 @@ rule scheduleRootChangeCreatesSE(env e) {
     require newRoot != rootBefore;
     require(numberOfSchedExeBefore < max_uint / 4);
 
-    scheduleRootChange@withrevert(e, newRoot, executors);
+    scheduleRootChange(e, newRoot, executors);
 
-    bool reverted = lastReverted;
     uint256 numberOfSchedExeAfter = getSchedExeLength();
 
-    assert !reverted => numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
-    assert !reverted => rootBefore == _root();
-    assert !reverted => pendingRootBefore == getPendingRoot();
+    assert numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
+    assert rootBefore == _root();
+    assert pendingRootBefore == getPendingRoot();
 }
 
 
