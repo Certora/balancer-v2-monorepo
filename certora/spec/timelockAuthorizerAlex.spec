@@ -95,7 +95,7 @@ rule whoCanCancelExecution(method f, env e){
     
     bool cancelled_     = getSchedExeCancelled(index);
 
-    // assert !executed_ => !_executed,"execution cannot be reversed";  // TODO: something the same as for executed (make stronger)
+    assert _cancelled => cancelled_,"cancellation cannot be reversed";
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
 }
@@ -155,7 +155,6 @@ rule schExeNotExecutedBeforeTime(method f, env e){
     uint256 executableAt = getSchedExeExecutableAt(index);
     uint256 length = getSchedExeLength();
     bool _executed = getSchedExeExecuted(index);
-    // require index < length;
 
     calldataarg args;
     f(e, args);
@@ -182,43 +181,4 @@ rule onlyPendingRootCanBecomeNewRoot(method f, env e){
     
     assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
-}
-
-
-rule whoChangedDelay(method f, env e){
-    bytes32 actionID;
-    uint256 _delay = getActionIdDelay(actionID);
-    
-    calldataarg args;
-    f(e, args);
-    
-    uint256 delay_ = getActionIdDelay(actionID);
-
-    assert _delay == delay_;    
-}
-
-
-rule WhoChangedRoot(method f, env e){
-    address _root = _root();
-    calldataarg args;
-    f(e, args);
-    address root_ = _root();
-
-    assert _root == root_;
-}
-
-rule whoChangedPermission(method f, env e){
-    bytes32 permissionID;
-    bool _allowed = _isPermissionGranted(permissionID);
-    bool isExecutor = e.msg.sender == _executor();
-    bool isRoot = isRoot(e.msg.sender);
-    bool isPendingRoot = e.msg.sender == _pendingRoot();
-    bool isAuthAdapEntryPoint = e.msg.sender == _authorizerAdaptorEntrypoint();
-    bool isAuthAdaptor = e.msg.sender == _authorizerAdaptor();
-
-    calldataarg args;
-    f(e, args);
-
-    bool allowed_ = _isPermissionGranted(permissionID);
-    assert allowed_ != _allowed;
 }
