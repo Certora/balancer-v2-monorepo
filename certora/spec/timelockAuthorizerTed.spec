@@ -72,17 +72,6 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actio
 }
 
 
-function helperSetDelay(env e, method f, bytes32 actionId, uint256 delayArg) {
-    if (f.selector == setDelay(bytes32, uint256).selector) {
-        setDelay(e, actionId, delayArg);
-    } else {
-        calldataarg args;
-        env e2;
-        f(e2, args);
-    }
-}
-
-
 // STATUS - verified
 // Delays of actions are less or equal to MAX_DELAY.
 rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
@@ -108,7 +97,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
-    require(to_uint256(lengthBefore + 1) > lengthBefore);   // TODO: limit to maxuint 
+    require(lengthBefore < max_uint256);
 
     // Invoke any function
     calldataarg args;
@@ -131,6 +120,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     uint256 newDelay;
     address[] executors;
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
+
     require(delayBefore <= MAX_DELAY());
     require(newDelay >= MIN_DELAY());
     require(numberOfScheduledExecutionsBefore < max_uint256);
@@ -142,6 +132,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
 
     uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
+
     assert numberOfScheduledExecutionsAfter == numberOfScheduledExecutionsBefore + 1;
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
@@ -159,9 +150,9 @@ rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = _root();
     address pendingRootBefore = getPendingRoot();
     uint256 numberOfSchedExeBefore = getSchedExeLength();
-
     address newRoot;
     address[] executors;
+
     require newRoot != rootBefore;
     require(numberOfSchedExeBefore < max_uint / 4);
 
