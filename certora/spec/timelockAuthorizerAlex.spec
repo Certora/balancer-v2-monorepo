@@ -95,7 +95,7 @@ rule whoCanCancelExecution(method f, env e){
     
     bool cancelled_     = getSchedExeCancelled(index);
 
-    // assert !executed_ => !_executed,"execution cannot be reversed";
+    // assert !executed_ => !_executed,"execution cannot be reversed";  // TODO: something the same as for executed (make stronger)
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
 }
@@ -180,7 +180,6 @@ rule onlyPendingRootCanBecomeNewRoot(method f, env e){
 
     address root_ = _root();
     
-    // assert root_ == _root,
     assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
 }

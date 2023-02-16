@@ -371,8 +371,6 @@ rule schExeNotExecutedBeforeTime(method f, env e){
     uint256 length = getSchedExeLength();
     bool _executed = getSchedExeExecuted(index);
 
-    require index < length;
-
     calldataarg args;
     f(e, args);
 
