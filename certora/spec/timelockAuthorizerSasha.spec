@@ -17,22 +17,21 @@ invariant matchingGenralActionIds()
 // STATUS - verified
 // all _delaysPerActionId are less or equal than MAX_DELAY
 invariant notGreaterThanMax(bytes32 actionId)
-    _delaysPerActionId(actionId) <= MAX_DELAY() // _vault.getActionId(IVault.setAuthorizer.selector)
+    (actionId != getSetAuthorizerActionId() && _delaysPerActionId(getSetAuthorizerActionId()) <= MAX_DELAY()) => _delaysPerActionId(actionId) <= MAX_DELAY()
     {
         preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
             require actionId == actionId1;
-            // require delay <= MAX_DELAY();
         }
     }
 
 
 // STATUS - verified
 // Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
-invariant notFarFuture(env e, uint256 actionIndex)
-    getSchedExeExecutableAt(actionIndex) <= e.block.timestamp + MAX_DELAY()     // uint256 timestamp
+invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
+    getSchedExeExecutableAt(actionIndex) <= timestamp + MAX_DELAY()
     {
         preserved with (env e2) {
-            require e.block.timestamp == e2.block.timestamp;
+            require timestamp == e2.block.timestamp;
             requireInvariant notGreaterThanMax(getActionIdHelper(actionIndex));
             require limitArrayLength();
         }

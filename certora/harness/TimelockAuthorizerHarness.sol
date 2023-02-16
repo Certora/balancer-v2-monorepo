@@ -63,4 +63,8 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
     function returnGetActionIdOfSetPendingRoot() external returns(bytes32) {
         return getActionId(this.setPendingRoot.selector);
     }
+
+    function getSetAuthorizerActionId() external view returns (bytes32) {
+        return _vault.getActionId(IVault.setAuthorizer.selector);
+    }
 }
