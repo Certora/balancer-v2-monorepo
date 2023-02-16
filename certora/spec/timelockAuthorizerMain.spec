@@ -529,10 +529,8 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
-    require(canceled_before || executed_before);
-
     cancel@withrevert(e, index);
-    assert lastReverted;
+    assert (canceled_before || executed_before) => lastReverted;
 }
 
 
@@ -543,10 +541,8 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
-    require(canceled_before || executed_before);
-
     execute@withrevert(e, index);
-    assert lastReverted;
+    assert (canceled_before || executed_before) => lastReverted;
 }
 
 

@@ -37,9 +37,6 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
-    // require(canceled_before && !executed_before || !canceled_before && executed_before);
-    // require(canceled_before || executed_before);
-
     cancel@withrevert(e, index);
     assert (canceled_before || executed_before) => lastReverted;
 }
@@ -52,11 +49,8 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
 
-    // require(canceled_before && !executed_before || !canceled_before && executed_before);
-    require(canceled_before || executed_before);
-
     execute@withrevert(e, index);
-    assert lastReverted;
+    assert (canceled_before || executed_before) => lastReverted;
 }
 
 
@@ -114,7 +108,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
-    require(to_uint256(lengthBefore + 1) > lengthBefore);   // limit to maxuint 
+    require(to_uint256(lengthBefore + 1) > lengthBefore);   // TODO: limit to maxuint 
 
     // Invoke any function
     calldataarg args;
