@@ -59,14 +59,14 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 // the parameter being the new delay.
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
-
     uint256 delayArg;
+
     helperSetDelay(e, f, actionId2, delayArg);
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
     assert delayAfter != delayBefore =>
-        (f.selector == setDelay(bytes32, uint256).selector && actionId2 == actiondId);
+        (f.selector == setDelay(bytes32, uint256).selector && actionId2 == actionId);
     assert delayAfter != delayBefore =>
         delayAfter == delayArg;
 }
