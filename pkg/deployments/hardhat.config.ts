@@ -1,12 +1,14 @@
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-local-networks-config-plugin';
+import 'hardhat-ignore-warnings';
 
 import '@balancer-labs/v2-common/setupTests';
 
 import { task } from 'hardhat/config';
 import { TASK_TEST } from 'hardhat/builtin-tasks/task-names';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { hardhatBaseConfig } from '@balancer-labs/v2-common';
 
 import path from 'path';
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
@@ -15,8 +17,10 @@ import { checkArtifact, extractArtifact } from './src/artifact';
 import test from './src/test';
 import Task, { TaskMode } from './src/task';
 import Verifier from './src/verifier';
-import { Logger } from './src/logger';
+import logger, { Logger } from './src/logger';
 import { checkActionIds, checkActionIdUniqueness, saveActionIds } from './src/actionId';
+import { saveContractDeploymentAddresses } from './src/network';
+import { name } from './package.json';
 
 task('deploy', 'Run deployment task')
   .addParam('id', 'Deployment task ID')
@@ -80,11 +84,16 @@ task('check-deployments', `Check that all tasks' deployments correspond to their
     // way to address type issues.
 
     Logger.setDefaults(false, args.verbose || false);
+    logger.log(`Checking deployments for ${hre.network.name}...`, '');
 
     if (args.id) {
       await new Task(args.id, TaskMode.CHECK, hre.network.name).run(args);
     } else {
       for (const taskID of Task.getAllTaskIds()) {
+        if (taskID.startsWith('00000000-')) {
+          continue;
+        }
+
         const task = new Task(taskID, TaskMode.CHECK, hre.network.name);
         const outputDir = path.resolve(task.dir(), 'output');
 
@@ -156,7 +165,7 @@ task('save-action-ids', `Print the action IDs for a particular contract and chec
               const outputFilePath = path.resolve(outputDir, outputFile);
               if (outputFile.includes(hre.network.name) && statSync(outputFilePath).isFile()) {
                 const fileContents = JSON.parse(readFileSync(outputFilePath).toString());
-                const contractNames = Object.keys(fileContents).filter((name) => name !== 'timestamp');
+                const contractNames = Object.keys(fileContents);
 
                 for (const contractName of contractNames) {
                   await saveActionIds(task, contractName);
@@ -187,6 +196,7 @@ task('check-action-ids', `Check that contract action-ids correspond the expected
   .addOptionalParam('id', 'Specific task ID')
   .setAction(async (args: { id?: string; verbose?: boolean }, hre: HardhatRuntimeEnvironment) => {
     Logger.setDefaults(false, args.verbose || false);
+    logger.log(`Checking action IDs for ${hre.network.name}...`, '');
 
     if (args.id) {
       const task = new Task(args.id, TaskMode.READ_ONLY, hre.network.name);
@@ -200,10 +210,37 @@ task('check-action-ids', `Check that contract action-ids correspond the expected
     checkActionIdUniqueness(hre.network.name);
   });
 
+task('build-address-lookup', `Build a lookup table from contract addresses to the relevant deployment`)
+  .addOptionalParam('id', 'Specific task ID')
+  .setAction(async (args: { id?: string; verbose?: boolean }, hre: HardhatRuntimeEnvironment) => {
+    Logger.setDefaults(false, args.verbose || false);
+
+    if (args.id) {
+      const task = new Task(args.id, TaskMode.READ_ONLY, hre.network.name);
+      saveContractDeploymentAddresses(task);
+    } else {
+      for (const taskID of Task.getAllTaskIds()) {
+        if (taskID.startsWith('00000000-')) {
+          continue;
+        }
+        const task = new Task(taskID, TaskMode.READ_ONLY, hre.network.name);
+        saveContractDeploymentAddresses(task);
+      }
+    }
+  });
+
 task(TASK_TEST).addOptionalParam('id', 'Specific task ID of the fork test to run.').setAction(test);
 
 export default {
   mocha: {
     timeout: 600000,
   },
+  solidity: {
+    compilers: hardhatBaseConfig.compilers,
+    overrides: { ...hardhatBaseConfig.overrides(name) },
+  },
+  paths: {
+    sources: './tasks',
+  },
+  warnings: hardhatBaseConfig.warnings,
 };

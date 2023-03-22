@@ -62,6 +62,7 @@ export default class WeightedPool extends BasePool {
   mustAllowlistLPs: boolean;
   managementAumFeePercentage: BigNumberish;
   aumProtocolFeesCollector: string;
+  poolVersion: string;
 
   static async create(params: RawWeightedPoolDeployment = {}): Promise<WeightedPool> {
     return WeightedPoolDeployer.deploy(params);
@@ -81,6 +82,7 @@ export default class WeightedPool extends BasePool {
     mustAllowlistLPs: boolean,
     managementAumFeePercentage: BigNumberish,
     aumProtocolFeesCollector: string,
+    poolVersion: string,
     owner?: SignerWithAddress
   ) {
     super(instance, poolId, vault, tokens, swapFeePercentage, owner);
@@ -93,6 +95,7 @@ export default class WeightedPool extends BasePool {
     this.mustAllowlistLPs = mustAllowlistLPs;
     this.managementAumFeePercentage = managementAumFeePercentage;
     this.aumProtocolFeesCollector = aumProtocolFeesCollector;
+    this.poolVersion = poolVersion;
   }
 
   get maxWeight(): BigNumberish {
@@ -132,6 +135,10 @@ export default class WeightedPool extends BasePool {
     return fpMul(currentBalances[tokenIndex], MAX_OUT_RATIO);
   }
 
+  async getJoinExitEnabled(from: SignerWithAddress): Promise<boolean> {
+    return this.instance.connect(from).getJoinExitEnabled();
+  }
+
   async getSwapEnabled(from: SignerWithAddress): Promise<boolean> {
     return this.instance.connect(from).getSwapEnabled();
   }
@@ -142,6 +149,10 @@ export default class WeightedPool extends BasePool {
 
   async getNormalizedWeights(): Promise<BigNumber[]> {
     return this.instance.getNormalizedWeights();
+  }
+
+  async version(): Promise<string[]> {
+    return this.instance.version();
   }
 
   async estimateSpotPrice(currentBalances?: BigNumberish[]): Promise<BigNumber> {
@@ -211,7 +222,7 @@ export default class WeightedPool extends BasePool {
 
   async estimateGivenIn(params: SwapWeightedPool, currentBalances?: BigNumberish[]): Promise<BigNumberish> {
     if (!currentBalances) currentBalances = await this.getBalances();
-    const [tokenIn, tokenOut] = this.tokens.indicesOf(params.in, params.out);
+    const [tokenIn, tokenOut] = this.tokens.indicesOf([params.in, params.out]);
 
     return bn(
       calcOutGivenIn(
@@ -226,7 +237,7 @@ export default class WeightedPool extends BasePool {
 
   async estimateGivenOut(params: SwapWeightedPool, currentBalances?: BigNumberish[]): Promise<BigNumberish> {
     if (!currentBalances) currentBalances = await this.getBalances();
-    const [tokenIn, tokenOut] = this.tokens.indicesOf(params.in, params.out);
+    const [tokenIn, tokenOut] = this.tokens.indicesOf([params.in, params.out]);
 
     return bn(
       calcInGivenOut(
@@ -558,7 +569,16 @@ export default class WeightedPool extends BasePool {
   }
 
   private _isManagedPool() {
-    return this.poolType == WeightedPoolType.MANAGED_POOL || this.poolType == WeightedPoolType.MOCK_MANAGED_POOL;
+    return (
+      this.poolType == WeightedPoolType.MANAGED_POOL ||
+      this.poolType == WeightedPoolType.MOCK_MANAGED_POOL ||
+      this.poolType == WeightedPoolType.MOCK_MANAGED_POOL_SETTINGS
+    );
+  }
+
+  async setJoinExitEnabled(from: SignerWithAddress, joinExitEnabled: boolean): Promise<ContractTransaction> {
+    const pool = this.instance.connect(from);
+    return pool.setJoinExitEnabled(joinExitEnabled);
   }
 
   async setSwapEnabled(from: SignerWithAddress, swapEnabled: boolean): Promise<ContractTransaction> {

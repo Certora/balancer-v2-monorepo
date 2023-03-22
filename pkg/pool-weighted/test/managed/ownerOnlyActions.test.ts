@@ -9,6 +9,7 @@ import TokenList from '@balancer-labs/v2-helpers/src/models/tokens/TokenList';
 import { fp } from '@balancer-labs/v2-helpers/src/numbers';
 import { ZERO_ADDRESS } from '@balancer-labs/v2-helpers/src/constants';
 import { ProtocolFee } from '@balancer-labs/v2-helpers/src/models/vault/types';
+import { sharedBeforeEach } from '@balancer-labs/v2-common/sharedBeforeEach';
 
 describe('ManagedPool owner only actions', () => {
   let pool: Contract;
@@ -21,24 +22,25 @@ describe('ManagedPool owner only actions', () => {
     const circuitBreakerLib = await deploy('CircuitBreakerLib');
     pool = await deploy('MockManagedPool', {
       args: [
+        { name: '', symbol: '', assetManagers: new Array(2).fill(ZERO_ADDRESS) },
         {
-          name: '',
-          symbol: '',
+          vault: vault.address,
+          protocolFeeProvider: vault.getFeesProvider().address,
+          weightedMath: math.address,
+          pauseWindowDuration: 0,
+          bufferPeriodDuration: 0,
+          version: '',
+        },
+        {
           tokens: tokens.addresses,
           normalizedWeights: [fp(0.5), fp(0.5)],
-          assetManagers: new Array(2).fill(ZERO_ADDRESS),
           swapFeePercentage: fp(0.05),
           swapEnabledOnStart: true,
           mustAllowlistLPs: false,
           managementAumFeePercentage: fp(0),
           aumFeeId: ProtocolFee.AUM,
         },
-        vault.address,
-        vault.getFeesProvider().address,
-        math.address,
         ZERO_ADDRESS,
-        0,
-        0,
       ],
       libraries: {
         CircuitBreakerLib: circuitBreakerLib.address,
@@ -75,6 +77,7 @@ describe('ManagedPool owner only actions', () => {
     'removeToken(address,uint256,address)',
     'setManagementAumFeePercentage(uint256)',
     'setMustAllowlistLPs(bool)',
+    'setJoinExitEnabled(bool)',
     'setSwapEnabled(bool)',
     'updateSwapFeeGradually(uint256,uint256,uint256,uint256)',
     'updateWeightsGradually(uint256,uint256,address[],uint256[])',

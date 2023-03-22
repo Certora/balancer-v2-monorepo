@@ -23,11 +23,11 @@ import { BigNumberish, bn, fp } from '@balancer-labs/v2-helpers/src/numbers';
 import { ANY_ADDRESS, DELEGATE_OWNER, MAX_UINT256, ZERO_ADDRESS } from '@balancer-labs/v2-helpers/src/constants';
 import { Account } from '@balancer-labs/v2-helpers/src/models/types/types';
 import TypesConverter from '@balancer-labs/v2-helpers/src/models/types/TypesConverter';
-import { impersonate } from '@balancer-labs/v2-deployments/src/signers';
 import { random } from 'lodash';
 import { defaultAbiCoder } from 'ethers/lib/utils';
 import { sharedBeforeEach } from '@balancer-labs/v2-common/sharedBeforeEach';
 import Vault from '@balancer-labs/v2-helpers/src/models/vault/Vault';
+import { impersonateAccount, setBalance } from '@nomicfoundation/hardhat-network-helpers';
 
 describe('NewBasePool', function () {
   let admin: SignerWithAddress,
@@ -51,7 +51,12 @@ describe('NewBasePool', function () {
   sharedBeforeEach(async () => {
     ({ instance: vault, authorizer } = await Vault.create({ admin }));
 
-    vaultSigner = await impersonate(vault.address, fp(100));
+    // We want to call Pools manually from the Vault address for some tests, so we impersonate the Vault and send it
+    // some ETH in order to be able to have it send transactions.
+    await impersonateAccount(vault.address);
+    await setBalance(vault.address, fp(100));
+    vaultSigner = await SignerWithAddress.create(ethers.provider.getSigner(vault.address));
+
     tokens = await TokenList.create(['DAI', 'MKR', 'SNX'], { sorted: true });
   });
 
@@ -149,7 +154,7 @@ describe('NewBasePool', function () {
 
     it('tracks authorizer changes in the vault', async () => {
       const action = await actionId(vault, 'setAuthorizer');
-      await authorizer.connect(admin).grantPermissions([action], admin.address, [ANY_ADDRESS]);
+      await authorizer.connect(admin).grantPermission(action, admin.address, ANY_ADDRESS);
 
       await vault.connect(admin).setAuthorizer(other.address);
 
@@ -374,12 +379,11 @@ describe('NewBasePool', function () {
         sharedBeforeEach('grant permission', async () => {
           const pauseAction = await actionId(pool, 'pause');
           const unpauseAction = await actionId(pool, 'unpause');
+          await authorizer.connect(admin).grantPermission(unpauseAction, sender.address, ANY_ADDRESS);
+          await authorizer.connect(admin).grantPermission(pauseAction, sender.address, ANY_ADDRESS);
           await authorizer
             .connect(admin)
-            .grantPermissions([pauseAction, unpauseAction], sender.address, [ANY_ADDRESS, ANY_ADDRESS]);
-          await authorizer
-            .connect(admin)
-            .grantPermissions([await actionId(minimalPool, 'pause')], sender.address, [ANY_ADDRESS]);
+            .grantPermission(await actionId(minimalPool, 'pause'), sender.address, ANY_ADDRESS);
         });
 
         itCanPause();
@@ -426,9 +430,8 @@ describe('NewBasePool', function () {
           sharedBeforeEach('grant permission', async () => {
             const pauseAction = await actionId(pool, 'pause');
             const unpauseAction = await actionId(pool, 'unpause');
-            await authorizer
-              .connect(admin)
-              .grantPermissions([pauseAction, unpauseAction], sender.address, [ANY_ADDRESS, ANY_ADDRESS]);
+            await authorizer.connect(admin).grantPermission(pauseAction, sender.address, ANY_ADDRESS);
+            await authorizer.connect(admin).grantPermission(unpauseAction, sender.address, ANY_ADDRESS);
           });
 
           itCanPause();
@@ -480,6 +483,10 @@ describe('NewBasePool', function () {
         sender = other;
       });
 
+      it('stores the vault (in RecoveryMode contract)', async () => {
+        expect(await pool.vault()).to.equal(vault.address);
+      });
+
       context('when the sender does not have the recovery mode permission in the authorizer', () => {
         itRevertsWithUnallowedSender();
       });
@@ -488,12 +495,8 @@ describe('NewBasePool', function () {
         sharedBeforeEach('grant permission', async () => {
           const enableRecoveryAction = await actionId(pool, 'enableRecoveryMode');
           const disableRecoveryAction = await actionId(pool, 'disableRecoveryMode');
-          await authorizer
-            .connect(admin)
-            .grantPermissions([enableRecoveryAction, disableRecoveryAction], sender.address, [
-              ANY_ADDRESS,
-              ANY_ADDRESS,
-            ]);
+          await authorizer.connect(admin).grantPermission(disableRecoveryAction, sender.address, ANY_ADDRESS);
+          await authorizer.connect(admin).grantPermission(enableRecoveryAction, sender.address, ANY_ADDRESS);
         });
 
         itCanEnableRecoveryMode();
@@ -533,12 +536,8 @@ describe('NewBasePool', function () {
           sharedBeforeEach('grant permission', async () => {
             const enableRecoveryAction = await actionId(pool, 'enableRecoveryMode');
             const disableRecoveryAction = await actionId(pool, 'disableRecoveryMode');
-            await authorizer
-              .connect(admin)
-              .grantPermissions([enableRecoveryAction, disableRecoveryAction], sender.address, [
-                ANY_ADDRESS,
-                ANY_ADDRESS,
-              ]);
+            await authorizer.connect(admin).grantPermission(enableRecoveryAction, sender.address, ANY_ADDRESS);
+            await authorizer.connect(admin).grantPermission(disableRecoveryAction, sender.address, ANY_ADDRESS);
           });
 
           itCanEnableRecoveryMode();
@@ -633,7 +632,7 @@ describe('NewBasePool', function () {
 
       await authorizer
         .connect(admin)
-        .grantPermissions([await actionId(feesCollector, 'setSwapFeePercentage')], admin.address, [ANY_ADDRESS]);
+        .grantPermission(await actionId(feesCollector, 'setSwapFeePercentage'), admin.address, ANY_ADDRESS);
 
       await feesCollector.connect(admin).setSwapFeePercentage(PROTOCOL_SWAP_FEE_PERCENTAGE);
 
@@ -668,9 +667,9 @@ describe('NewBasePool', function () {
       sharedBeforeEach('enable recovery mode', async () => {
         const enableRecoveryAction = await actionId(pool, 'enableRecoveryMode');
         const disableRecoveryAction = await actionId(pool, 'disableRecoveryMode');
-        await authorizer
-          .connect(admin)
-          .grantPermissions([enableRecoveryAction, disableRecoveryAction], admin.address, [ANY_ADDRESS, ANY_ADDRESS]);
+        await authorizer.connect(admin).grantPermission(enableRecoveryAction, admin.address, ANY_ADDRESS);
+
+        await authorizer.connect(admin).grantPermission(disableRecoveryAction, admin.address, ANY_ADDRESS);
 
         await pool.connect(admin).enableRecoveryMode();
       });
@@ -728,9 +727,7 @@ describe('NewBasePool', function () {
 
       context('when paused', () => {
         sharedBeforeEach('pause pool', async () => {
-          await authorizer
-            .connect(admin)
-            .grantPermissions([await actionId(pool, 'pause')], admin.address, [ANY_ADDRESS]);
+          await authorizer.connect(admin).grantPermission(await actionId(pool, 'pause'), admin.address, ANY_ADDRESS);
 
           await pool.connect(admin).pause();
         });
@@ -940,9 +937,7 @@ describe('NewBasePool', function () {
 
     context('when paused', () => {
       sharedBeforeEach(async () => {
-        await authorizer
-          .connect(admin)
-          .grantPermissions([await actionId(pool, 'pause')], sender.address, [ANY_ADDRESS]);
+        await authorizer.connect(admin).grantPermission(await actionId(pool, 'pause'), sender.address, ANY_ADDRESS);
         await pool.connect(sender).pause();
       });
 

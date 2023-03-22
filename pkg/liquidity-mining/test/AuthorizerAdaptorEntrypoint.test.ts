@@ -4,6 +4,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 
 import { expect } from 'chai';
 import { defaultAbiCoder } from 'ethers/lib/utils';
+import * as expectEvent from '@balancer-labs/v2-helpers/src/test/expectEvent';
 import { sharedBeforeEach } from '@balancer-labs/v2-common/sharedBeforeEach';
 import { ANY_ADDRESS } from '@balancer-labs/v2-helpers/src/constants';
 import { deploy } from '@balancer-labs/v2-helpers/src/contract';
@@ -47,14 +48,14 @@ describe('AuthorizerAdaptorEntrypoint', () => {
       expect(await adaptorEntrypoint.getAuthorizer()).to.equal(authorizer.address);
     });
 
-    it('returns the same action ID as the adaptor', async () => {
-      expect(await adaptorEntrypoint.getActionId('0xaabbccdd')).to.equal(await adaptor.getActionId('0xaabbccdd'));
-    });
-
     it('tracks authorizer changes in the vault', async () => {
       await vault.setAuthorizer(other);
 
       expect(await adaptorEntrypoint.getAuthorizer()).to.equal(other.address);
+    });
+
+    it('returns the same action ID as the adaptor', async () => {
+      expect(await adaptorEntrypoint.getActionId('0xaabbccdd')).to.equal(await adaptor.getActionId('0xaabbccdd'));
     });
   });
 
@@ -69,7 +70,10 @@ describe('AuthorizerAdaptorEntrypoint', () => {
       action = await actionId(adaptor, 'getProtocolFeesCollector', vault.interface);
 
       target = vault.address;
-      calldata = vault.interface.encodeFunctionData('getProtocolFeesCollector');
+      // Function selector and some random extra info as calldata.
+      // The extra bytes are not required to perform the call, but for testing purposes it's better if the selector
+      // does not match the entire calldata.
+      calldata = vault.interface.encodeFunctionData('getProtocolFeesCollector').concat('aabbccddeeff');
 
       expectedResult = defaultAbiCoder.encode(['address'], [await vault.instance.getProtocolFeesCollector()]);
     });
@@ -103,13 +107,22 @@ describe('AuthorizerAdaptorEntrypoint', () => {
         // The authorizer will reject calls that are not initiated in the adaptor adaptorEntrypoint.
         await expect(adaptor.connect(grantee).performAction(target, calldata)).to.be.revertedWith('SENDER_NOT_ALLOWED');
       });
+
+      it('emits an event describing the performed action', async () => {
+        const tx = await adaptorEntrypoint.connect(grantee).performAction(target, calldata);
+        expectEvent.inReceipt(await tx.wait(), 'ActionPerformed', {
+          selector: vault.interface.getSighash('getProtocolFeesCollector'),
+          caller: grantee.address,
+          target,
+          data: calldata,
+        });
+      });
     }
 
     context('when caller is authorized globally', () => {
       sharedBeforeEach('authorize caller globally', async () => {
-        await authorizer
-          .connect(admin)
-          .grantPermissions([action, payableAction], grantee.address, [ANY_ADDRESS, ANY_ADDRESS]);
+        await authorizer.connect(admin).grantPermission(action, grantee.address, ANY_ADDRESS);
+        await authorizer.connect(admin).grantPermission(payableAction, grantee.address, ANY_ADDRESS);
       });
 
       itHandlesFunctionCallsCorrectly();
@@ -117,9 +130,8 @@ describe('AuthorizerAdaptorEntrypoint', () => {
 
     context('when caller is authorized locally on target', () => {
       sharedBeforeEach('authorize caller on target locally', async () => {
-        await authorizer
-          .connect(admin)
-          .grantPermissions([action, payableAction], grantee.address, [vault.address, paymentReceiver.address]);
+        await authorizer.connect(admin).grantPermission(action, grantee.address, vault.address);
+        await authorizer.connect(admin).grantPermission(payableAction, grantee.address, paymentReceiver.address);
       });
 
       itHandlesFunctionCallsCorrectly();
@@ -127,7 +139,7 @@ describe('AuthorizerAdaptorEntrypoint', () => {
 
     context('when caller is authorized locally on a different target', () => {
       sharedBeforeEach('authorize caller on different target locally', async () => {
-        await authorizer.connect(admin).grantPermissions([action], grantee.address, [other.address]);
+        await authorizer.connect(admin).grantPermission(action, grantee.address, other.address);
       });
 
       it('reverts', async () => {
@@ -147,7 +159,9 @@ describe('AuthorizerAdaptorEntrypoint', () => {
 
     context('when calldata is invalid', () => {
       it('reverts', async () => {
-        await expect(adaptorEntrypoint.connect(other).performAction(target, '0x')).to.be.reverted;
+        await expect(adaptorEntrypoint.connect(other).performAction(target, '0x')).to.be.revertedWith(
+          'INSUFFICIENT_DATA'
+        );
       });
     });
   });

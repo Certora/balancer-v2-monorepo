@@ -7,6 +7,7 @@ import { advanceTime, currentTimestamp, MONTH } from '@balancer-labs/v2-helpers/
 import * as expectEvent from '@balancer-labs/v2-helpers/src/test/expectEvent';
 import { ZERO_ADDRESS } from '@balancer-labs/v2-helpers/src/constants';
 import { deploy, deployedAt } from '@balancer-labs/v2-helpers/src/contract';
+import { sharedBeforeEach } from '@balancer-labs/v2-common/sharedBeforeEach';
 
 import Vault from '@balancer-labs/v2-helpers/src/models/vault/Vault';
 import TokenList from '@balancer-labs/v2-helpers/src/models/tokens/TokenList';
@@ -14,6 +15,7 @@ import { toNormalizedWeights } from '@balancer-labs/balancer-js';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ManagedPoolParams } from '@balancer-labs/v2-helpers/src/models/pools/weighted/types';
 import { ProtocolFee } from '@balancer-labs/v2-helpers/src/models/vault/types';
+import { randomBytes } from 'ethers/lib/utils';
 
 describe('ManagedPoolFactory', function () {
   let tokens: TokenList;
@@ -22,6 +24,17 @@ describe('ManagedPoolFactory', function () {
   let admin: SignerWithAddress;
   let manager: SignerWithAddress;
   let assetManager: SignerWithAddress;
+
+  const factoryVersion = JSON.stringify({
+    name: 'ManagedPoolFactory',
+    version: '4',
+    deployment: 'test-deployment',
+  });
+  const poolVersion = JSON.stringify({
+    name: 'ManagedPool',
+    version: '0',
+    deployment: 'test-deployment',
+  });
 
   const NAME = 'Balancer Pool Token';
   const SYMBOL = 'BPT';
@@ -44,7 +57,14 @@ describe('ManagedPoolFactory', function () {
     const addRemoveTokenLib = await deploy('ManagedPoolAddRemoveTokenLib');
     const circuitBreakerLib = await deploy('CircuitBreakerLib');
     factory = await deploy('ManagedPoolFactory', {
-      args: [vault.address, vault.getFeesProvider().address],
+      args: [
+        vault.address,
+        vault.getFeesProvider().address,
+        factoryVersion,
+        poolVersion,
+        BASE_PAUSE_WINDOW_DURATION,
+        BASE_BUFFER_PERIOD_DURATION,
+      ],
       libraries: {
         CircuitBreakerLib: circuitBreakerLib.address,
         ManagedPoolAddRemoveTokenLib: addRemoveTokenLib.address,
@@ -55,24 +75,29 @@ describe('ManagedPoolFactory', function () {
     tokens = await TokenList.create(['MKR', 'DAI', 'SNX', 'BAT'], { sorted: true });
   });
 
-  async function createPool(swapsEnabled = true, mustAllowlistLPs = false): Promise<Contract> {
+  async function createPool(swapEnabled = true, mustAllowlistLPs = false): Promise<Contract> {
     const assetManagers: string[] = Array(tokens.length).fill(ZERO_ADDRESS);
     assetManagers[tokens.indexOf(tokens.DAI)] = assetManager.address;
 
-    const newPoolParams: ManagedPoolParams = {
+    const poolParams = {
       name: NAME,
       symbol: SYMBOL,
+      assetManagers: assetManagers,
+    };
+
+    const settingsParams: ManagedPoolParams = {
       tokens: tokens.addresses,
       normalizedWeights: WEIGHTS,
-      assetManagers: assetManagers,
       swapFeePercentage: POOL_SWAP_FEE_PERCENTAGE,
-      swapEnabledOnStart: swapsEnabled,
+      swapEnabledOnStart: swapEnabled,
       mustAllowlistLPs: mustAllowlistLPs,
       managementAumFeePercentage: POOL_MANAGEMENT_AUM_FEE_PERCENTAGE,
       aumFeeId: ProtocolFee.AUM,
     };
 
-    const receipt = await (await factory.connect(manager).create(newPoolParams, manager.address)).wait();
+    const receipt = await (
+      await factory.connect(manager).create(poolParams, settingsParams, manager.address, randomBytes(32))
+    ).wait();
 
     const event = expectEvent.inReceipt(receipt, 'PoolCreated');
     return deployedAt('ManagedPool', event.args.pool);
@@ -138,6 +163,18 @@ describe('ManagedPoolFactory', function () {
 
     it('sets the decimals', async () => {
       expect(await pool.decimals()).to.equal(18);
+    });
+
+    it('sets factory version', async () => {
+      expect(await factory.version()).to.be.eq(factoryVersion);
+    });
+
+    it('sets pool version', async () => {
+      expect(await factory.getPoolVersion()).to.be.eq(poolVersion);
+    });
+
+    it('sets pool version in the pool', async () => {
+      expect(await pool.version()).to.be.eq(poolVersion);
     });
   });
 

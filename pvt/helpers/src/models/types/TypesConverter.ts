@@ -33,14 +33,15 @@ export function computeDecimalsFromIndex(i: number): number {
 
 export default {
   toVaultDeployment(params: RawVaultDeployment): VaultDeployment {
-    let { mocked, admin, pauseWindowDuration, bufferPeriodDuration, maxYieldValue, maxAUMValue } = params;
+    let { mocked, admin, nextAdmin, pauseWindowDuration, bufferPeriodDuration, maxYieldValue, maxAUMValue } = params;
     if (!mocked) mocked = false;
     if (!admin) admin = params.from;
+    if (!nextAdmin) nextAdmin = ZERO_ADDRESS;
     if (!pauseWindowDuration) pauseWindowDuration = 0;
     if (!bufferPeriodDuration) bufferPeriodDuration = 0;
     if (!maxYieldValue) maxYieldValue = FP_100_PCT;
     if (!maxAUMValue) maxAUMValue = FP_100_PCT;
-    return { mocked, admin, pauseWindowDuration, bufferPeriodDuration, maxYieldValue, maxAUMValue };
+    return { mocked, admin, nextAdmin, pauseWindowDuration, bufferPeriodDuration, maxYieldValue, maxAUMValue };
   },
 
   toRawVaultDeployment(params: RawWeightedPoolDeployment): RawVaultDeployment {
@@ -68,6 +69,8 @@ export default {
       aumProtocolFeesCollector,
       poolType,
       aumFeeId,
+      factoryVersion,
+      poolVersion,
     } = params;
     if (!params.owner) params.owner = ZERO_ADDRESS;
     if (!tokens) tokens = new TokenList();
@@ -84,6 +87,8 @@ export default {
     if (undefined == swapEnabledOnStart) swapEnabledOnStart = true;
     if (undefined == mustAllowlistLPs) mustAllowlistLPs = false;
     if (undefined == managementAumFeePercentage) managementAumFeePercentage = FP_ZERO;
+    if (undefined == factoryVersion) factoryVersion = 'default factory version';
+    if (undefined == poolVersion) poolVersion = 'default pool version';
     return {
       tokens,
       weights,
@@ -100,7 +105,8 @@ export default {
       from: params.from,
       poolType,
       aumFeeId,
-      mockContractName: params.mockContractName,
+      factoryVersion,
+      poolVersion,
     };
   },
 
@@ -135,6 +141,7 @@ export default {
       swapFeePercentage,
       pauseWindowDuration,
       bufferPeriodDuration,
+      version,
     } = params;
 
     if (!tokens) tokens = new TokenList();
@@ -145,6 +152,7 @@ export default {
     if (!pauseWindowDuration) pauseWindowDuration = 3 * MONTH;
     if (!bufferPeriodDuration) bufferPeriodDuration = MONTH;
     if (!exemptFromYieldProtocolFeeFlags) exemptFromYieldProtocolFeeFlags = Array(tokens.length).fill(false);
+    if (!version) version = 'test';
 
     return {
       tokens,
@@ -156,6 +164,7 @@ export default {
       pauseWindowDuration,
       bufferPeriodDuration,
       owner: params.owner,
+      version,
     };
   },
 
