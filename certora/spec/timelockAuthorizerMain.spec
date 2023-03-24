@@ -49,6 +49,7 @@ methods {
     _delaysPerActionId(bytes32) returns(uint256) envfree
 
     // TimelockAuthorizerManagement.sol
+    getTimelockExecutionHelper() returns(address) envfree
     isExecutor(uint256, address) returns(bool) envfree
     isRoot(address) returns (bool) envfree
     getRoot() returns(address) envfree

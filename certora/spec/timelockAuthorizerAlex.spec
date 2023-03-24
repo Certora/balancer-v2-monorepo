@@ -8,14 +8,15 @@ import "timelockAuthorizerMain.spec"
  */
 // STATUS: Verified
 rule pendingRootChangeOnlyByExecutor(method f, env e){
-    address executer        = _executor();
-    address _pendingRoot    = getPendingRoot();
+    //TODO: modify accordingly
+    bool isExecutor      = e.msg.sender == getTimelockExecutionHelper();
+    address _pendingRoot = getPendingRoot();
     calldataarg args;
-    
+
     f(e, args);
 
-    address pendingRoot_    = getPendingRoot();
-    assert (_pendingRoot == 0 && pendingRoot_ != 0) => e.msg.sender == executer,"pendingRoot can only be changed by the executer";
+    address pendingRoot_ = getPendingRoot();
+    assert (_pendingRoot == 0 && pendingRoot_ != 0) => isExecutor, "pendingRoot can only be changed by the executer";
 }
 
 // rule whoChangedPendingRoot(method f, env e){
@@ -27,13 +28,13 @@ rule pendingRootChangeOnlyByExecutor(method f, env e){
  */
 // STATUS: Verified
 rule rootChangedOnlyByPendingRoot(method f, env e){
-    address _root           = _root();
+    address _root           = getRoot();
     address _pendingRoot    = getPendingRoot();
-    
+
     calldataarg args;
     f(e, args);
 
-    address root_           = _root();
+    address root_           = getRoot();
 
     assert _root != root_ => e.msg.sender == _pendingRoot,"only pending root can change the root";
 }
@@ -43,18 +44,18 @@ rule rootChangedOnlyByPendingRoot(method f, env e){
  * Rule to check that only the root can add a scheduledExecution
  */
 // STATUS: FAILING
-// fails for schedule(), scheduleRevokePermission() and scheduleGrantPermission() 
+// fails for schedule(), scheduleRevokePermission() and scheduleGrantPermission()
 // that create a new scheduledExecution that does not require the caller to be the root.
 // https://vaas-stg.certora.com/output/11775/563831424bdd396a192e/?anonymousKey=e21e47ed98096788ec82c386e0bca74088910bee
 rule scheduledExecutionLengthIncreaseByRootOnly(method f, env e){
     uint256 _length = getSchedExeLength();
-    
+
     calldataarg args;
     f(e, args);
 
     uint256 length_ = getSchedExeLength();
 
-    assert _length != length_ => e.msg.sender == _root(),"scheduled execution length can be changed only by the root";
+    assert _length != length_ => e.msg.sender == getRoot(),"scheduled execution length can be changed only by the root";
 }
 
 /**
@@ -92,7 +93,7 @@ rule whoCanCancelExecution(method f, env e){
 
     calldataarg args;
     f(e, args);
-    
+
     bool cancelled_     = getSchedExeCancelled(index);
 
     assert _cancelled => cancelled_,"cancellation cannot be reversed";
@@ -118,7 +119,7 @@ rule schExExecutionCheck(method f, env e){
 
     calldataarg args;
     f(e, args);
-    
+
     bool executed_      = getSchedExeExecuted(index);
 
     assert !executed_ => !_executed,"execution cannot be reversed";
@@ -133,8 +134,8 @@ rule schExExecutionCheck(method f, env e){
 // https://vaas-stg.certora.com/output/11775/b4275f9fd1a4d31dc76e/?anonymousKey=0418a2c8f8a9f36046b64e2ce34dec49c1808120
 rule delayPerActionIdChangeAccess(method f, env e){
     bytes32 actionID;
-    uint256 _delay = getActionIdDelay(actionID);
-    address executor = _executor();
+    uint256 _delay  = getActionIdDelay(actionID);
+    bool isExecutor = e.msg.sender == getTimelockExecutionHelper();
 
     calldataarg args;
     f(e, args);
@@ -142,7 +143,7 @@ rule delayPerActionIdChangeAccess(method f, env e){
     uint256 delay_ = getActionIdDelay(actionID);
 
     // assert _delay == delay_;
-    assert delay_ != _delay => e.msg.sender == executor,"only executor should be able to change delaysPerActionID";
+    assert delay_ != _delay => isExecutor,"only executor should be able to change delaysPerActionID";
 }
 
 /**
@@ -172,13 +173,13 @@ rule schExeNotExecutedBeforeTime(method f, env e){
 // https://vaas-stg.certora.com/output/11775/d9fddcc284739529e05d/?anonymousKey=3848d16e8c96553a5e8faf7ca9a4b3fb134bb058
 rule onlyPendingRootCanBecomeNewRoot(method f, env e){
     address _pendingRoot = _pendingRoot();
-    address _root = _root();
+    address _root = getRoot();
 
     calldataarg args;
     f(e, args);
 
-    address root_ = _root();
-    
+    address root_ = getRoot();
+
     assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
 }

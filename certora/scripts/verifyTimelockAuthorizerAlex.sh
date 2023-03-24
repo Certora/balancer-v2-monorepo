@@ -9,15 +9,12 @@ then
 fi
 
 certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
-    certora/munged/vault/contracts/authorizer/TimelockExecutor.sol \
+    certora/munged/vault/contracts/authorizer/TimelockExecutionHelper.sol \
     certora/munged/vault/contracts/Vault.sol \
     certora/harness/AuthenticationHarness.sol \
     certora/helpers/Receiver.sol \
     certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol \
     --verify TimelockAuthorizerHarness:certora/spec/timelockAuthorizerAlex.spec \
-    --link TimelockAuthorizerHarness:_vault=Vault \
-            TimelockAuthorizerHarness:_executor=TimelockExecutor \
-            TimelockExecutor:authorizer=TimelockAuthorizerHarness \
     --solc solc7.1 \
     --staging master \
     --optimistic_loop \
@@ -28,7 +25,6 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
     --msg "TimelockAuthorizer: $RULE $MSG"
-
 
     # --staging bgreenwald/cert-740 \
     # --staging EyalH/ShowCallTraceWrongIndex \

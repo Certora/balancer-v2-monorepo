@@ -13,7 +13,6 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
     ) TimelockAuthorizer(admin, nextRoot, authorizerAdaptorEntrypoint, rootTransferDelay) { }
 
     function getSchedExeWhere(uint256 index) external view returns (address) {
-//        return getScheduledExecution(index).where;
         return _scheduledExecutions.length <= index ? address(0) : _scheduledExecutions[index].where;
     }
 
