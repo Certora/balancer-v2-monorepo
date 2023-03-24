@@ -35,7 +35,7 @@ contract TimelockAuthorizerMigrator {
     IBasicAuthorizer public immutable oldAuthorizer;
     TimelockAuthorizer public immutable newAuthorizer;
 
-    uint256 public rootChangeExecutionId;
+    uint256 private _lastScheduledExecutionId;
 
     struct RoleData {
         address grantee;

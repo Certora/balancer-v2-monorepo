@@ -9,15 +9,12 @@ then
 fi
 
 certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
-    certora/munged/vault/contracts/authorizer/TimelockExecutor.sol \
+    certora/munged/vault/contracts/authorizer/TimelockExecutionHelper.sol \
     certora/munged/vault/contracts/Vault.sol \
     certora/harness/AuthenticationHarness.sol \
     certora/helpers/Receiver.sol \
     certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol \
     --verify TimelockAuthorizerHarness:certora/spec/timelockAuthorizerTed.spec \
-    --link TimelockAuthorizerHarness:_vault=Vault \
-            TimelockAuthorizerHarness:_executor=TimelockExecutor \
-            TimelockExecutor:authorizer=TimelockAuthorizerHarness \
     --solc solc7.1 \
     --staging master \
     --optimistic_loop \

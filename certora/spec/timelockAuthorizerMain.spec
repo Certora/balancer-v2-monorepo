@@ -1,7 +1,7 @@
 import "erc20.spec"
 
 // using MockVault as MockVault
-using Vault as Vault
+// using Vault as Vault
 
 methods {
     // Summarization
@@ -111,7 +111,7 @@ invariant notFarFuture(env e, uint256 actionIndex)
 // go over array, two the same action IDs, id with lower index should have lower or equal executableAt
 invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
     (indexLow < indexHigh
-        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
+        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh))
     => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
     {
         preserved {
@@ -131,7 +131,7 @@ invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
 rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
@@ -150,7 +150,7 @@ rule immutableExecuteAt(env e, method f) {
 rule immutableWhere(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     address whereBefore = getSchedExeWhere(actionIndex);
@@ -169,7 +169,7 @@ rule immutableWhere(env e, method f) {
 rule immutableProtected(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     bool protectedBefore = getSchedExeProtected(actionIndex);
@@ -203,24 +203,24 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
     bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-    assert isExecuted1Before != isExecuted1After 
-                => (isExecuted2Before == isExecuted2After 
-                    && isCancelled1Before == isCancelled1After 
+    assert isExecuted1Before != isExecuted1After
+                => (isExecuted2Before == isExecuted2After
+                    && isCancelled1Before == isCancelled1After
                     && isCancelled2Before == isCancelled2After)
                     && !isExecuted1Before;
-    assert isCancelled1Before != isCancelled1After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isExecuted2Before == isExecuted2After 
+    assert isCancelled1Before != isCancelled1After
+                => (isExecuted1Before == isExecuted1After
+                    && isExecuted2Before == isExecuted2After
                     && isCancelled2Before == isCancelled2After)
                     && !isCancelled1Before;
-    assert isExecuted2Before != isExecuted2After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isCancelled1Before == isCancelled1After 
+    assert isExecuted2Before != isExecuted2After
+                => (isExecuted1Before == isExecuted1After
+                    && isCancelled1Before == isCancelled1After
                     && isCancelled2Before == isCancelled2After)
                     && !isExecuted2Before;
-    assert isCancelled2Before != isCancelled2After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isExecuted2Before == isExecuted2After 
+    assert isCancelled2Before != isCancelled2After
+                => (isExecuted1Before == isExecuted1After
+                    && isExecuted2Before == isExecuted2After
                     && isCancelled1Before == isCancelled1After)
                     && !isCancelled2Before;
 }
@@ -246,10 +246,10 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
     bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-    assert (isExecuted1Before != isExecuted1After 
+    assert (isExecuted1Before != isExecuted1After
                 || isExecuted2Before != isExecuted2After)
             => f.selector == execute(uint256).selector;
-    assert (isCancelled1Before != isCancelled1After 
+    assert (isCancelled1Before != isCancelled1After
                 || isCancelled2Before != isCancelled2After)
             => f.selector == cancel(uint256).selector;
 }
@@ -279,7 +279,7 @@ rule pendingRootChangeOnlyByExecutor(method f, env e){
 rule rootChangedOnlyByPendingRoot(method f, env e){
     address _root           = _root();
     address _pendingRoot    = getPendingRoot();
-    
+
     calldataarg args;
     f(e, args);
 
@@ -309,7 +309,7 @@ rule whoCanCancelExecution(method f, env e){
 
     calldataarg args;
     f(e, args);
-    
+
     bool cancelled_     = getSchedExeCancelled(index);
 
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
@@ -335,7 +335,7 @@ rule schExExecutionCheck(method f, env e){
 
     calldataarg args;
     f(e, args);
-    
+
     bool executed_      = getSchedExeExecuted(index);
 
     assert !executed_ => !_executed,"execution cannot be reversed";
@@ -349,7 +349,7 @@ rule schExExecutionCheck(method f, env e){
 // STATUS: Verified
 rule delayPerActionIdChangeAccess(method f, env e){
     bytes32 actionID;
-    
+
     uint256 _delay = getActionIdDelay(actionID);
     address executor = _executor();
 
@@ -393,7 +393,7 @@ rule onlyPendingRootCanBecomeNewRoot(method f, env e){
     f(e, args);
 
     address root_ = _root();
-    
+
     assert root_ == _root || root_ == _pendingRoot,
         "root can either remain unchanged or change to the pendingRoot";
 }
@@ -459,7 +459,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
 
     uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
-    
+
     assert numberOfScheduledExecutionsAfter == numberOfScheduledExecutionsBefore + 1;
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);

@@ -9,6 +9,8 @@ then
 fi
 
 certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
+    certora/munged/vault/contracts/authorizer/TimelockExecutionHelper.sol \
+    certora/munged/vault/contracts/Vault.sol \
     --verify TimelockAuthorizerHarness:certora/spec/sanity.spec \
     --solc solc7.1 \
     --staging master \

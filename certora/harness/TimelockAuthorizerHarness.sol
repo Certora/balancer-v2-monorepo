@@ -7,11 +7,13 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
 
     constructor(
         address admin,
+        address nextRoot,
         IAuthorizerAdaptorEntrypoint authorizerAdaptorEntrypoint,
         uint256 rootTransferDelay
-    ) TimelockAuthorizer(admin, authorizerAdaptorEntrypoint, rootTransferDelay) { }
+    ) TimelockAuthorizer(admin, nextRoot, authorizerAdaptorEntrypoint, rootTransferDelay) { }
 
     function getSchedExeWhere(uint256 index) external view returns (address) {
+//        return getScheduledExecution(index).where;
         return _scheduledExecutions.length <= index ? address(0) : _scheduledExecutions[index].where;
     }
 
@@ -39,13 +41,13 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return _scheduledExecutions.length;
     }
 
-    function getGrantActionId() external view returns (bytes4) {
-        return TimelockAuthorizer.grantPermissions.selector;
-    }
+    // function getGrantActionId() external view returns (bytes4) {
+    //     return TimelockAuthorizer.grantPermissions.selector;
+    // }
 
-    function getRevokeActionId() external view returns (bytes4) {
-        return TimelockAuthorizer.revokePermissions.selector;
-    }
+    // function getRevokeActionId() external view returns (bytes4) {
+    //     return TimelockAuthorizer.revokePermissions.selector;
+    // }
 
     function getActionIdHelper(uint256 index) external returns(bytes32) {
         ScheduledExecution storage scheduledExecution = _scheduledExecutions[index];
@@ -60,11 +62,11 @@ contract TimelockAuthorizerHarness is TimelockAuthorizer {
         return actionId;
     }
 
-    function returnGetActionIdOfSetPendingRoot() external returns(bytes32) {
-        return getActionId(this.setPendingRoot.selector);
-    }
+    // function returnGetActionIdOfSetPendingRoot() external returns(bytes32) {
+    //     return getActionId(this.setPendingRoot.selector);
+    // }
 
-    function getSetAuthorizerActionId() external view returns (bytes32) {
-        return _vault.getActionId(IVault.setAuthorizer.selector);
-    }
+    // function getSetAuthorizerActionId() external view returns (bytes32) {
+    //     return _vault.getActionId(IVault.setAuthorizer.selector);
+    // }
 }
