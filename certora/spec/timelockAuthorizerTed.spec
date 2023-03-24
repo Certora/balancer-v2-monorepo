@@ -6,14 +6,14 @@ import "timelockAuthorizerMain.spec"
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
 rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
-    address rootBefore = _root();
+    address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
 
     // Invoke any function
     calldataarg args;
     f(eForPayableFunctions, args);
 
-    address rootAfter = _root();
+    address rootAfter = getRoot();
 
     // if the function changed the root, the sender was pendingRoot
     assert rootBefore != rootAfter =>
@@ -57,6 +57,8 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 // STATUS - verified
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
+// Unresolved call havoc type all contracts except TimelockExecutionHelper:
+// https://vaas-stg.certora.com/output/40577/4c0f91e6c182423db143a88e1fbb8b81/?anonymousKey=2005f30acb244140337c0d04523ce42d90f4a8a9
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 delayArg;
@@ -86,14 +88,16 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 
     uint256 delayAfter = getActionIdDelay(actionId);
 
-    // Note: In this rule we allow the executor to change delay in any way.
-    assert e.msg.sender == getExecutor() || delayAfter <= maximal_delay,
+    // Note: TODO: allow the executor to change delay in any way.
+    assert delayAfter <= maximal_delay,
         "Delay of an action is greater than MAX_DELAY.";
 }
 
 
 // STATUS - verified
 // The array _scheduledExecution is never shortened.
+// Unresolved call havoc type all contracts except TimelockExecutionHelper:
+// https://vaas-stg.certora.com/output/40577/4c0f91e6c182423db143a88e1fbb8b81/?anonymousKey=2005f30acb244140337c0d04523ce42d90f4a8a9
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
@@ -122,7 +126,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
 
     require(delayBefore <= MAX_DELAY());
-    require(newDelay >= MIN_DELAY());
+    require(newDelay >= MINIMUM_CHANGE_DELAY_EXECUTION_DELAY());
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 timestampBefore = eForPayableFunctions.block.timestamp;
@@ -137,7 +141,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
 
-    assert executableAt >= timestampBefore + MIN_DELAY();
+    assert executableAt >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
     assert newDelay <= delayBefore =>
         executableAt - timestampBefore >= delayBefore - newDelay;
 }
@@ -147,7 +151,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 // ScheduleRootChange creates a new scheduled execution and
 // it doesn't change current root nor pending root.
 rule scheduleRootChangeCreatesSE(env e) {
-    address rootBefore = _root();
+    address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
     uint256 numberOfSchedExeBefore = getSchedExeLength();
     address newRoot;
@@ -161,7 +165,7 @@ rule scheduleRootChangeCreatesSE(env e) {
     uint256 numberOfSchedExeAfter = getSchedExeLength();
 
     assert numberOfSchedExeAfter == numberOfSchedExeBefore + 1;
-    assert rootBefore == _root();
+    assert rootBefore == getRoot();
     assert pendingRootBefore == getPendingRoot();
 }
 

@@ -28,7 +28,7 @@ methods {
 
     // TimelockAuthorizer.sol constants
     EVERYWHERE() returns(address) envfree
-    MIN_DELAY() returns(uint256) envfree
+    MINIMUM_CHANGE_DELAY_EXECUTION_DELAY() returns(uint256) envfree
     MAX_DELAY() returns(uint256) envfree
     GENERAL_PERMISSION_SPECIFIER() returns(bytes32) envfree
     GRANT_ACTION_ID() returns(bytes32) envfree
@@ -40,18 +40,19 @@ methods {
     getActionId(bytes4) returns (bytes32) envfree
     _isPermissionGranted(bytes32) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
-    _root() returns(address) envfree
     _pendingRoot() returns(address) envfree
-    _executor() returns(address) envfree
     getExecuteExecutionActionId(uint256) returns(bytes32) envfree
     getExtendedActionId(bytes32, bytes32) returns(bytes32) envfree
-    getPendingRoot() returns(address) envfree
     hasPermission(bytes32, address, address) returns (bool) envfree
-    isRoot(address) returns (bool) envfree
     _authorizerAdaptorEntrypoint() returns (address) envfree
     _authorizerAdaptor() returns (address) envfree
     _delaysPerActionId(bytes32) returns(uint256) envfree
-    getExecutor() returns(address) envfree
+
+    // TimelockAuthorizerManagement.sol
+    isExecutor(uint256, address) returns(bool) envfree
+    isRoot(address) returns (bool) envfree
+    getRoot() returns(address) envfree
+    getPendingRoot() returns(address) envfree
 }
 
 
