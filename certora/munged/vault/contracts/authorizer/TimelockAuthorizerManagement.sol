@@ -20,7 +20,8 @@ import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/IAuthorizer.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/ITimelockAuthorizer.sol";
 
-import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
+// import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
+import "../../../../harness/Address.sol";   // HARNESS: Using harnessed Address.sol (harnessing low-level code) instead of OZ(above)
 import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol";
 import "./TimelockExecutionHelper.sol";
 
