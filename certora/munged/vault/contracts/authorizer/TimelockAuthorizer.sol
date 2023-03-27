@@ -55,22 +55,22 @@ import "./TimelockAuthorizerManagement.sol";
  */
 contract TimelockAuthorizer is IAuthorizer, TimelockAuthorizerManagement {
     // solhint-disable-next-line const-name-snakecase
-    uint256 private constant _MAX_DELAY = 2 * (365 days);
+    uint256 public constant _MAX_DELAY = 2 * (365 days);   // HARNESS: private -> public
 
     // solhint-disable-next-line const-name-snakecase
-    uint256 private constant _MINIMUM_CHANGE_DELAY_EXECUTION_DELAY = 5 days;
+    uint256 public constant _MINIMUM_CHANGE_DELAY_EXECUTION_DELAY = 5 days;    // HARNESS: private -> public
 
-    IAuthorizerAdaptorEntrypoint private immutable _authorizerAdaptorEntrypoint;
-    IAuthorizerAdaptor private immutable _authorizerAdaptor;
+    IAuthorizerAdaptorEntrypoint public immutable _authorizerAdaptorEntrypoint;    //HARNESS: private -> public
+    IAuthorizerAdaptor public immutable _authorizerAdaptor;        //HARNESS: private -> public
 
     // action id => delay
-    mapping(bytes32 => uint256) private _grantDelays;
+    mapping(bytes32 => uint256) public _grantDelays;       // HARNESS: private -> public
     // action id => delay
-    mapping(bytes32 => uint256) private _revokeDelays;
+    mapping(bytes32 => uint256) public _revokeDelays;      // HARNESS: private -> public
 
     // External permissions
-    mapping(bytes32 => bool) private _isPermissionGranted;
-    mapping(bytes32 => uint256) private _delaysPerActionId;
+    mapping(bytes32 => bool) public _isPermissionGranted;      // HARNESS: private -> public
+    mapping(bytes32 => uint256) public _delaysPerActionId;     // HARNESS: private -> public
 
     constructor(
         address initialRoot,

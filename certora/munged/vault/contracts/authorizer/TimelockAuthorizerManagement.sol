@@ -43,25 +43,25 @@ abstract contract TimelockAuthorizerManagement is ITimelockAuthorizer, Reentranc
     // solhint-disable-next-line const-name-snakecase
     uint256 internal constant _GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID = type(uint256).max;
 
-    TimelockExecutionHelper private immutable _executionHelper;
+    TimelockExecutionHelper public immutable _executionHelper;     // HARNESS: removed immutable, private -> public
     IAuthentication private immutable _vault;
     uint256 private immutable _rootTransferDelay;
 
     // Authorizer permissions
-    address public _root;
-    address private _pendingRoot;
+    address public _root;                   // HARNESS: private -> public
+    address public _pendingRoot;            // HARNESS: private -> public
 
     // scheduled execution id => account => is executor
-    mapping(uint256 => mapping(address => bool)) private _isExecutor;
+    mapping(uint256 => mapping(address => bool)) public _isExecutor;           // HARNESS: private -> public
 
     // action id => account => where => is granter
-    mapping(bytes32 => mapping(address => mapping(address => bool))) private _isGranter;
+    mapping(bytes32 => mapping(address => mapping(address => bool))) public _isGranter;        // HARNESS: private -> public
     // account => where => is revoker
-    mapping(address => mapping(address => bool)) private _isRevoker;
+    mapping(address => mapping(address => bool)) public _isRevoker;            // HARNESS: private -> public
     // scheduled execution id => account => is canceler
-    mapping(uint256 => mapping(address => bool)) private _isCanceler;
+    mapping(uint256 => mapping(address => bool)) public _isCanceler;           // HARNESS: private -> public
 
-    ITimelockAuthorizer.ScheduledExecution[] public _scheduledExecutions; // harness private -> public
+    ITimelockAuthorizer.ScheduledExecution[] public _scheduledExecutions;       // HARNESS: private -> public
 
     /**
      * @dev Prevents a TimelockAuthorizer function from being called directly, making it only possible to call it by
