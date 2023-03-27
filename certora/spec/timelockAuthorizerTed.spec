@@ -2,6 +2,13 @@ import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
 
+rule sanity(env e, method f) {
+    calldataarg args;
+    f(e, args);
+    assert false;
+}
+
+
 // STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
