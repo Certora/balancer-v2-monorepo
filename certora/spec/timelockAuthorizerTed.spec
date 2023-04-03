@@ -61,6 +61,25 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 }
 
 
+// STATUS -
+// Scheduled execution can only be executed by those supplied as executors during scheduling
+rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
+    uint256 length = getSchedExeLength();
+    uint256 id;
+    address user;
+    require(length < max_uint256);
+    require(id < length);
+    bool isExecutor = isExecutor(id, user);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    assert !isExecutor => !isExecutor(id, user),
+        "User became an executor after the scheduled execution has been scheduled.";
+}
+
+
 // STATUS - verified
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
