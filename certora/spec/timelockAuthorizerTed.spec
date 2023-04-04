@@ -12,6 +12,7 @@ rule sanity(env e, method f) {
 // STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
@@ -37,9 +38,35 @@ rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
 }
 
 
+// STATUS - failing
+// setPendingRoot is the only function that changes pending root
+// It can only be called by the root
+rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env eForPayableFunctions, method f) {
+    address rootBefore = getRoot();
+    address pendingRootBefore = getPendingRoot();
+
+    // Invoke any function
+    calldataarg args;
+    f(eForPayableFunctions, args);
+
+    address pendingRootAfter = getPendingRoot();
+
+    // if the function f changed the root, then f must be setPendingRoot or claimRoot
+    assert pendingRootBefore != pendingRootAfter =>
+        ( f.selector == setPendingRoot(address).selector ||
+        f.selector == claimRoot().selector ),
+        "Pending root changed by a function other than setPendingRoot or claimRoot.";
+    // if the function changed the pending root, the sender was root
+    assert pendingRootBefore != pendingRootAfter =>
+        eForPayableFunctions.msg.sender == rootBefore,
+        "Pending root changed by somebody, who was not root.";
+}
+
+
 // STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be canceled again.
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
@@ -52,6 +79,7 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
 // STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be executed again.
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
@@ -61,8 +89,9 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 }
 
 
-// STATUS -
+// STATUS - verified
 // Scheduled execution can only be executed by those supplied as executors during scheduling
+// https://prover.certora.com/output/40577/f84672d68a6d42498d6899d27b9288a1/?anonymousKey=cf4c6f18c3a8fad6fc659a983a8ed595775a061a
 rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -84,7 +113,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
 // Unresolved call havoc type all contracts except TimelockExecutionHelper:
-// https://vaas-stg.certora.com/output/40577/4c0f91e6c182423db143a88e1fbb8b81/?anonymousKey=2005f30acb244140337c0d04523ce42d90f4a8a9
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 delayArg;
@@ -100,7 +129,7 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actio
 }
 
 
-// STATUS - verified
+// STATUS - failing
 // Delays of actions are less or equal to MAX_DELAY.
 rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
@@ -123,7 +152,7 @@ rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
 // STATUS - verified
 // The array _scheduledExecution is never shortened.
 // Unresolved call havoc type all contracts except TimelockExecutionHelper:
-// https://vaas-stg.certora.com/output/40577/4c0f91e6c182423db143a88e1fbb8b81/?anonymousKey=2005f30acb244140337c0d04523ce42d90f4a8a9
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
@@ -145,6 +174,7 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 // STATUS - verified
 // This rule checks, that what a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
@@ -176,6 +206,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 // STATUS - verified
 // ScheduleRootChange creates a new scheduled execution and
 // it doesn't change current root nor pending root.
+// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
