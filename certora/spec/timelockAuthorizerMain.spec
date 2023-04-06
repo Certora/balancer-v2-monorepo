@@ -37,8 +37,10 @@ methods {
 
     // TimelockAuthorizer.sol
     getActionIdDelay(bytes32) returns(uint256) envfree
+    getActionIdGrantDelay(bytes32) returns(uint256) envfree
+    getActionIdRevokeDelay(bytes32) returns(uint256) envfree
     getActionId(bytes4) returns (bytes32) envfree
-    _isPermissionGranted(bytes32) returns(bool) envfree
+    isPermissionGrantedOnTarget(bytes32, address, address) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
     _pendingRoot() returns(address) envfree
     getExecuteExecutionActionId(uint256) returns(bytes32) envfree
@@ -54,6 +56,9 @@ methods {
     isRoot(address) returns (bool) envfree
     getRoot() returns(address) envfree
     getPendingRoot() returns(address) envfree
+    isGranter(bytes32, address, address) returns(bool) envfree
+    isRevoker(address, address) returns(bool) envfree
+    isCanceler(uint256, address) returns(bool) envfree
 }
 
 

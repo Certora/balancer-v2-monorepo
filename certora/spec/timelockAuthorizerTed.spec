@@ -2,13 +2,6 @@ import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
 
-rule sanity(env e, method f) {
-    calldataarg args;
-    f(e, args);
-    assert false;
-}
-
-
 // STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
@@ -38,16 +31,16 @@ rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
 }
 
 
-// STATUS - failing
+// STATUS - failing as anybody can change pendingRoot. TODO: Is it desired?
 // setPendingRoot is the only function that changes pending root
 // It can only be called by the root
-rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env eForPayableFunctions, method f) {
-    address rootBefore = getRoot();
+// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
     address pendingRootBefore = getPendingRoot();
 
     // Invoke any function
     calldataarg args;
-    f(eForPayableFunctions, args);
+    f(e, args);
 
     address pendingRootAfter = getPendingRoot();
 
@@ -58,7 +51,7 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env eForPayableFunction
         "Pending root changed by a function other than setPendingRoot or claimRoot.";
     // if the function changed the pending root, the sender was root
     assert pendingRootBefore != pendingRootAfter =>
-        eForPayableFunctions.msg.sender == rootBefore,
+        e.msg.sender == pendingRootBefore,
         "Pending root changed by somebody, who was not root.";
 }
 
@@ -106,6 +99,94 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
     assert !isExecutor => !isExecutor(id, user),
         "User became an executor after the scheduled execution has been scheduled.";
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+rule isGranterChangesOnlyWithAddOrRemoveGranter(env e, method f) {
+    bytes32 actionId;
+    address account;
+    address where;
+    bool isGranterBefore = isGranter(actionId, account, where);
+    address rootBefore = getRoot();
+    address pendingRootBefore = getPendingRoot();
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool isGranterAfter = isGranter(actionId, account, where);
+
+    assert isGranterBefore && !isGranterAfter =>
+                f.selector == removeGranter(bytes32, address, address).selector ||
+                f.selector == claimRoot().selector,
+                "User ceased to be granter not with removeGranter or claimRoot.";
+    assert !isGranterBefore && isGranterAfter =>
+                f.selector == addGranter(bytes32, address, address).selector ||
+                f.selector == claimRoot().selector,
+                "User became granter not with addGranter or claimRoot.";
+    assert isGranterBefore != isGranterAfter =>
+        e.msg.sender == rootBefore || e.msg.sender == pendingRootBefore,
+        "Granter changed by somebody, who was not root or pending root.";
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+rule isRevokerChangesOnlyWithAddOrRemoveRevoker(env e, method f) {
+    address account;
+    address where;
+    bool isRevokerBefore = isRevoker(account, where);
+    address rootBefore = getRoot();
+    address pendingRootBefore = getPendingRoot();
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool isRevokerAfter = isRevoker(account, where);
+
+    assert isRevokerBefore && !isRevokerAfter =>
+                f.selector == removeRevoker(address, address).selector ||
+                f.selector == claimRoot().selector,
+                "User ceased to be revoker not with removeRevoker or claimRoot.";
+    assert !isRevokerBefore && isRevokerAfter =>
+                f.selector == addRevoker(address, address).selector ||
+                f.selector == claimRoot().selector,
+                "User became revoker not with addRevoker or claimRoot.";
+    assert isRevokerBefore != isRevokerAfter =>
+        e.msg.sender == rootBefore || e.msg.sender == pendingRootBefore,
+        "Revoker changed by somebody, who was not root or pending root.";
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+rule isCancelerChangesOnlyWithAddOrRemoveCanceler(env e, method f) {
+    uint256 scheduledExecution;
+    address account;
+    bool isCancelerBefore = isCanceler(scheduledExecution, account);
+    address rootBefore = getRoot();
+    address pendingRootBefore = getPendingRoot();
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool isCancelerAfter = isCanceler(scheduledExecution, account);
+
+    assert isCancelerBefore && !isCancelerAfter =>
+                f.selector == removeCanceler(uint256, address).selector ||
+                f.selector == claimRoot().selector,
+                "User ceased to be canceler not with removeCanceler or claimRoot.";
+    assert !isCancelerBefore && isCancelerAfter =>
+                f.selector == addCanceler(uint256, address).selector ||
+                f.selector == claimRoot().selector ||
+                f.selector == schedule(address,bytes,address[]).selector ||
+                f.selector == scheduleRevokePermission(bytes32,address,address,address[]).selector ||
+                f.selector == scheduleGrantPermission(bytes32,address,address,address[]).selector,
+                "User became canceler not with addCanceler or claimRoot.";
 }
 
 
@@ -168,6 +249,107 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     assert lengthBefore != lengthAfter =>
         lengthBefore + 1 == lengthAfter,
         "Number of scheduled executions changed and did not increase by one.";
+}
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/2ccdf706be7e404e9ada9ecddec30ab8/?anonymousKey=d9e3be8168c4a8290ba7d5480acb9dd4afd7ffb4
+rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
+    uint256 lengthBefore = getSchedExeLength();
+
+    require(lengthBefore < max_uint256);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 lengthAfter = getSchedExeLength();
+
+    // If the number of scheduled executions changed, it was increased by one.
+    assert lengthBefore != lengthAfter =>
+        f.selector == scheduleRootChange(address, address[]).selector ||
+        f.selector == scheduleDelayChange(bytes32, uint256, address[]).selector ||
+        f.selector == scheduleGrantDelayChange(bytes32, uint256, address[]).selector ||
+        f.selector == scheduleRevokeDelayChange(bytes32, uint256, address[]).selector ||
+        f.selector == schedule(address, bytes, address[]).selector ||
+        f.selector == scheduleGrantPermission(bytes32, address, address, address[]).selector ||
+        f.selector == scheduleRevokePermission(bytes32, address, address, address[]).selector,
+        "Scheduled executions modified by non-schedule function.";
+}
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
+    bytes32 actionId;
+    uint256 delayBefore = getActionIdGrantDelay(actionId);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 delayAfter = getActionIdGrantDelay(actionId);
+
+    // If the number of scheduled executions changed, it was increased by one.
+    assert delayBefore != delayAfter =>
+        f.selector == setGrantDelay(bytes32, uint256).selector,
+        "_grantDelays modified by function other than setGrantDelay.";
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/1e33bc5d53c14f2f813df35118ea5537/?anonymousKey=748ce92eccecdd20c0af0282e4f9b8906fce0fe6
+rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
+    bytes32 actionId;
+    uint256 delayBefore = getActionIdRevokeDelay(actionId);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 delayAfter = getActionIdRevokeDelay(actionId);
+
+    // If the number of scheduled executions changed, it was increased by one.
+    assert delayBefore != delayAfter =>
+        f.selector == setRevokeDelay(bytes32, uint256).selector,
+        "_revokeDelays modified by function other than setRevokeDelay.";
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/1e33bc5d53c14f2f813df35118ea5537/?anonymousKey=748ce92eccecdd20c0af0282e4f9b8906fce0fe6
+rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
+    bytes32 actionId;
+    address account;
+    address where;
+    bool grantedBefore = isPermissionGrantedOnTarget(actionId, account, where);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool grantedAfter = isPermissionGrantedOnTarget(actionId, account, where);
+
+    assert grantedBefore && !grantedAfter =>
+        f.selector == revokePermission(bytes32, address, address).selector ||
+        f.selector == renouncePermission(bytes32,address).selector,
+        "permission revoked by function other than revokePermission.";
+    assert !grantedBefore && grantedAfter =>
+        f.selector == grantPermission(bytes32, address, address).selector,
+        "permission granted by function other than grantPermission.";
+}
+
+rule delaysPerActionIdChangeOnlyByAllowedFunctions(env e, method f) {
+    bytes32 actionId;
+    uint256 delayBefore = getActionIdDelay(actionId);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 delayAfter = getActionIdDelay(actionId);
+
+    assert delayBefore != delayAfter =>
+        f.selector == setDelay(bytes32, uint256).selector,
+        "delay of action changed by function other than setDelay.";
 }
 
 
