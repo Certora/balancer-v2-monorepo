@@ -9,22 +9,21 @@ then
 fi
 
 certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
-    certora/munged/vault/contracts/authorizer/TimelockExecutor.sol \
+    certora/munged/vault/contracts/authorizer/TimelockExecutionHelper.sol \
     certora/munged/vault/contracts/Vault.sol \
     certora/harness/SingletonAuthenticationHarness.sol \
     certora/helpers/Receiver.sol \
-    certora/helpers/DummyERC20A.sol certora/helpers/DummyERC20B.sol \
-    --verify TimelockAuthorizerHarness:certora/spec/timelockAuthorizerSasha.spec \
+    --verify TimelockAuthorizerHarness:certora/spec/CVL2/timelockAuthorizerSasha.spec \
     --link TimelockAuthorizerHarness:_vault=Vault \
-            TimelockAuthorizerHarness:_executor=TimelockExecutor \
-            TimelockExecutor:authorizer=TimelockAuthorizerHarness \
+            TimelockAuthorizerHarness:_executionHelper=TimelockExecutionHelper \
+            TimelockExecutionHelper:_authorizer=TimelockAuthorizerHarness \
             SingletonAuthenticationHarness:_vault=Vault \
     --solc solc7.1 \
     --staging master \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \
-    --rule_sanity basic \
+    --rule_sanity \
     --settings -optimisticUnboundedHashing=true \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
