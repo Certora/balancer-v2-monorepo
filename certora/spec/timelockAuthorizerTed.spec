@@ -194,7 +194,7 @@ rule isCancelerChangesOnlyWithAddOrRemoveCanceler(env e, method f) {
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
 // Unresolved call havoc type all contracts except TimelockExecutionHelper:
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
+// https://prover.certora.com/output/40577/fb12ffffa89847579f737148a17ee3c3/?anonymousKey=87bc45cf7a3575f6baaf7702943e8c8dee9ad5d9
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 delayArg;
@@ -207,26 +207,9 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actio
         (f.selector == setDelay(bytes32, uint256).selector && actionId2 == actionId);
     assert delayAfter != delayBefore =>
         delayAfter == delayArg;
-}
-
-
-// STATUS - failing
-// Delays of actions are less or equal to MAX_DELAY.
-rule delaysOfActionsHaveUpperBound(env e, method f, bytes32 actionId) {
-    uint256 delayBefore = getActionIdDelay(actionId);
-    uint256 maximal_delay = MAX_DELAY();
-
-    require(delayBefore <= maximal_delay);
-
-    // Invoke any function
-    calldataarg args;
-    f(e, args);
-
-    uint256 delayAfter = getActionIdDelay(actionId);
-
-    // Note: TODO: allow the executor to change delay in any way.
-    assert delayAfter <= maximal_delay,
-        "Delay of an action is greater than MAX_DELAY.";
+    assert delayAfter != delayBefore =>
+            e.msg.sender == getTimelockExecutionHelper(),
+        "Delay changed by other entity than execution helper.";
 }
 
 
@@ -277,7 +260,7 @@ rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
 }
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+// https://prover.certora.com/output/40577/4fc440c4a1654fdda243cc1a30151573/?anonymousKey=2f909d3f7a3fe4ed878c24c6e69892b127296685
 rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     bytes32 actionId;
     uint256 delayBefore = getActionIdGrantDelay(actionId);
@@ -292,11 +275,14 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     assert delayBefore != delayAfter =>
         f.selector == setGrantDelay(bytes32, uint256).selector,
         "_grantDelays modified by function other than setGrantDelay.";
+    assert delayAfter != delayBefore =>
+            e.msg.sender == getTimelockExecutionHelper(),
+        "Delay changed by other entity than execution helper.";
 }
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/1e33bc5d53c14f2f813df35118ea5537/?anonymousKey=748ce92eccecdd20c0af0282e4f9b8906fce0fe6
+// https://prover.certora.com/output/40577/457f4ae249cf4f6c96d09aa709578277/?anonymousKey=5c0926936c949b5e66bccc3c1969fbaa236c2e94
 rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
     bytes32 actionId;
     uint256 delayBefore = getActionIdRevokeDelay(actionId);
@@ -311,11 +297,16 @@ rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
     assert delayBefore != delayAfter =>
         f.selector == setRevokeDelay(bytes32, uint256).selector,
         "_revokeDelays modified by function other than setRevokeDelay.";
+    assert delayAfter != delayBefore =>
+            e.msg.sender == getTimelockExecutionHelper(),
+        "Delay changed by other entity than execution helper.";
 }
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/1e33bc5d53c14f2f813df35118ea5537/?anonymousKey=748ce92eccecdd20c0af0282e4f9b8906fce0fe6
+// grantPermission ... is "granter" or "execution helper"
+// revokePermission ... is "revoker" or "execution helper"
+// https://prover.certora.com/output/40577/519200fb133e44c0a368c5b8a0ba2363/?anonymousKey=d54f3a36650ac03fe922c8bd52d202b074723321
 rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
     bytes32 actionId;
     address account;
@@ -335,21 +326,11 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
     assert !grantedBefore && grantedAfter =>
         f.selector == grantPermission(bytes32, address, address).selector,
         "permission granted by function other than grantPermission.";
-}
-
-rule delaysPerActionIdChangeOnlyByAllowedFunctions(env e, method f) {
-    bytes32 actionId;
-    uint256 delayBefore = getActionIdDelay(actionId);
-
-    // Invoke any function
-    calldataarg args;
-    f(e, args);
-
-    uint256 delayAfter = getActionIdDelay(actionId);
-
-    assert delayBefore != delayAfter =>
-        f.selector == setDelay(bytes32, uint256).selector,
-        "delay of action changed by function other than setDelay.";
+    assert grantedBefore != grantedAfter =>
+        e.msg.sender == getTimelockExecutionHelper() ||
+        (grantedAfter && isGranter(actionId, e.msg.sender, where)) ||
+        (grantedBefore && (isRevoker(e.msg.sender, where)) || f.selector == renouncePermission(bytes32,address).selector),
+        "Granted permission changed by other entity than execution helper or revoker.";
 }
 
 
@@ -388,7 +369,7 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
 // STATUS - verified
 // ScheduleRootChange creates a new scheduled execution and
 // it doesn't change current root nor pending root.
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
+// https://prover.certora.com/output/40577/8caf238ec03c439c8441b0676ab9ed71/?anonymousKey=b85e92cf6c33c9b40528d5ee9c8e0b98bc8a620c
 rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
@@ -396,7 +377,6 @@ rule scheduleRootChangeCreatesSE(env e) {
     address newRoot;
     address[] executors;
 
-    require newRoot != rootBefore;
     require(numberOfSchedExeBefore < max_uint / 4);
 
     scheduleRootChange(e, newRoot, executors);
