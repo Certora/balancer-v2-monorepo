@@ -1,24 +1,103 @@
 import "erc20.spec"
 import "timelockAuthorizerMain.spec"
 
+// STATUS - verified
+// https://prover.certora.com/output/40577/43649cf8b8f148a98a7fb83a7647cc34/?anonymousKey=f4c1e5e509629a8ad342dc1997b0cc430264cd84
+rule rootNotZero(env e, method f)
+{
+    require(getRoot() != 0);
+    require(e.msg.sender != 0);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    assert getRoot() != 0;
+}
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/e38e4eb130054ebb88922acd43f27777/?anonymousKey=d847f9e3d234739e3652f5e73b5d2dce9d404039
+rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
+{
+    uint256 scheduledExecution; address possibleCanceller;
+    bool cancelerBefore = isCanceler(scheduledExecution, possibleCanceller);
+    uint256 otherScheduledExecution; address otherPossibleCanceller;
+    bool otherCancelerBefore = isCanceler(otherScheduledExecution, otherPossibleCanceller);
+    address possibleRevoker; address whereRevoker;
+    bool revokerBefore = isRevoker(possibleRevoker, whereRevoker);
+    address otherPossibleRevoker; address otherWhereRevoker;
+    bool otherRevokerBefore = isRevoker(otherPossibleRevoker, otherWhereRevoker);
+    address possibleGranter; address whereGranter; bytes32 actionId;
+    bool granterBefore = isGranter(actionId, possibleGranter, whereGranter);
+    address otherPossibleGranter; address otherWhereGranter; bytes32 otherActionId;
+    bool otherGranterBefore = isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
+    bool nonClaimRoot = f.selector != claimRoot().selector;
+
+    require(possibleCanceller != otherPossibleCanceller);
+    require(possibleRevoker != otherPossibleRevoker);
+    require(possibleGranter != otherPossibleGranter);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool cancelerChanged = cancelerBefore != isCanceler(scheduledExecution, possibleCanceller);
+    bool revokerChanged = revokerBefore != isRevoker(possibleRevoker, whereRevoker);
+    bool granterChanged = granterBefore != isGranter(actionId, possibleGranter, whereGranter);
+
+    assert cancelerChanged && nonClaimRoot => !revokerChanged && !granterChanged;
+    assert revokerChanged && nonClaimRoot => !granterChanged && !cancelerChanged;
+    assert granterChanged && nonClaimRoot => !cancelerChanged && !revokerChanged;
+
+    bool otherCancelerChanged = otherCancelerBefore != isCanceler(otherScheduledExecution, otherPossibleCanceller);
+    bool otherRevokerChanged = otherRevokerBefore != isRevoker(otherPossibleRevoker, otherWhereRevoker);
+    bool otherGranterChanged = otherGranterBefore != isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
+
+    assert cancelerChanged && nonClaimRoot => !otherCancelerChanged;
+    assert revokerChanged && nonClaimRoot => !otherRevokerChanged;
+    assert granterChanged && nonClaimRoot => !otherGranterChanged;
+}
+
+
+rule minimalDelayAfterScheduling(env e, method f) {
+    uint256 indexBefore = getSchedExeLength();
+    uint256 timestampBefore = e.block.timestamp;
+
+    require(indexBefore < max_uint256);
+    require(to_uint256(timestampBefore + timestampBefore) > timestampBefore);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    uint256 indexAfter = getSchedExeLength();
+    require(indexAfter > 0);
+
+    bool scheduled = indexAfter == indexBefore + 1;
+    uint256 executableAt = getSchedExeExecutableAt(indexAfter);
+
+    assert scheduled => executableAt >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
+}
+
 
 // STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.
 // https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
-rule rootChangesOnlyWithClaimRoot(env eForPayableFunctions, method f) {
+rule rootChangesOnlyWithClaimRoot(env e, method f) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
 
     // Invoke any function
     calldataarg args;
-    f(eForPayableFunctions, args);
+    f(e, args);
 
     address rootAfter = getRoot();
 
     // if the function changed the root, the sender was pendingRoot
     assert rootBefore != rootAfter =>
-        eForPayableFunctions.msg.sender == pendingRootBefore,
+        e.msg.sender == pendingRootBefore,
         "Root changed by somebody, who was not pending root.";
     // if the function changed the root, the new root is old pendingRoot
     assert rootBefore != rootAfter =>
@@ -99,6 +178,35 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
     assert !isExecutor => !isExecutor(id, user),
         "User became an executor after the scheduled execution has been scheduled.";
+}
+
+
+
+
+
+// STATUS - verified
+// https://prover.certora.com/output/40577/cd669744022849bd8b49be6ca23c2749/?anonymousKey=29341486144142477ebd5eb60b1bf54e90d3b765
+rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
+    uint256 id;
+    address user;
+    bool executorBefore = isExecutor(id, user);
+
+    // Invoke any function
+    calldataarg args;
+    f(e, args);
+
+    bool executorAfter = isExecutor(id, user);
+
+    assert executorBefore != executorAfter =>
+            e.msg.sender == getTimelockExecutionHelper() ||
+            f.selector == schedule(address,bytes,address[]).selector ||
+            f.selector == scheduleRevokePermission(bytes32,address,address,address[]).selector ||
+            f.selector == scheduleGrantPermission(bytes32,address,address,address[]).selector ||
+            f.selector == scheduleRevokeDelayChange(bytes32,uint256,address[]).selector ||
+            f.selector == scheduleGrantDelayChange(bytes32,uint256,address[]).selector ||
+            f.selector == scheduleRootChange(address,address[]).selector ||
+            f.selector == scheduleDelayChange(bytes32,uint256,address[]).selector,
+            "Executor status changed in non-schedule function by other entity than execution helper.";
 }
 
 
@@ -338,7 +446,7 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 // This rule checks, that what a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
 // https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
-rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 actionId) {
+rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
     address[] executors;
@@ -348,11 +456,11 @@ rule scheduleDelayChangeHasProperDelay(env e, env eForPayableFunctions, bytes32 
     require(newDelay >= MINIMUM_CHANGE_DELAY_EXECUTION_DELAY());
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
-    uint256 timestampBefore = eForPayableFunctions.block.timestamp;
+    uint256 timestampBefore = e.block.timestamp;
 
     require(to_uint256(timestampBefore + timestampBefore) > timestampBefore);
 
-    scheduleDelayChange(eForPayableFunctions, actionId, newDelay, executors);
+    scheduleDelayChange(e, actionId, newDelay, executors);
 
     uint256 numberOfScheduledExecutionsAfter = getSchedExeLength();
 
