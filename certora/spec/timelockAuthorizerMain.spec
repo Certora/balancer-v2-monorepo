@@ -53,6 +53,7 @@ methods {
     // TimelockAuthorizerManagement.sol
     getTimelockExecutionHelper() returns(address) envfree
     isExecutor(uint256, address) returns(bool) envfree
+    canExecute(uint256) returns(bool)
     isRoot(address) returns (bool) envfree
     getRoot() returns(address) envfree
     getPendingRoot() returns(address) envfree

@@ -160,7 +160,56 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 }
 
 
+// STATUS - under development
+// https://prover.certora.com/output/40577/80d0025d88fe4d92b055d38a378f8894/?anonymousKey=3b7c0aac9ac0d2e15a853130bdf57343917d0919
+rule executorCanExecute(env e) {
+    uint256 length = getSchedExeLength();
+    uint256 id;
+    require(id < length);
 
+    bool canExecute = canExecute(e, id);
+    bool isExecutor = isExecutor(id, e.msg.sender);
+    bool isProtected = getSchedExeProtected(id);
+
+    assert (
+        !getSchedExeExecuted(id) &&
+        !getSchedExeCancelled(id) && 
+        getSchedExeExecutableAt(id) < e.block.timestamp
+    ) => canExecute;
+
+    bool executedBefore = getSchedExeExecuted(id);
+
+    execute(e, id);
+
+    bool executedAfter = getSchedExeExecuted(id);
+
+    assert !executedBefore && executedAfter => isExecutor || !isProtected;
+
+    cancel@withrevert(e, id);
+    bool reverted = lastReverted;
+    assert !executedBefore && executedAfter => reverted;
+}
+
+// STATUS - under development
+// https://prover.certora.com/output/40577/a904d452e55a4eaf8c65607ad7235f0d/?anonymousKey=00aa7cf727381e8e8a5af914229c8029335efb39
+rule cancelerCanCancel(env e) {
+    uint256 length = getSchedExeLength();
+    uint256 id;
+    require(id < length);
+    address entity;
+    bool isCanceler = isCanceler(id, e.msg.sender);
+
+    bool canceledBefore = getSchedExeCancelled(id);
+    bool executed = getSchedExeExecuted(id);
+
+    cancel@withrevert(e, id);
+
+    bool canceledAfter = getSchedExeCancelled(id);
+    bool reverted = lastReverted;
+
+    assert canceledAfter && !canceledBefore => isCanceler;
+    assert (!canceledBefore && !executed) => (!reverted && getSchedExeCancelled(id));
+}
 
 
 // STATUS - verified
