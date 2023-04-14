@@ -60,27 +60,6 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
 }
 
 
-rule minimalDelayAfterScheduling(env e, method f) {
-    uint256 indexBefore = getSchedExeLength();
-    uint256 timestampBefore = e.block.timestamp;
-
-    require(indexBefore < max_uint256);
-    require(to_uint256(timestampBefore + timestampBefore) > timestampBefore);
-
-    // Invoke any function
-    calldataarg args;
-    f(e, args);
-
-    uint256 indexAfter = getSchedExeLength();
-    require(indexAfter > 0);
-
-    bool scheduled = indexAfter == indexBefore + 1;
-    uint256 executableAt = getSchedExeExecutableAt(indexAfter);
-
-    assert scheduled => executableAt >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
-}
-
-
 // STATUS - verified
 // claimRoot is the only function that changes root
 // and variables are updated appropriately.

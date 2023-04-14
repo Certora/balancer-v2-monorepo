@@ -13,6 +13,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     certora/munged/vault/contracts/Vault.sol \
     certora/helpers/Receiver.sol \
     --verify TimelockAuthorizerHarness:certora/spec/timelockAuthorizerAlex.spec \
+    --link TimelockAuthorizerHarness:_executionHelper=TimelockExecutionHelper \
     --solc solc7.1 \
     --optimistic_loop \
     --loop_iter 8 \
