@@ -161,7 +161,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/80d0025d88fe4d92b055d38a378f8894/?anonymousKey=3b7c0aac9ac0d2e15a853130bdf57343917d0919
+// https://prover.certora.com/output/40577/0b63385b7d2c4389acfcd10e8e4babfa/?anonymousKey=602c9b0b12b1e83f7625b142d5244a03f6ef6a3c
 rule executorCanExecute(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -184,14 +184,15 @@ rule executorCanExecute(env e) {
     bool executedAfter = getSchedExeExecuted(id);
 
     assert !executedBefore && executedAfter => isExecutor || !isProtected;
+    assert canExecute && isExecutor => executedAfter;
 
     cancel@withrevert(e, id);
     bool reverted = lastReverted;
-    assert !executedBefore && executedAfter => reverted;
+    assert executedAfter => reverted;
 }
 
-// STATUS - under development
-// https://prover.certora.com/output/40577/a904d452e55a4eaf8c65607ad7235f0d/?anonymousKey=00aa7cf727381e8e8a5af914229c8029335efb39
+// STATUS - verified
+// https://prover.certora.com/output/40577/932a5378e8b043c2ac0a07b82dd2e3f3/?anonymousKey=9b663bca7afe0aff0559fe37a922e54193765410
 rule cancelerCanCancel(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -202,14 +203,16 @@ rule cancelerCanCancel(env e) {
     bool canceledBefore = getSchedExeCancelled(id);
     bool executed = getSchedExeExecuted(id);
 
-    cancel@withrevert(e, id);
+    cancel(e, id);
 
     bool canceledAfter = getSchedExeCancelled(id);
-    bool reverted = lastReverted;
 
-    assert canceledAfter && !canceledBefore => isCanceler;
-    assert (!canceledBefore && !executed) => !reverted;
-    assert !reverted => canceledAfter;
+    assert canceledAfter;
+    assert !canceledBefore => isCanceler;
+
+    execute@withrevert(e, id);
+    bool reverted = lastReverted;
+    assert canceledAfter => reverted;
 }
 
 
