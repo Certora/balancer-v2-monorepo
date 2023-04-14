@@ -160,7 +160,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 }
 
 
-// STATUS - under development
+// STATUS - verified
 // https://prover.certora.com/output/40577/80d0025d88fe4d92b055d38a378f8894/?anonymousKey=3b7c0aac9ac0d2e15a853130bdf57343917d0919
 rule executorCanExecute(env e) {
     uint256 length = getSchedExeLength();
@@ -208,7 +208,8 @@ rule cancelerCanCancel(env e) {
     bool reverted = lastReverted;
 
     assert canceledAfter && !canceledBefore => isCanceler;
-    assert (!canceledBefore && !executed) => (!reverted && getSchedExeCancelled(id));
+    assert (!canceledBefore && !executed) => !reverted;
+    assert !reverted => canceledAfter;
 }
 
 
