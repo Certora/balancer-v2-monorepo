@@ -45,7 +45,7 @@ abstract contract TimelockAuthorizerManagement is ITimelockAuthorizer, Reentranc
     uint256 internal constant _GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID = type(uint256).max;
 
     TimelockExecutionHelper public immutable _executionHelper;     // HARNESS: removed immutable, private -> public
-    IAuthentication private immutable _vault;
+    IAuthentication internal immutable _vault;                       // HARNESS: removed immutable, private -> internal
     uint256 private immutable _rootTransferDelay;
 
     // Authorizer permissions

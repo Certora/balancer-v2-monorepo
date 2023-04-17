@@ -1,4 +1,4 @@
-import "timelockAuthorizerMain.spec"
+import "timelockAuthorizerMain.spec";
 
 
 /**************************************************
@@ -20,7 +20,7 @@ invariant notGreaterThanMax(bytes32 actionId)
 // STATUS - verified
 // Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
 invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
-    getSchedExeExecutableAt(actionIndex) <= timestamp + MAX_DELAY()
+    to_mathint(getSchedExeExecutableAt(actionIndex)) <= timestamp + MAX_DELAY()
     {
         preserved with (env e2) {
             require timestamp == e2.block.timestamp;
@@ -42,6 +42,14 @@ invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
             require limitArrayLength();
         }
     }
+
+
+// STATUS - verified
+// `scheduledExecutionId` can’t be executed and cancelled at the same time.
+invariant oneOfThree(uint256 actionIndex)
+    (!getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
+        || (getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
+        || (!getSchedExeExecuted(actionIndex) && getSchedExeCancelled(actionIndex))
 
 
 
@@ -167,10 +175,48 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
 
     assert (isExecuted1Before != isExecuted1After)
-            => f.selector == execute(uint256).selector;
+            => f.selector == sig:execute(uint256).selector;
     assert (isCancelled1Before != isCancelled1After)
-            => f.selector == cancel(uint256).selector;
+            => f.selector == sig:cancel(uint256).selector;
 }
+
+
+// STATUS - verified
+// if canExecute returns true / false, execute finishes successfully / reverts.
+rule canExecuteAndExecuteUnion(env e, method f) {
+    uint256 scheduledExecutionId;
+
+    bool canExe = canExecute(e, scheduledExecutionId);
+    bool canReverted = lastReverted;
+
+    execute@withrevert(e, scheduledExecutionId);
+    bool exeReveted = lastReverted;
+
+    assert (!canExe || canReverted) => exeReveted;
+}
+
+
+// STATUS - verified
+// If it’s one of the states (executed/cancelled) it should remain in forever.
+rule executedForever(env e, method f) {
+    uint256 actionIndex1;
+
+    require actionIndex1 < getSchedExeLength();
+    require limitArrayLength(); 
+
+    bool isExecutedBefore = getSchedExeExecuted(actionIndex1);
+    bool isCancelledBefore = getSchedExeCancelled(actionIndex1);
+
+    calldataarg args;
+    f(e, args);
+
+    bool isExecutedAfter = getSchedExeExecuted(actionIndex1);
+    bool isCancelledAfter = getSchedExeCancelled(actionIndex1);
+
+    assert isExecutedBefore && !isCancelledBefore => isExecutedAfter && !isCancelledAfter;
+    assert !isExecutedBefore && isCancelledBefore => !isExecutedAfter && isCancelledAfter;
+}
+
 
 
 
@@ -196,3 +242,38 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 
 //     assert dataBefore == dataAfter;
 // }
+
+
+
+// STATUS - in progress
+// check what function can “frontrun“ an action execution: cancel(), anything else?
+rule executionFrontrun(env e, method f) {
+    uint256 scheduledExecutionId;
+
+    storage initialStorage = lastStorage;
+
+    execute@withrevert(e, scheduledExecutionId);
+    bool isRevertedSingle = lastReverted;
+
+    calldataarg args;
+    f(e, args) at initialStorage;
+    execute@withrevert(e, scheduledExecutionId);
+    bool isRevertedFrontrun = lastReverted;
+
+    assert !isRevertedSingle => !isRevertedFrontrun;
+}
+
+
+
+// STATUS - in progress
+// account with GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID() can cancel any scheduled execution.
+rule almightyGlobal(env e, uint256 scheduledExecutionId) {
+    bool isAlmighty = _isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), e.msg.sender);
+    require !_isCanceler(scheduledExecutionId, e.msg.sender);
+    require !isRoot(e.msg.sender);
+
+    cancel@withrevert(e, scheduledExecutionId);
+    bool isReverted = lastReverted;
+
+    assert !isReverted => isAlmighty, "Remember, with great power comes great responsibility.";
+}

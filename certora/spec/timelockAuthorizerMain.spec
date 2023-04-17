@@ -1,8 +1,3 @@
-import "erc20.spec"
-
-// using MockVault as MockVault
-// using Vault as Vault
-
 methods {
     // Summarization
     execute(address, bytes) returns(bytes) => DISPATCHER(true)
@@ -17,34 +12,34 @@ methods {
     getSchedExeProtected(uint256) returns(bool) envfree
     getSchedExeExecutableAt(uint256) returns(uint256) envfree
     getSchedExeLength() returns(uint256) envfree
-    getGrantActionId() returns(bytes4) envfree
-    getRevokeActionId() returns(bytes4) envfree
+    // getGrantActionId() returns(bytes4) envfree
+    // getRevokeActionId() returns(bytes4) envfree
     getActionIdHelper(uint256) returns (bytes32) envfree
     getActionIdFromDataAndWhere(bytes, address) returns(bytes32) envfree
-    returnGetActionIdOfSetPendingRoot() returns(bytes32) envfree
+    // returnGetActionIdOfSetPendingRoot() returns(bytes32) envfree
     getSetAuthorizerActionId() returns (bytes32) envfree
 
-    returnDataForScheduleGrantPermission(bytes32, address, address) returns(bytes) envfree
+    // returnDataForScheduleGrantPermission(bytes32, address, address) returns(bytes) envfree
 
     // TimelockAuthorizer.sol constants
     EVERYWHERE() returns(address) envfree
     MINIMUM_CHANGE_DELAY_EXECUTION_DELAY() returns(uint256) envfree
     MAX_DELAY() returns(uint256) envfree
-    GENERAL_PERMISSION_SPECIFIER() returns(bytes32) envfree
-    GRANT_ACTION_ID() returns(bytes32) envfree
-    _GENERAL_GRANT_ACTION_ID() returns(bytes32) envfree
-    _GENERAL_REVOKE_ACTION_ID() returns(bytes32) envfree
+    // GENERAL_PERMISSION_SPECIFIER() returns(bytes32) envfree
+    // GRANT_ACTION_ID() returns(bytes32) envfree
+    // _GENERAL_GRANT_ACTION_ID() returns(bytes32) envfree
+    // _GENERAL_REVOKE_ACTION_ID() returns(bytes32) envfree
 
     // TimelockAuthorizer.sol
     getActionIdDelay(bytes32) returns(uint256) envfree
     getActionIdGrantDelay(bytes32) returns(uint256) envfree
     getActionIdRevokeDelay(bytes32) returns(uint256) envfree
-    getActionId(bytes4) returns (bytes32) envfree
+    // getActionId(bytes4) returns (bytes32) envfree
     isPermissionGrantedOnTarget(bytes32, address, address) returns(bool) envfree
     getPermissionId(bytes32, address, address) returns(bytes32) envfree
     _pendingRoot() returns(address) envfree
-    getExecuteExecutionActionId(uint256) returns(bytes32) envfree
-    getExtendedActionId(bytes32, bytes32) returns(bytes32) envfree
+    // getExecuteExecutionActionId(uint256) returns(bytes32) envfree
+    // getExtendedActionId(bytes32, bytes32) returns(bytes32) envfree
     hasPermission(bytes32, address, address) returns (bool) envfree
     _authorizerAdaptorEntrypoint() returns (address) envfree
     _authorizerAdaptor() returns (address) envfree
