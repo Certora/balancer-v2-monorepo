@@ -173,7 +173,7 @@ rule executorCanExecute(env e) {
 
     assert (
         !getSchedExeExecuted(id) &&
-        !getSchedExeCancelled(id) && 
+        !getSchedExeCancelled(id) &&
         getSchedExeExecutableAt(id) < e.block.timestamp
     ) => canExecute;
 
@@ -197,7 +197,6 @@ rule cancelerCanCancel(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
     require(id < length);
-    address entity;
     bool isCanceler = isCanceler(id, e.msg.sender);
 
     bool canceledBefore = getSchedExeCancelled(id);
@@ -213,6 +212,20 @@ rule cancelerCanCancel(env e) {
     execute@withrevert(e, id);
     bool reverted = lastReverted;
     assert canceledAfter => reverted;
+}
+
+
+rule cancelerCanBeAdded(env e) {
+    uint256 length = getSchedExeLength();
+    uint256 id;
+    require(id < length);
+    address account;
+    bool wasCanceller = isCanceler(id, account);
+
+    addCanceler@withrevert(e, id, account);
+
+    bool reverted = lastReverted;
+    assert reverted != (isRoot(e.msg.sender) && !wasCanceller);
 }
 
 
