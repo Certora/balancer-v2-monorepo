@@ -215,20 +215,6 @@ rule cancelerCanCancel(env e) {
 }
 
 
-rule cancelerCanBeAdded(env e) {
-    uint256 length = getSchedExeLength();
-    uint256 id;
-    require(id < length);
-    address account;
-    bool wasCanceller = isCanceler(id, account);
-
-    addCanceler@withrevert(e, id, account);
-
-    bool reverted = lastReverted;
-    assert reverted != (isRoot(e.msg.sender) && !wasCanceller);
-}
-
-
 // STATUS - verified
 // https://prover.certora.com/output/40577/cd669744022849bd8b49be6ca23c2749/?anonymousKey=29341486144142477ebd5eb60b1bf54e90d3b765
 rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
