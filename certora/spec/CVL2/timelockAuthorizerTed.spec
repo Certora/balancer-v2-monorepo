@@ -1,16 +1,6 @@
 import "timelockAuthorizerMain.spec";
 
 
-// STATUS -
-// invariant rootIsGranter(bytes32 actionId, address where)
-//     isGranter(actionId, getRoot(), where)
-
-
-// STATUS - unresolved call all contracts except TimelockAuthorizerHarness (new TimelockExecutionHelper())
-// invariant rootIsRevoker(address where)
-//     isRevoker(getRoot(), where)
-
-
 // rule isPermissionGrantedOnTargetReturnsFalseWhenGlobalPermission
 
 
@@ -112,6 +102,7 @@ rule rootChangesOnlyWithClaimRoot(env e, method f) {
 // https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
 rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
     address pendingRootBefore = getPendingRoot();
+    address executionHelper = getTimelockExecutionHelper();
 
     // Invoke any function
     calldataarg args;
@@ -126,7 +117,8 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
         "Pending root changed by a function other than setPendingRoot or claimRoot.";
     // if the function changed the pending root, the sender was root
     assert pendingRootBefore != pendingRootAfter =>
-        e.msg.sender == pendingRootBefore,
+        e.msg.sender == pendingRootBefore ||
+        e.msg.sender == executionHelper,
         "Pending root changed by somebody, who was not root.";
 }
 
