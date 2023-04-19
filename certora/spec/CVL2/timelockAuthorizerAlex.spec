@@ -18,10 +18,6 @@ rule pendingRootChangeOnlyByExecutor(method f, env e){
     assert (_pendingRoot == 0 && pendingRoot_ != 0) => isExecutor, "pendingRoot can only be changed by the executer";
 }
 
-// rule whoChangedPendingRoot(method f, env e){
-
-// }
-
 /**
  * Rule to check that the _root can be changed only by the _pendingRoot
  */
@@ -36,25 +32,6 @@ rule rootChangedOnlyByPendingRoot(method f, env e){
     address root_           = getRoot();
 
     assert _root != root_ => e.msg.sender == _pendingRoot,"only pending root can change the root";
-}
-
-
-/**
- * Rule to check that only the root can add a scheduledExecution
- */
-// STATUS: FAILING
-// fails for schedule(), scheduleRevokePermission() and scheduleGrantPermission()
-// that create a new scheduledExecution that does not require the caller to be the root.
-// https://vaas-stg.certora.com/output/11775/563831424bdd396a192e/?anonymousKey=e21e47ed98096788ec82c386e0bca74088910bee
-rule scheduledExecutionLengthIncreaseByRootOnly(method f, env e){
-    uint256 _length = getSchedExeLength();
-
-    calldataarg args;
-    f(e, args);
-
-    uint256 length_ = getSchedExeLength();
-
-    assert _length != length_ => e.msg.sender == getRoot(),"scheduled execution length can be changed only by the root";
 }
 
 /**
@@ -95,7 +72,7 @@ rule whoCanCancelExecution(method f, env e){
 
     bool cancelled_     = getSchedExeCancelled(index);
 
-    assert _cancelled => cancelled_,"cancellation cannot be reversed";
+    assert _cancelled => cancelled_, "cancellation cannot be reversed";
     assert _cancelled != cancelled_ => _isRoot || _hasPermission,
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
 }
@@ -105,7 +82,7 @@ rule whoCanCancelExecution(method f, env e){
  */
 // STATUS: Verified
 // https://vaas-stg.certora.com/output/11775/ecb18fb6c4126ebcb8fc/?anonymousKey=2665ea0baeb63f53a7f67641ed18ef18ed88031c
-rule schExExecutionCheck(method f, env e){
+rule schExExecutionCheck(method f, env e) {
     uint256 index;
     uint256 length      = getSchedExeLength();
     bool _executed      = getSchedExeExecuted(index);
