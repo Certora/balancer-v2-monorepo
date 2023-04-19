@@ -96,10 +96,11 @@ rule rootChangesOnlyWithClaimRoot(env e, method f) {
 }
 
 
-// STATUS - failing as anybody can change pendingRoot. TODO: Is it desired?
-// setPendingRoot is the only function that changes pending root
-// It can only be called by the root
-// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+// STATUS - verified
+// Only two functions can change pending root: claimRoot and setPendingRoot.
+// claimRoot can only be called by the execution helper.
+// setPendingRoot can only be called by the root or the execution helper.
+// https://vaas-stg.certora.com/output/40577/7efc90865f0f47d09d3d42dab4214400/?anonymousKey=26431befd59fbb32ae6201c42e7f456e7ccceb06
 rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
     address pendingRootBefore = getPendingRoot();
     address executionHelper = getTimelockExecutionHelper();
@@ -486,7 +487,8 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 // STATUS - verified
 // This rule checks, that what a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
+// !! We assume e.block.timestamp + new delay < max_uint256
+// https://vaas-stg.certora.com/output/40577/54f8ec53150442d38b1ed15719ec9038/?anonymousKey=a64b34f9e0f545f1d5d8bd64e9044754c62475f9
 rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
@@ -494,7 +496,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
 
     require(delayBefore <= MAX_DELAY());
-    require(newDelay >= MINIMUM_CHANGE_DELAY_EXECUTION_DELAY());
+    require(e.block.timestamp + newDelay < max_uint256);
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 timestampBefore = e.block.timestamp;
@@ -509,7 +511,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
 
-    assert to_mathint(executableAt) >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
+    assert executableAt - MINIMUM_CHANGE_DELAY_EXECUTION_DELAY() >= to_mathint(timestampBefore);
     assert newDelay <= delayBefore =>
         executableAt - timestampBefore >= delayBefore - newDelay;
 }
