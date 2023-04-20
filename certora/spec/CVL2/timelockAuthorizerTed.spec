@@ -487,17 +487,20 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 // STATUS - verified
 // This rule checks, that what a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
-// !! We assume e.block.timestamp + new delay < max_uint256
+// We assume e.block.timestamp + new delay < max_uint256
 // https://vaas-stg.certora.com/output/40577/54f8ec53150442d38b1ed15719ec9038/?anonymousKey=a64b34f9e0f545f1d5d8bd64e9044754c62475f9
 rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
     address[] executors;
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
+    uint256 calculatedDelay = _getDelayChangeExecutionDelay();
 
     require(delayBefore <= MAX_DELAY());
-    require(e.block.timestamp + newDelay < max_uint256);
     require(numberOfScheduledExecutionsBefore < max_uint256);
+
+    uint256 executionDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
+    require(e.block.timestamp + newDelay + executionDelay < max_uint256);
 
     uint256 timestampBefore = e.block.timestamp;
 
@@ -511,7 +514,8 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
 
-    assert executableAt - MINIMUM_CHANGE_DELAY_EXECUTION_DELAY() >= to_mathint(timestampBefore);
+    assert executableAt >= require_uint256(timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY());
+    // assert to_mathint(executableAt) >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
     assert newDelay <= delayBefore =>
         executableAt - timestampBefore >= delayBefore - newDelay;
 }

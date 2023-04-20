@@ -45,6 +45,7 @@ methods {
     function _authorizerAdaptorEntrypoint() external returns (address) envfree;
     function _authorizerAdaptor() external returns (address) envfree;
     function _delaysPerActionId(bytes32) external returns(uint256) envfree;
+    function _getDelayChangeExecutionDelay(uint256, uint256) external returns(uint256) envfree;
 
     // TimelockAuthorizerManagement.sol
     function getTimelockExecutionHelper() external returns(address) envfree;

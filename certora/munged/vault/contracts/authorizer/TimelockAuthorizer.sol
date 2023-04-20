@@ -452,7 +452,7 @@ contract TimelockAuthorizer is IAuthorizer, TimelockAuthorizerManagement {
         }
     }
 
-    function _getDelayChangeExecutionDelay(uint256 currentDelay, uint256 newDelay) private pure returns (uint256) {
+    function _getDelayChangeExecutionDelay(uint256 currentDelay, uint256 newDelay) public pure returns (uint256) { // made public
         // The delay change is scheduled so that it's never possible to execute an action in a shorter time than the
         // current delay.
         //
