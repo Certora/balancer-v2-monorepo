@@ -57,14 +57,13 @@ rule monotonicIncreaseOfScheduledExecutionLength(method f, env e){
 // https://vaas-stg.certora.com/output/11775/7b1a794b6a263a14632e/?anonymousKey=7f40bbaccc123cc47e3a1bd745a9a0bdb13b8e78
 rule whoCanCancelExecution(method f, env e){
     uint256 index;
-    uint256 length      = getSchedExeLength();
-    bool _cancelled     = getSchedExeCancelled(index);
-    bytes32 actionId    = getActionIdHelper(index);
-    address where       = getSchedExeWhere(index);
-    bool _isRoot        = isRoot(e.msg.sender);
-    bool _hasPermission = hasPermission(actionId, e.msg.sender, where);
-    require index       < length;
-    require length      < max_uint256;
+    uint256 length   = getSchedExeLength();
+    bool _cancelled  = getSchedExeCancelled(index);
+    bytes32 actionId = getActionIdHelper(index);
+    address where    = getSchedExeWhere(index);
+    bool _isCanceler = isCanceler(index, e.msg.sender);
+    require index    < length;
+    require length   < max_uint256;
     require getSchedExeLength() < max_uint / 4;
 
     calldataarg args;
@@ -73,8 +72,7 @@ rule whoCanCancelExecution(method f, env e){
     bool cancelled_     = getSchedExeCancelled(index);
 
     assert _cancelled => cancelled_, "cancellation cannot be reversed";
-    assert _cancelled != cancelled_ => _isRoot || _hasPermission,
-    "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
+    assert _cancelled != cancelled_ => _isCanceler, "only canceller can cancel a scheduled execution";
 }
 
 /**
