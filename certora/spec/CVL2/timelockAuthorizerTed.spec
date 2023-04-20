@@ -494,7 +494,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 newDelay;
     address[] executors;
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
-    uint256 calculatedDelay = _getDelayChangeExecutionDelay();
+    uint256 calculatedDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
 
     require(delayBefore <= MAX_DELAY());
     require(numberOfScheduledExecutionsBefore < max_uint256);
