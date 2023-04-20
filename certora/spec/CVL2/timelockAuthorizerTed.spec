@@ -500,7 +500,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 executionDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
-    require(e.block.timestamp + newDelay + executionDelay < max_uint256);
+    require(e.block.timestamp + executionDelay < max_uint256);  // avoiding overflow. In the current Ethereum state it is not possible to overflow
 
     uint256 timestampBefore = e.block.timestamp;
 
