@@ -31,8 +31,8 @@ invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
 
 
 // STATUS - verified
-// For any two scheduled actions with the same ID, 
-// the action from the lower index should have a lower or equal executableAt as the action from the higher index.
+// For any two scheduled executions having the same action ID, 
+// the execution with the lower index should have a lower or equal executableAt comparing to the execution with the higher index.
 invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
     (indexLow < indexHigh
         && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
@@ -45,7 +45,7 @@ invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
 
 
 // STATUS - verified
-// `scheduledExecutionId` can’t be executed and cancelled at the same time.
+// No `scheduledExecution` can be executed and cancelled at the same time.
 invariant oneOfThree(uint256 actionIndex)
     (!getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
         || (getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
@@ -83,7 +83,7 @@ rule immutableWhere(env e, method f) {
     uint256 actionIndex;
 
     require limitArrayLength();  
-    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+    require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     address whereBefore = getSchedExeWhere(actionIndex);
 
@@ -102,7 +102,7 @@ rule immutableProtected(env e, method f) {
     uint256 actionIndex;
 
     require limitArrayLength();  
-    require actionIndex < getSchedExeLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+    require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     bool protectedBefore = getSchedExeProtected(actionIndex);
 
@@ -228,7 +228,7 @@ rule almightyGlobal(env e, uint256 scheduledExecutionId) {
     cancel@withrevert(e, scheduledExecutionId);
     bool isReverted = lastReverted;
 
-    assert !isReverted => isAlmighty, "Remember, with great power comes great responsibility.";
+    assert !isReverted => isAlmighty;
 }
 
 
@@ -263,7 +263,7 @@ rule onlyOneCanceler(env e) {
 //     uint256 actionIndex;
 
 //     require getSchedExeLength() < max_uint / 4;
-//     require limitArrayLength();  // need this require becuase otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
+//     require limitArrayLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
 //     bytes dataBefore = getSchedExeData(actionIndex);
 
