@@ -18,7 +18,7 @@ invariant notGreaterThanMax(bytes32 actionId)
 
 
 // STATUS - verified
-// Any executableAt from _scheduledExecutions is not far more in the future than MAX_DELAY
+// Any executableAt from _scheduledExecutions is not later in the future than MAX_DELAY
 invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
     to_mathint(getSchedExeExecutableAt(actionIndex)) <= timestamp + MAX_DELAY()
     {
@@ -31,8 +31,8 @@ invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
 
 
 // STATUS - verified
-// go over array, two the same action IDs, id with lower index should have lower or equal executableAt
-// However the tool could "violate" it in two steps due of induction
+// For any two scheduled actions with the same ID, 
+// the action from the lower index should have a lower or equal executableAt as the action from the higher index.
 invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
     (indexLow < indexHigh
         && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
@@ -186,7 +186,7 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 rule canExecuteAndExecuteUnion(env e, method f) {
     uint256 scheduledExecutionId;
 
-    bool canExe = canExecute(e, scheduledExecutionId);
+    bool canExe = canExecute@withrevert(e, scheduledExecutionId);
     bool canReverted = lastReverted;
 
     execute@withrevert(e, scheduledExecutionId);
@@ -198,7 +198,7 @@ rule canExecuteAndExecuteUnion(env e, method f) {
 
 // STATUS - verified
 // If it’s one of the states (executed/cancelled) it should remain in forever.
-rule executedForever(env e, method f) {
+rule executedCanceledForever(env e, method f) {
     uint256 actionIndex1;
 
     require actionIndex1 < getSchedExeLength();
