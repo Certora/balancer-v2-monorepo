@@ -2,53 +2,55 @@ import "timelockAuthorizerMain.spec";
 
 
 
-/**
- * Rule to check that the _pendingRoot can be changed only by the executor
- */
+// /**
+//  * Rule to check that the _pendingRoot can be changed only by the executor
+//  * Replaced by stronger pendingRootChangesOnlyWithSetPendingRootOrClaimRoot
+//  */
 // STATUS: Verified
-rule pendingRootChangeOnlyByExecutor(method f, env e){
-    //TODO: modify accordingly
-    bool isExecutor      = e.msg.sender == getTimelockExecutionHelper();
-    address _pendingRoot = getPendingRoot();
-    calldataarg args;
+// rule pendingRootChangeOnlyByExecutor(method f, env e){
+//     bool isExecutor      = e.msg.sender == getTimelockExecutionHelper();
+//     address _pendingRoot = getPendingRoot();
+//     calldataarg args;
 
-    f(e, args);
+//     f(e, args);
 
-    address pendingRoot_ = getPendingRoot();
-    assert (_pendingRoot == 0 && pendingRoot_ != 0) => isExecutor, "pendingRoot can only be changed by the executer";
-}
+//     address pendingRoot_ = getPendingRoot();
+//     assert (_pendingRoot == 0 && pendingRoot_ != 0) => isExecutor, "pendingRoot can only be changed by the executer";
+// }
 
-/**
- * Rule to check that the _root can be changed only by the _pendingRoot
- */
-// STATUS: Verified
-rule rootChangedOnlyByPendingRoot(method f, env e){
-    address _root           = getRoot();
-    address _pendingRoot    = getPendingRoot();
+// /**
+//  * Rule to check that the _root can be changed only by the _pendingRoot
+//  * Commented out as rootChangesOnlyWithClaimRoot is stronger.
+//  */
+// // STATUS: Verified
+// rule rootChangedOnlyByPendingRoot(method f, env e){
+//     address _root           = getRoot();
+//     address _pendingRoot    = getPendingRoot();
 
-    calldataarg args;
-    f(e, args);
+//     calldataarg args;
+//     f(e, args);
 
-    address root_           = getRoot();
+//     address root_           = getRoot();
 
-    assert _root != root_ => e.msg.sender == _pendingRoot,"only pending root can change the root";
-}
+//     assert _root != root_ => e.msg.sender == _pendingRoot,"only pending root can change the root";
+// }
 
-/**
- * Rule to check that the scheduledExecution array can only increase in length
- */
-// STATUS: Verified
-// https://vaas-stg.certora.com/output/11775/fbdbf344b011d569e7a7/?anonymousKey=32c8fc3829f77691b50b091df7798b73fc51dcd2
-rule monotonicIncreaseOfScheduledExecutionLength(method f, env e){
-    uint256 _length = getSchedExeLength();
-    require _length < max_uint256;
-    calldataarg args;
-    f(e, args);
+// /**
+//  * Rule to check that the scheduledExecution array can only increase in length
+//  * Commented out as scheduledExecutionsArrayIsNeverShortened is stronger.
+//  */
+// // STATUS: Verified
+// // https://vaas-stg.certora.com/output/11775/fbdbf344b011d569e7a7/?anonymousKey=32c8fc3829f77691b50b091df7798b73fc51dcd2
+// rule monotonicIncreaseOfScheduledExecutionLength(method f, env e){
+//     uint256 _length = getSchedExeLength();
+//     require _length < max_uint256;
+//     calldataarg args;
+//     f(e, args);
 
-    uint256 length_ = getSchedExeLength();
+//     uint256 length_ = getSchedExeLength();
 
-    assert length_ >= _length,"scheduled execution length cannot decrease";
-}
+//     assert length_ >= _length,"scheduled execution length cannot decrease";
+// }
 
 /**
  * Rule to check the access privilege for cancellling an already scheduled execution
@@ -101,24 +103,25 @@ rule schExExecutionCheck(method f, env e) {
     "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
 }
 
-/**
- * Rule to check only the executor can change delays.
- */
-// STATUS: Verified
-// https://vaas-stg.certora.com/output/11775/b4275f9fd1a4d31dc76e/?anonymousKey=0418a2c8f8a9f36046b64e2ce34dec49c1808120
-rule delayPerActionIdChangeAccess(method f, env e){
-    bytes32 actionID;
-    uint256 _delay  = getActionIdDelay(actionID);
-    bool isExecutor = e.msg.sender == getTimelockExecutionHelper();
+// /**
+//  * Rule to check only the executor can change delays.
+//  * Replaced by delayChangesOnlyBySetDelay (stronger).
+//  */
+// // STATUS: Verified
+// // https://vaas-stg.certora.com/output/11775/b4275f9fd1a4d31dc76e/?anonymousKey=0418a2c8f8a9f36046b64e2ce34dec49c1808120
+// rule delayPerActionIdChangeAccess(method f, env e){
+//     bytes32 actionID;
+//     uint256 _delay  = getActionIdDelay(actionID);
+//     bool isExecutor = e.msg.sender == getTimelockExecutionHelper();
 
-    calldataarg args;
-    f(e, args);
+//     calldataarg args;
+//     f(e, args);
 
-    uint256 delay_ = getActionIdDelay(actionID);
+//     uint256 delay_ = getActionIdDelay(actionID);
 
-    // assert _delay == delay_;
-    assert delay_ != _delay => isExecutor,"only executor should be able to change delaysPerActionID";
-}
+//     // assert _delay == delay_;
+//     assert delay_ != _delay => isExecutor,"only executor should be able to change delaysPerActionID";
+// }
 
 /**
  * A scheduled execution cannot be executed before the executableAt time
@@ -140,20 +143,21 @@ rule schExeNotExecutedBeforeTime(method f, env e){
         "cannot execute and execution before executableAt time";
 }
 
-/**
- * A rule to check that only pendingRoot can become the new Root
- */
-// STATUS: Verified
-// https://vaas-stg.certora.com/output/11775/d9fddcc284739529e05d/?anonymousKey=3848d16e8c96553a5e8faf7ca9a4b3fb134bb058
-rule onlyPendingRootCanBecomeNewRoot(method f, env e){
-    address _pendingRoot = _pendingRoot();
-    address _root = getRoot();
+// /**
+//  * A rule to check that only pendingRoot can become the new Root
+//  * Commented out as rootChangesOnlyWithClaimRoot is stronger.
+//  */
+// // STATUS: Verified
+// // https://vaas-stg.certora.com/output/11775/d9fddcc284739529e05d/?anonymousKey=3848d16e8c96553a5e8faf7ca9a4b3fb134bb058
+// rule onlyPendingRootCanBecomeNewRoot(method f, env e){
+//     address _pendingRoot = _pendingRoot();
+//     address _root = getRoot();
 
-    calldataarg args;
-    f(e, args);
+//     calldataarg args;
+//     f(e, args);
 
-    address root_ = getRoot();
+//     address root_ = getRoot();
 
-    assert root_ == _root || root_ == _pendingRoot,
-        "root can either remain unchanged or change to the pendingRoot";
-}
+//     assert root_ == _root || root_ == _pendingRoot,
+//         "root can either remain unchanged or change to the pendingRoot";
+// }

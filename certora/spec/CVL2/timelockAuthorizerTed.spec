@@ -110,16 +110,18 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
 
     address pendingRootAfter = getPendingRoot();
 
-    // if the function f changed the root, then f must be setPendingRoot or claimRoot
+    // if the function f changed the root, then f must be setPendingRoot or claimRoot.
     assert pendingRootBefore != pendingRootAfter =>
         ( f.selector == sig:setPendingRoot(address).selector ||
         f.selector == sig:claimRoot().selector ),
         "Pending root changed by a function other than setPendingRoot or claimRoot.";
-    // if the function changed the pending root, the sender was root
+    // if the function changed the pending root, the sender was pending root or execution helper.
     assert pendingRootBefore != pendingRootAfter =>
         e.msg.sender == pendingRootBefore ||
         e.msg.sender == executionHelper,
         "Pending root changed by somebody, who was not root.";
+    assert (pendingRootBefore == 0 && pendingRootAfter != 0) => e.msg.sender == executionHelper,
+        "pendingRoot can only be changed by the executer";
 }
 
 
