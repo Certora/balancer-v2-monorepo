@@ -19,7 +19,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockExecutionHelper:_authorizer=TimelockAuthorizerHarness \
             SingletonAuthenticationHarness:_vault=Vault \
     --solc solc7.1 \
-    --staging master \
+    --staging yuvalbd/skey_detection \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \

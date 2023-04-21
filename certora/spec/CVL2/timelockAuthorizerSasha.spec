@@ -218,6 +218,37 @@ rule executedForever(env e, method f) {
 }
 
 
+// STATUS - verified
+// account with GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID() can cancel any scheduled execution.
+rule almightyGlobal(env e, uint256 scheduledExecutionId) {
+    bool isAlmighty = _isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), e.msg.sender);
+    require !_isCanceler(scheduledExecutionId, e.msg.sender);   // eliminate scenarious when a sender is a canceler for a specific scheduled execution
+    require !isRoot(e.msg.sender);   // eliminate scenarious when a sender is a root
+
+    cancel@withrevert(e, scheduledExecutionId);
+    bool isReverted = lastReverted;
+
+    assert !isReverted => isAlmighty, "Remember, with great power comes great responsibility.";
+}
+
+
+// STATUS - violated, proves a bug
+// when an action is scheduled, it has only one canceler (should fail to show an issue we brought up)
+rule onlyOneCanceler(env e) {
+    address where;
+    bytes data;
+    address[] executors;
+    address user;
+
+    uint256 scheduledExecutionId = schedule(e, where, data, executors);
+
+    bool cancelerSender = isCanceler(scheduledExecutionId, e.msg.sender); 
+    bool cancelerUser = isCanceler(scheduledExecutionId, user); 
+
+    assert cancelerSender;
+    assert e.msg.sender != user => !cancelerUser;
+}
+
 
 
 /**************************************************
@@ -245,35 +276,20 @@ rule executedForever(env e, method f) {
 
 
 
-// STATUS - in progress
+// STATUS - timeout
 // check what function can “frontrun“ an action execution: cancel(), anything else?
-rule executionFrontrun(env e, method f) {
-    uint256 scheduledExecutionId;
+// rule executionFrontrun(env e, method f) {
+//     uint256 scheduledExecutionId;
 
-    storage initialStorage = lastStorage;
+//     storage initialStorage = lastStorage;
 
-    execute@withrevert(e, scheduledExecutionId);
-    bool isRevertedSingle = lastReverted;
+//     execute@withrevert(e, scheduledExecutionId);
+//     bool isRevertedSingle = lastReverted;
 
-    calldataarg args;
-    f(e, args) at initialStorage;
-    execute@withrevert(e, scheduledExecutionId);
-    bool isRevertedFrontrun = lastReverted;
+//     calldataarg args;
+//     f(e, args) at initialStorage;
+//     execute@withrevert(e, scheduledExecutionId);
+//     bool isRevertedFrontrun = lastReverted;
 
-    assert !isRevertedSingle => !isRevertedFrontrun;
-}
-
-
-
-// STATUS - in progress
-// account with GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID() can cancel any scheduled execution.
-rule almightyGlobal(env e, uint256 scheduledExecutionId) {
-    bool isAlmighty = _isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), e.msg.sender);
-    require !_isCanceler(scheduledExecutionId, e.msg.sender);
-    require !isRoot(e.msg.sender);
-
-    cancel@withrevert(e, scheduledExecutionId);
-    bool isReverted = lastReverted;
-
-    assert !isReverted => isAlmighty, "Remember, with great power comes great responsibility.";
-}
+//     assert !isRevertedSingle => !isRevertedFrontrun;
+// }
