@@ -65,7 +65,9 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
 
 
 // STATUS - verified
-// claimRoot is the only function that changes root
+// When `_root` is changed, it is only by calling `claimRoot`,
+// the caller must be the `_pendingRoot` before the call
+// and the new `_root` must also be the `_pendingRoot` before the call.
 // and variables are updated appropriately.
 // https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule rootChangesOnlyWithClaimRoot(env e, method f) {
@@ -168,8 +170,12 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
 
 // STATUS - verified
+// Only execution, that has not yet been cancelled or executed can be executed
+// and only if it's executableAt is not greater than current timestamp.
+// Also, when execution happens, the caller must be executor.
+// Also, executor can execute execution, which is executable (`canExecute`)
 // https://prover.certora.com/output/40577/0b63385b7d2c4389acfcd10e8e4babfa/?anonymousKey=602c9b0b12b1e83f7625b142d5244a03f6ef6a3c
-rule executorCanExecute(env e) {
+rule whoCanExecuteAndWhatIsExecutable(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
     require(id < length);
@@ -223,6 +229,8 @@ rule cancelerCanCancel(env e) {
 
 
 // STATUS - verified
+// `isExecutor` can only be changed by `_executionHelper` and
+// it can only happen by executing a non-schedule function.
 // https://prover.certora.com/output/40577/cd669744022849bd8b49be6ca23c2749/?anonymousKey=29341486144142477ebd5eb60b1bf54e90d3b765
 rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
     uint256 id;
@@ -249,6 +257,9 @@ rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
 
 
 // STATUS - verified
+// `isGranter` can be changed only by `_root` or `_pendingRoot`
+// A granter can be added only by calling `addGranter` or `claimRoot`
+// A granter can only be removed by calling `removeGranter` or `claimRoot`.
 // https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
 rule isGranterChangesOnlyWithAddOrRemoveGranter(env e, method f) {
     bytes32 actionId;
@@ -382,6 +393,8 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 
 
 // STATUS - verified
+// The `_scheduledExecutions` array only changes it's length
+// when one of the schedule functions is called.
 // https://prover.certora.com/output/40577/2ccdf706be7e404e9ada9ecddec30ab8/?anonymousKey=d9e3be8168c4a8290ba7d5480acb9dd4afd7ffb4
 rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
@@ -407,6 +420,8 @@ rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
 }
 
 // STATUS - verified
+// The grant delay of and action (stored in `_grantDelays`) is changed only
+// by calling `setGrantDelay` and the caller must be the `_executionHelper`.
 // https://prover.certora.com/output/40577/4fc440c4a1654fdda243cc1a30151573/?anonymousKey=2f909d3f7a3fe4ed878c24c6e69892b127296685
 rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     bytes32 actionId;
