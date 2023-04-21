@@ -1,9 +1,6 @@
 import "timelockAuthorizerMain.spec";
 
 
-// rule isPermissionGrantedOnTargetReturnsFalseWhenGlobalPermission
-
-
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
     isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where)
 
@@ -488,7 +485,7 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 // This rule checks, that what a change of delay is scheduled, the created
 // ScheduledExecution has appropriate executableAt (waiting time to be executed).
 // We assume e.block.timestamp + new delay < max_uint256
-// https://vaas-stg.certora.com/output/40577/54f8ec53150442d38b1ed15719ec9038/?anonymousKey=a64b34f9e0f545f1d5d8bd64e9044754c62475f9
+// https://vaas-stg.certora.com/output/40577/41aa47833fe3406c924f0a9e3b0963b0/?anonymousKey=9aadea70b2a378e36ac5016f1bb3dc10df2f94d1
 rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
@@ -514,10 +511,8 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
 
     uint256 executableAt = getSchedExeExecutableAt(numberOfScheduledExecutionsBefore);
 
-    assert executableAt >= require_uint256(timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY());
-    // assert to_mathint(executableAt) >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
-    assert newDelay <= delayBefore =>
-        executableAt - timestampBefore >= delayBefore - newDelay;
+    assert to_mathint(executableAt) >= timestampBefore + MINIMUM_CHANGE_DELAY_EXECUTION_DELAY();
+    assert newDelay <= delayBefore => executableAt - timestampBefore >= delayBefore - newDelay;
 }
 
 
@@ -542,20 +537,3 @@ rule scheduleRootChangeCreatesSE(env e) {
     assert rootBefore == getRoot();
     assert pendingRootBefore == getPendingRoot();
 }
-
-
-//rule loweringDelayRequiresProperWaitingTime(env e) {
-    // In this rule we would like to execute any function (parametrical) and say, that if delay of action was lowered,
-    // it happened by calling the execute function with scheduledExecution,
-    // which has been scheduled before long-enough period of time.
-
-    // This has two problems:
-    // 1. We do not have harness for execute
-    // 2. We do not store timestamp capturing time, when a ScheduledExecution has been created.
-
-    // This is why I propose to change the way we check this to:
-    // 1.
-    // 2. Check, that scheduleDelayChange creates execution with correct executableAt. (Done)
-    // 3. Check, that when ScheduledExecution is scheduled, it is impossible to execute it before the executableAt time
-    //
-//}
