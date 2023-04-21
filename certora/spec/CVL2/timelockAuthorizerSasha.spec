@@ -234,6 +234,7 @@ rule almightyGlobal(env e, uint256 scheduledExecutionId) {
 
 // STATUS - violated, proves a bug
 // when an action is scheduled, it has only one canceler (should fail to show an issue we brought up)
+// https://vaas-stg.certora.com/output/3106/48aa68dd0eee457cb14e6747a11e8967/?anonymousKey=3d5f3362a9509c7e5c997635f21c42878284bb3d
 rule onlyOneCanceler(env e) {
     address where;
     bytes data;
