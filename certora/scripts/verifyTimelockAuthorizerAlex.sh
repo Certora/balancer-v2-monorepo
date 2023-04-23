@@ -19,7 +19,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --staging master \
     --loop_iter 8 \
     --send_only \
-    --rule_sanity basic \
+    --rule_sanity \
     --settings -optimisticUnboundedHashing=true \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
