@@ -456,7 +456,6 @@ rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
 
     uint256 delayAfter = getActionIdRevokeDelay(actionId);
 
-    // If the number of scheduled executions changed, it was increased by one.
     assert delayBefore != delayAfter =>
         f.selector == sig:setRevokeDelay(bytes32, uint256).selector,
         "_revokeDelays modified by function other than setRevokeDelay.";
@@ -506,7 +505,7 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 // MINIMUM_CHANGE_DELAY_EXECUTION_DELAY. Additionaly, when the delay has
 // been lowered, then the time it will take before this execution is executable
 // is at least the difference between the old delay and the new delay.
-// We assume e.block.timestamp + new delay < max_uint256
+// We assume e.block.timestamp + execution delay < max_uint256
 rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
