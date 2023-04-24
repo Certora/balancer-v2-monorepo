@@ -118,9 +118,9 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
     assert pendingRootBefore != pendingRootAfter =>
         e.msg.sender == pendingRootBefore ||
         e.msg.sender == executionHelper,
-        "Pending root changed by somebody, who was not root.";
+        "Pending root changed by somebody, who was not root or executor.";
     assert (pendingRootBefore == 0 && pendingRootAfter != 0) => e.msg.sender == executionHelper,
-        "pendingRoot can only be changed by the executer";
+        "Pending root changed from 0 by other entity than the executer";
 }
 
 
@@ -534,7 +534,6 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
 // STATUS - verified
 // ScheduleRootChange creates a new scheduled execution and
 // it doesn't change current root nor pending root.
-// https://prover.certora.com/output/40577/8caf238ec03c439c8441b0676ab9ed71/?anonymousKey=b85e92cf6c33c9b40528d5ee9c8e0b98bc8a620c
 rule scheduleRootChangeCreatesSE(env e) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
