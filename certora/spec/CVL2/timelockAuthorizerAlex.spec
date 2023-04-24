@@ -61,8 +61,6 @@ rule whoCanCancelExecution(method f, env e){
     uint256 index;
     uint256 length   = getSchedExeLength();
     bool _cancelled  = getSchedExeCancelled(index);
-    bytes32 actionId = getActionIdHelper(index);
-    address where    = getSchedExeWhere(index);
     bool _isCanceler = isCanceler(index, e.msg.sender);
     require index    < length;
     require length   < max_uint256;
