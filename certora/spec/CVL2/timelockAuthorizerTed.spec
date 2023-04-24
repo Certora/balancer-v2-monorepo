@@ -174,6 +174,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 // or executed and its `executableAt` is not greater than current timestamp.
 rule whatCanBeExecuted(env e) {
     uint256 id;
+    uint256 length = getSchedExeLength();
     require(id < length);
 
     bool canExecute = canExecute(e, id);
