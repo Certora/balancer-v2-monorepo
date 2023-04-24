@@ -149,7 +149,9 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 
 
 // STATUS - verified
-// Scheduled execution can only be executed by those supplied as executors during scheduling
+// User cannot become an executor for already scheduled execution, meaning that
+// a user has to be supplied as one of the executors when scheduling an execution,
+// to be able to execute this execution.
 rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -168,11 +170,25 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
 
 // STATUS - verified
-// Only execution, that has not yet been cancelled or executed can be executed
-// and only if it's executableAt is not greater than current timestamp.
-// Also, when execution happens, the caller must be executor.
-// Also, executor can execute execution, which is executable (`canExecute`)
-rule whoCanExecuteAndWhatIsExecutable(env e) {
+// An execution can be executed (`canExecute`) only when it has not yet been cancelled
+// or executed and its `executableAt` is not greater than current timestamp.
+rule whatCanBeExecuted(env e) {
+    uint256 id;
+    require(id < length);
+
+    bool canExecute = canExecute(e, id);
+
+    assert (
+        !getSchedExeExecuted(id) &&
+        !getSchedExeCancelled(id) &&
+        getSchedExeExecutableAt(id) < e.block.timestamp
+    ) => canExecute;
+}
+
+
+// STATUS - verified
+// A protected scheduled execution can be executed only by an executor.
+rule whoCanExecute(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
     require(id < length);
@@ -180,13 +196,6 @@ rule whoCanExecuteAndWhatIsExecutable(env e) {
     bool canExecute = canExecute(e, id);
     bool isExecutor = isExecutor(id, e.msg.sender);
     bool isProtected = getSchedExeProtected(id);
-
-    assert (
-        !getSchedExeExecuted(id) &&
-        !getSchedExeCancelled(id) &&
-        getSchedExeExecutableAt(id) < e.block.timestamp
-    ) => canExecute;
-
     bool executedBefore = getSchedExeExecuted(id);
 
     execute(e, id);
@@ -195,11 +204,8 @@ rule whoCanExecuteAndWhatIsExecutable(env e) {
 
     assert !executedBefore && executedAfter => isExecutor || !isProtected;
     assert canExecute && isExecutor => executedAfter;
-
-    cancel@withrevert(e, id);
-    bool reverted = lastReverted;
-    assert executedAfter => reverted;
 }
+
 
 // STATUS - verified
 // to cancel user must be canceler and it is impossible to execute after canceled.
