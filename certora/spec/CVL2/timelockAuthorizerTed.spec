@@ -6,7 +6,7 @@ invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address 
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/43649cf8b8f148a98a7fb83a7647cc34/?anonymousKey=f4c1e5e509629a8ad342dc1997b0cc430264cd84
+// Address _root is not zero
 rule rootNotZero(env e, method f)
 {
     require(getRoot() != 0);
@@ -21,7 +21,8 @@ rule rootNotZero(env e, method f)
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/e38e4eb130054ebb88922acd43f27777/?anonymousKey=d847f9e3d234739e3652f5e73b5d2dce9d404039
+// When execution function other than the claimRoot, only one of the roles revoker, granter
+// or canceler can change during the function call and this can happen for one entity only.
 rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
 {
     uint256 scheduledExecution; address possibleCanceller;
@@ -69,7 +70,6 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
 // the caller must be the `_pendingRoot` before the call
 // and the new `_root` must also be the `_pendingRoot` before the call.
 // and variables are updated appropriately.
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule rootChangesOnlyWithClaimRoot(env e, method f) {
     address rootBefore = getRoot();
     address pendingRootBefore = getPendingRoot();
@@ -99,7 +99,6 @@ rule rootChangesOnlyWithClaimRoot(env e, method f) {
 // Only two functions can change pending root: claimRoot and setPendingRoot.
 // claimRoot can only be called by the execution helper.
 // setPendingRoot can only be called by the root or the execution helper.
-// https://vaas-stg.certora.com/output/40577/7efc90865f0f47d09d3d42dab4214400/?anonymousKey=26431befd59fbb32ae6201c42e7f456e7ccceb06
 rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
     address pendingRootBefore = getPendingRoot();
     address executionHelper = getTimelockExecutionHelper();
@@ -128,7 +127,6 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
 // STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be canceled again.
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
@@ -141,7 +139,6 @@ rule scheduledExecutionCanBeCancelledOnlyOnce(env e, uint256 index) {
 // STATUS - verified
 // ScheduledExecution that has already been cancelled or executed
 // cannot be executed again.
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
 rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
     bool canceled_before = getSchedExeCancelled(index);
     bool executed_before = getSchedExeExecuted(index);
@@ -153,7 +150,6 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 
 // STATUS - verified
 // Scheduled execution can only be executed by those supplied as executors during scheduling
-// https://prover.certora.com/output/40577/f84672d68a6d42498d6899d27b9288a1/?anonymousKey=cf4c6f18c3a8fad6fc659a983a8ed595775a061a
 rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -176,7 +172,6 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 // and only if it's executableAt is not greater than current timestamp.
 // Also, when execution happens, the caller must be executor.
 // Also, executor can execute execution, which is executable (`canExecute`)
-// https://prover.certora.com/output/40577/0b63385b7d2c4389acfcd10e8e4babfa/?anonymousKey=602c9b0b12b1e83f7625b142d5244a03f6ef6a3c
 rule whoCanExecuteAndWhatIsExecutable(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -207,7 +202,7 @@ rule whoCanExecuteAndWhatIsExecutable(env e) {
 }
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/932a5378e8b043c2ac0a07b82dd2e3f3/?anonymousKey=9b663bca7afe0aff0559fe37a922e54193765410
+// to cancel user must be canceler and it is impossible to execute after canceled.
 rule cancelerCanCancel(env e) {
     uint256 length = getSchedExeLength();
     uint256 id;
@@ -231,9 +226,8 @@ rule cancelerCanCancel(env e) {
 
 
 // STATUS - verified
-// `isExecutor` can only be changed by `_executionHelper` and
-// it can only happen by executing a non-schedule function.
-// https://prover.certora.com/output/40577/cd669744022849bd8b49be6ca23c2749/?anonymousKey=29341486144142477ebd5eb60b1bf54e90d3b765
+// `isExecutor` can only be changed by `_executionHelper` or
+// in one of the schedule functions.
 rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
     uint256 id;
     address user;
@@ -262,7 +256,6 @@ rule isExecutorChangedBySchedulerInNonScheduleFunction(env e, method f) {
 // `isGranter` can be changed only by `_root` or `_pendingRoot`
 // A granter can be added only by calling `addGranter` or `claimRoot`
 // A granter can only be removed by calling `removeGranter` or `claimRoot`.
-// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
 rule isGranterChangesOnlyWithAddOrRemoveGranter(env e, method f) {
     bytes32 actionId;
     address account;
@@ -292,7 +285,9 @@ rule isGranterChangesOnlyWithAddOrRemoveGranter(env e, method f) {
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+// `isRevoker` can be changed only by `_root` or `_pendingRoot`
+// A revoker can be added only by calling `addRevoker` or `claimRoot`
+// A revoker can only be removed by calling `removeRevoker` or `claimRoot`.
 rule isRevokerChangesOnlyWithAddOrRemoveRevoker(env e, method f) {
     address account;
     address where;
@@ -321,7 +316,9 @@ rule isRevokerChangesOnlyWithAddOrRemoveRevoker(env e, method f) {
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/fd84cc7fb32d4748b84df810aa5c557d/?anonymousKey=b6913e028107a567c85b7de953db2467f1bb8f8b
+// A canceler can be added only by calling `addCanceler`, `claimRoot`, `schedule`,
+// `scheduleRevokePermission` or `scheduleGrantPermission`.
+// A canceler can only be removed by calling `removeCanceler` or `claimRoot`.
 rule isCancelerChangesOnlyWithAddOrRemoveCanceler(env e, method f) {
     uint256 scheduledExecution;
     address account;
@@ -352,8 +349,6 @@ rule isCancelerChangesOnlyWithAddOrRemoveCanceler(env e, method f) {
 // STATUS - verified
 // When a delay is changed, it is because setDelay is executed with
 // the parameter being the new delay.
-// Unresolved call havoc type all contracts except TimelockExecutionHelper:
-// https://prover.certora.com/output/40577/fb12ffffa89847579f737148a17ee3c3/?anonymousKey=87bc45cf7a3575f6baaf7702943e8c8dee9ad5d9
 rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actionId2) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 delayArg;
@@ -374,8 +369,7 @@ rule delayChangesOnlyBySetDelay(env e, method f, bytes32 actionId, bytes32 actio
 
 // STATUS - verified
 // The array _scheduledExecution is never shortened.
-// Unresolved call havoc type all contracts except TimelockExecutionHelper:
-// https://prover.certora.com/output/40577/0a8cadb54810435c859098750efa8ee0/?anonymousKey=58e33df6c4063dd4882ec3f40d8b86d816951102
+// The length can either stay the same or increase by one.
 rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
@@ -397,7 +391,6 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 // STATUS - verified
 // The `_scheduledExecutions` array only changes it's length
 // when one of the schedule functions is called.
-// https://prover.certora.com/output/40577/2ccdf706be7e404e9ada9ecddec30ab8/?anonymousKey=d9e3be8168c4a8290ba7d5480acb9dd4afd7ffb4
 rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
 
@@ -424,7 +417,6 @@ rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
 // STATUS - verified
 // The grant delay of and action (stored in `_grantDelays`) is changed only
 // by calling `setGrantDelay` and the caller must be the `_executionHelper`.
-// https://prover.certora.com/output/40577/4fc440c4a1654fdda243cc1a30151573/?anonymousKey=2f909d3f7a3fe4ed878c24c6e69892b127296685
 rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     bytes32 actionId;
     uint256 delayBefore = getActionIdGrantDelay(actionId);
@@ -446,7 +438,8 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
 
 
 // STATUS - verified
-// https://prover.certora.com/output/40577/457f4ae249cf4f6c96d09aa709578277/?anonymousKey=5c0926936c949b5e66bccc3c1969fbaa236c2e94
+// The revoke delay of and action is changed only
+// by calling `setRevokeDelay` and the caller must be the `_executionHelper`.
 rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
     bytes32 actionId;
     uint256 delayBefore = getActionIdRevokeDelay(actionId);
@@ -468,9 +461,11 @@ rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
 
 
 // STATUS - verified
-// grantPermission ... is "granter" or "execution helper"
-// revokePermission ... is "revoker" or "execution helper"
-// https://prover.certora.com/output/40577/519200fb133e44c0a368c5b8a0ba2363/?anonymousKey=d54f3a36650ac03fe922c8bd52d202b074723321
+// Permissions granted on target is removed when:
+// `revokePermission` is called by a revoker or the `_executionHelper`
+// or when `renouncePermission` is called (by anybody)
+// Permissions granted on target is added when `grantPermission` is
+// called by the `_executionHelper` or some granter.
 rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
     bytes32 actionId;
     address account;
@@ -499,10 +494,13 @@ rule grantedPermissionsChangeOnlyByAllowedFunctions(env e, method f) {
 
 
 // STATUS - verified
-// This rule checks, that what a change of delay is scheduled, the created
-// ScheduledExecution has appropriate executableAt (waiting time to be executed).
+// This rule checks, that when a change of delay is scheduled, a new
+// ScheduledExecution is created and its executableAt meets, that
+// the waiting time for the execution to be executed is at least
+// MINIMUM_CHANGE_DELAY_EXECUTION_DELAY. Additionaly, when the delay has
+// been lowered, then the time it will take before this execution is executable
+// is at least the difference between the old delay and the new delay.
 // We assume e.block.timestamp + new delay < max_uint256
-// https://vaas-stg.certora.com/output/40577/41aa47833fe3406c924f0a9e3b0963b0/?anonymousKey=9aadea70b2a378e36ac5016f1bb3dc10df2f94d1
 rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 delayBefore = getActionIdDelay(actionId);
     uint256 newDelay;
