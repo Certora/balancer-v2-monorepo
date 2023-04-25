@@ -1,6 +1,7 @@
 import "timelockAuthorizerMain.spec";
 
 
+// When `isPermissionGrantedOnTarget(id, account, where)` returns `true`, then `hasPermission(id, account, where)` also returns `true`
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
     isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where)
 
