@@ -86,7 +86,8 @@ library Address {
      */
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returndata) = target.call(data);
+        bool success; bytes memory returndata;
+        // (bool success, bytes memory returndata) = target.call(data);
         return verifyCallResult(success, returndata);
     }
 

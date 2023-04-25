@@ -1,0 +1,24 @@
+[
+    {
+        "filename": "certora/munged/vault/contracts/authorizer/TimelockAuthorizerManagement.sol",
+        "solc" : "solc7.1",
+        "num-mutants": 6,
+        "remappings": [
+            "@balancer-labs/=../../node_modules/@balancer-labs/"
+        ],
+        "solc-allowpaths": [
+          "../../node_modules/."
+        ]
+    },
+    {
+        "filename": "certora/munged/vault/contracts/authorizer/TimelockAuthorizer.sol",
+        "solc" : "solc7.1",
+        "num-mutants": 6,
+        "remappings": [
+            "@balancer-labs/=../../node_modules/@balancer-labs/"
+        ],
+        "solc-allowpaths": [
+          "../../node_modules/."
+        ]
+    }
+]

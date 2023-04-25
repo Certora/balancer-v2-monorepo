@@ -1,3 +1,9 @@
+cd certora
+touch applyHarness.patch
+make munged
+cd ..
+echo "key length" ${#CERTORAKEY}
+
 if [[ "$1" ]]
 then
     RULE="--rule $1"

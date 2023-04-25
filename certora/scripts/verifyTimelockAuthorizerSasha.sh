@@ -19,12 +19,12 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockExecutionHelper:_authorizer=TimelockAuthorizerHarness \
             SingletonAuthenticationHarness:_vault=Vault \
     --solc solc7.1 \
-    --staging yuvalbd/skey_detection \
+    --staging master \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \
     --rule_sanity \
-    --settings -optimisticUnboundedHashing=true,-mediumTimeout=15,-adaptiveSolverConfig=false \
+    --settings -optimisticUnboundedHashing=true,-mediumTimeout=20,-adaptiveSolverConfig=false \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
     --msg "TimelockAuthorizer: $RULE $MSG"

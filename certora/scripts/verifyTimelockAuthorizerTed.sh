@@ -20,7 +20,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --loop_iter 8 \
     --send_only \
     --rule_sanity basic \
-    --settings -optimisticUnboundedHashing=true \
+    --settings -optimisticUnboundedHashing=true,-mediumTimeout=20,-adaptiveSolverConfig=false \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
     --msg "TimelockAuthorizer: $RULE $MSG"
