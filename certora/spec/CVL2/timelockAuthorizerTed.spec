@@ -3,7 +3,7 @@ import "timelockAuthorizerMain.spec";
 
 // When `isPermissionGrantedOnTarget(id, account, where)` returns `true`, then `hasPermission(id, account, where)` also returns `true`
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
-    isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where)
+    isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where);
 
 
 // STATUS - verified
@@ -154,11 +154,10 @@ rule scheduledExecutionCanBeExecutedOnlyOnce(env e, uint256 index) {
 // a user has to be supplied as one of the executors when scheduling an execution,
 // to be able to execute this execution.
 rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
-    uint256 length = getSchedExeLength();
     uint256 id;
     address user;
-    require(length < max_uint256);
-    require(id < length);
+    require limitArrayLength();
+    require (id < getSchedExeLength());
     bool isExecutor = isExecutor(id, user);
 
     // Invoke any function
@@ -548,7 +547,7 @@ rule scheduleRootChangeCreatesSE(env e) {
     address newRoot;
     address[] executors;
 
-    require(numberOfSchedExeBefore < max_uint / 4);
+    require limitArrayLength();
 
     scheduleRootChange(e, newRoot, executors);
 

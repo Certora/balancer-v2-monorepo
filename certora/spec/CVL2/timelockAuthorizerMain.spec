@@ -131,12 +131,12 @@ invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
 invariant oneOfThree(uint256 actionIndex)
     (!getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
         || (getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
-        || (!getSchedExeExecuted(actionIndex) && getSchedExeCancelled(actionIndex))
+        || (!getSchedExeExecuted(actionIndex) && getSchedExeCancelled(actionIndex));
 
 
 // When `isPermissionGrantedOnTarget(id, account, where)` returns `true`, then `hasPermission(id, account, where)` also returns `true`
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
-    isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where)
+    isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where);
     
 
 

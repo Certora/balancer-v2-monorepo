@@ -49,7 +49,7 @@ invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
 invariant oneOfThree(uint256 actionIndex)
     (!getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
         || (getSchedExeExecuted(actionIndex) && !getSchedExeCancelled(actionIndex))
-        || (!getSchedExeExecuted(actionIndex) && getSchedExeCancelled(actionIndex))
+        || (!getSchedExeExecuted(actionIndex) && getSchedExeCancelled(actionIndex));
 
 
 
@@ -125,7 +125,7 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
     bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
 
     require actionIndex1 != actionIndex2;
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();
 
     calldataarg args;
     f(e, args);
@@ -246,6 +246,7 @@ rule onlyOneCanceler(env e) {
 
     bool cancelerSender = isCanceler(scheduledExecutionId, e.msg.sender);
     require !_isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), user);
+    require !isRoot(user);
     bool cancelerUser = isCanceler(scheduledExecutionId, user); 
 
     assert cancelerSender;

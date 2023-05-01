@@ -19,7 +19,7 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
             TimelockExecutionHelper:_authorizer=TimelockAuthorizerHarness \
             SingletonAuthenticationHarness:_vault=Vault \
     --solc solc7.1 \
-    --staging master \
+    --staging shelly/manifold \
     --optimistic_loop \
     --loop_iter 8 \
     --send_only \
@@ -27,4 +27,4 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --settings -optimisticUnboundedHashing=true,-mediumTimeout=20,-adaptiveSolverConfig=false \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
-    --msg "TimelockAuthorizer: $RULE $MSG"
+    --msg "TimelockAuthorizerSasha: $RULE $MSG"

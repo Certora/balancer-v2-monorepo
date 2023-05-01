@@ -59,12 +59,10 @@ import "timelockAuthorizerMain.spec";
 // https://vaas-stg.certora.com/output/11775/7b1a794b6a263a14632e/?anonymousKey=7f40bbaccc123cc47e3a1bd745a9a0bdb13b8e78
 rule whoCanCancelExecution(method f, env e){
     uint256 index;
-    uint256 length   = getSchedExeLength();
     bool _cancelled  = getSchedExeCancelled(index);
     bool _isCanceler = isCanceler(index, e.msg.sender);
-    require index    < length;
-    require length   < max_uint256;
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();
+    require index    < getSchedExeLength();
 
     calldataarg args;
     f(e, args);
@@ -82,14 +80,13 @@ rule whoCanCancelExecution(method f, env e){
 // https://vaas-stg.certora.com/output/11775/ecb18fb6c4126ebcb8fc/?anonymousKey=2665ea0baeb63f53a7f67641ed18ef18ed88031c
 rule schExExecutionCheck(method f, env e) {
     uint256 index;
-    uint256 length      = getSchedExeLength();
     bool _executed      = getSchedExeExecuted(index);
     bool protected      = getSchedExeProtected(index);
     bytes32 actionId    = getActionIdHelper(index);
     address where       = getSchedExeWhere(index);
     bool _hasPermission = hasPermission(actionId, e.msg.sender, where);
-    require index       < length;
-    require getSchedExeLength() < max_uint / 4;
+    require index       < getSchedExeLength();
+    require limitArrayLength();
 
     calldataarg args;
     f(e, args);
@@ -97,8 +94,7 @@ rule schExExecutionCheck(method f, env e) {
     bool executed_      = getSchedExeExecuted(index);
 
     assert !executed_ => !_executed,"execution cannot be reversed";
-    assert _executed != executed_ => !protected || _hasPermission,
-    "only the root or an account with the permission of the corresponding actionID and where can cancel a scheduled execution";
+    assert _executed != executed_ => !protected || _hasPermission;
 }
 
 // /**
@@ -138,7 +134,7 @@ rule schExeNotExecutedBeforeTime(method f, env e){
     bool executed_ = getSchedExeExecuted(index);
 
     assert !_executed && executed_ => e.block.timestamp >= executableAt,
-        "cannot execute and execution before executableAt time";
+        "cannot execute an execution before executableAt time";
 }
 
 // /**

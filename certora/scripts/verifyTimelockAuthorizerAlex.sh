@@ -16,14 +16,14 @@ certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     --link TimelockAuthorizerHarness:_executionHelper=TimelockExecutionHelper \
     --solc solc7.1 \
     --optimistic_loop \
-    --staging master \
+    --staging shelly/manifold \
     --loop_iter 8 \
     --send_only \
     --rule_sanity \
     --settings -optimisticUnboundedHashing=true,-mediumTimeout=20,-adaptiveSolverConfig=false \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \
-    --msg "TimelockAuthorizer: $RULE $MSG"
+    --msg "TimelockAuthorizerAlex: $RULE $MSG"
 
     # --staging bgreenwald/cert-740 \
     # --staging EyalH/ShowCallTraceWrongIndex \
