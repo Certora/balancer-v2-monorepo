@@ -182,7 +182,7 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 
 
 // STATUS - verified
-// if canExecute returns true / false, execute finishes successfully / reverts.
+// An `execute()` reverts if `canExecute()` is reverts/returns false.
 rule canExecuteAndExecuteUnion(env e, method f) {
     uint256 scheduledExecutionId;
 

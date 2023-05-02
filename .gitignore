@@ -32,6 +32,7 @@ forge-cache/
 .certora*
 .last_confs
 certora_*
+out/*
 
 pkg/balancer-js/*
 pkg/deployments/*
