@@ -281,7 +281,7 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
     bool isCancelled2Before = getSchedExeCancelled(actionIndex2);
 
     require actionIndex1 != actionIndex2;
-    require getSchedExeLength() < max_uint / 4;
+    require limitArrayLength();
 
     calldataarg args;
     f(e, args);
@@ -338,7 +338,7 @@ rule onlyExecuteAndCancelCanChangeTheirFlags(env e, method f) {
 
 
 // STATUS - verified
-// if canExecute returns true / false, execute finishes successfully / reverts.
+// An `execute()` reverts if `canExecute()` is reverts/returns false.
 rule canExecuteAndExecuteUnion(env e, method f) {
     uint256 scheduledExecutionId;
 
@@ -402,7 +402,8 @@ rule onlyOneCanceler(env e) {
 
     bool cancelerSender = isCanceler(scheduledExecutionId, e.msg.sender);
     require !_isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), user);
-    bool cancelerUser = isCanceler(scheduledExecutionId, user);
+    require !isRoot(user);
+    bool cancelerUser = isCanceler(scheduledExecutionId, user); 
 
     assert cancelerSender;
     assert e.msg.sender != user => !cancelerUser;
