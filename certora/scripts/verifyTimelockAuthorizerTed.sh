@@ -11,15 +11,16 @@ fi
 certoraRun  certora/harness/TimelockAuthorizerHarness.sol \
     certora/munged/vault/contracts/authorizer/TimelockExecutionHelper.sol \
     certora/munged/vault/contracts/Vault.sol \
+    certora/harness/SingletonAuthenticationHarness.sol \
     certora/helpers/Receiver.sol \
     --verify TimelockAuthorizerHarness:certora/spec/CVL2/timelockAuthorizerTed.spec \
     --link TimelockAuthorizerHarness:_executionHelper=TimelockExecutionHelper \
     --solc solc7.1 \
-    --optimistic_loop \
     --staging master \
+    --optimistic_loop \
     --loop_iter 8 \
     --send_only \
-    --rule_sanity basic \
+    --rule_sanity \
     --settings -optimisticUnboundedHashing=true,-mediumTimeout=20,-adaptiveSolverConfig=false \
     --packages @balancer-labs=node_modules/@balancer-labs \
     $RULE \

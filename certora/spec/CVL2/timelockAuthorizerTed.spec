@@ -120,7 +120,8 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
         e.msg.sender == pendingRootBefore ||
         e.msg.sender == executionHelper,
         "Pending root changed by somebody, who was not root or executor.";
-    assert (pendingRootBefore == 0 && pendingRootAfter != 0) => e.msg.sender == executionHelper,
+    assert (pendingRootBefore != pendingRootAfter && pendingRootAfter != 0)
+        => e.msg.sender == executionHelper,
         "Pending root changed from 0 by other entity than the executer";
 }
 
@@ -190,7 +191,7 @@ rule whatCanBeExecuted(env e) {
 // STATUS - verified
 // A protected scheduled execution can be executed only by an executor.
 rule whoCanExecute(env e) {
-    uint256 length = getSchedExeLength();
+    uint256 length;
     uint256 id;
     require(id < length);
 
