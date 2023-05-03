@@ -34,6 +34,4 @@ forge-cache/
 certora_*
 out/*
 
-pkg/balancer-js/*
-pkg/deployments/*
-pkg/typechain/*
+

@@ -1,0 +1,16 @@
+{
+  "0x527e5a8917fef9f19f55ea7d3f9dc98c00e4836cf918d2af144d2ef91076a53c": [
+    {
+      "taskId": "20211208-aave-linear-pool",
+      "contractName": "AaveLinearPoolFactory",
+      "signature": "create(string,string,address,address,uint256,uint256,address)",
+      "useAdaptor": true
+    },
+    {
+      "taskId": "20220304-erc4626-linear-pool",
+      "contractName": "ERC4626LinearPoolFactory",
+      "signature": "create(string,string,address,address,uint256,uint256,address)",
+      "useAdaptor": true
+    }
+  ]
+}
