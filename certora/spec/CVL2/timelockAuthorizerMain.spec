@@ -113,11 +113,11 @@ invariant notFarFuture(uint256 timestamp, uint256 actionIndex)
 
 
 // STATUS - verified
-// For any two scheduled executions having the same action ID, 
+// For any two scheduled executions having the same action ID,
 // the execution with the lower index should have a lower or equal executableAt comparing to the execution with the higher index.
 invariant arrayHierarchy(env e, uint256 indexLow, uint256 indexHigh)
     (indexLow < indexHigh
-        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh)) 
+        && getActionIdHelper(indexLow) == getActionIdHelper(indexHigh))
     => getSchedExeExecutableAt(indexLow) <= getSchedExeExecutableAt(indexHigh)
     {
         preserved {
@@ -137,7 +137,7 @@ invariant oneOfThree(uint256 actionIndex)
 // When `isPermissionGrantedOnTarget(id, account, where)` returns `true`, then `hasPermission(id, account, where)` also returns `true`
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
     isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where);
-    
+
 
 
 /**************************************************
@@ -219,7 +219,7 @@ rule schExeNotExecutedBeforeTime(method f, env e){
 rule immutableExecuteAt(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     uint256 executableAtBefore = getSchedExeExecutableAt(actionIndex);
@@ -238,7 +238,7 @@ rule immutableExecuteAt(env e, method f) {
 rule immutableWhere(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     address whereBefore = getSchedExeWhere(actionIndex);
@@ -257,7 +257,7 @@ rule immutableWhere(env e, method f) {
 rule immutableProtected(env e, method f) {
     uint256 actionIndex;
 
-    require limitArrayLength();  
+    require limitArrayLength();
     require actionIndex < getSchedExeLength();  // need this require because otherwise the tool takes index that will be created. Thus it's 0 before and > 0 after.
 
     bool protectedBefore = getSchedExeProtected(actionIndex);
@@ -291,24 +291,24 @@ rule onlyOneExecuteOrCancelCanChangeAtTime(env e, method f) {
     bool isCancelled1After = getSchedExeCancelled(actionIndex1);
     bool isCancelled2After = getSchedExeCancelled(actionIndex2);
 
-    assert isExecuted1Before != isExecuted1After 
-                => (isExecuted2Before == isExecuted2After 
-                    && isCancelled1Before == isCancelled1After 
+    assert isExecuted1Before != isExecuted1After
+                => (isExecuted2Before == isExecuted2After
+                    && isCancelled1Before == isCancelled1After
                     && isCancelled2Before == isCancelled2After)
                     && !isExecuted1Before;
-    assert isCancelled1Before != isCancelled1After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isExecuted2Before == isExecuted2After 
+    assert isCancelled1Before != isCancelled1After
+                => (isExecuted1Before == isExecuted1After
+                    && isExecuted2Before == isExecuted2After
                     && isCancelled2Before == isCancelled2After)
                     && !isCancelled1Before;
-    assert isExecuted2Before != isExecuted2After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isCancelled1Before == isCancelled1After 
+    assert isExecuted2Before != isExecuted2After
+                => (isExecuted1Before == isExecuted1After
+                    && isCancelled1Before == isCancelled1After
                     && isCancelled2Before == isCancelled2After)
                     && !isExecuted2Before;
-    assert isCancelled2Before != isCancelled2After 
-                => (isExecuted1Before == isExecuted1After 
-                    && isExecuted2Before == isExecuted2After 
+    assert isCancelled2Before != isCancelled2After
+                => (isExecuted1Before == isExecuted1After
+                    && isExecuted2Before == isExecuted2After
                     && isCancelled1Before == isCancelled1After)
                     && !isCancelled2Before;
 }
@@ -358,7 +358,7 @@ rule executedCanceledForever(env e, method f) {
     uint256 actionIndex1;
 
     require actionIndex1 < getSchedExeLength();
-    require limitArrayLength(); 
+    require limitArrayLength();
 
     bool isExecutedBefore = getSchedExeExecuted(actionIndex1);
     bool isCancelledBefore = getSchedExeCancelled(actionIndex1);
@@ -402,7 +402,7 @@ rule onlyOneCanceler(env e) {
 
     bool cancelerSender = isCanceler(scheduledExecutionId, e.msg.sender);
     require !_isCanceler(GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID(), user);
-    bool cancelerUser = isCanceler(scheduledExecutionId, user); 
+    bool cancelerUser = isCanceler(scheduledExecutionId, user);
 
     assert cancelerSender;
     assert e.msg.sender != user => !cancelerUser;
@@ -427,8 +427,9 @@ rule rootNotZero(env e, method f)
 // STATUS - verified
 // When execution function other than the claimRoot, only one of the roles revoker, granter
 // or canceler can change during the function call and this can happen for one entity only.
-rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
-{
+rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f) filtered {
+    f -> f.selector != sig:claimRoot().selector
+} {
     uint256 scheduledExecution; address possibleCanceller;
     bool cancelerBefore = isCanceler(scheduledExecution, possibleCanceller);
     uint256 otherScheduledExecution; address otherPossibleCanceller;
@@ -441,7 +442,6 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
     bool granterBefore = isGranter(actionId, possibleGranter, whereGranter);
     address otherPossibleGranter; address otherWhereGranter; bytes32 otherActionId;
     bool otherGranterBefore = isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
-    bool nonClaimRoot = f.selector != sig:claimRoot().selector;
 
     require(possibleCanceller != otherPossibleCanceller);
     require(possibleRevoker != otherPossibleRevoker);
@@ -455,17 +455,17 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
     bool revokerChanged = revokerBefore != isRevoker(possibleRevoker, whereRevoker);
     bool granterChanged = granterBefore != isGranter(actionId, possibleGranter, whereGranter);
 
-    assert cancelerChanged && nonClaimRoot => !revokerChanged && !granterChanged;
-    assert revokerChanged && nonClaimRoot => !granterChanged && !cancelerChanged;
-    assert granterChanged && nonClaimRoot => !cancelerChanged && !revokerChanged;
+    assert cancelerChanged => !revokerChanged && !granterChanged;
+    assert revokerChanged => !granterChanged && !cancelerChanged;
+    assert granterChanged => !cancelerChanged && !revokerChanged;
 
     bool otherCancelerChanged = otherCancelerBefore != isCanceler(otherScheduledExecution, otherPossibleCanceller);
     bool otherRevokerChanged = otherRevokerBefore != isRevoker(otherPossibleRevoker, otherWhereRevoker);
     bool otherGranterChanged = otherGranterBefore != isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
 
-    assert cancelerChanged && nonClaimRoot => !otherCancelerChanged;
-    assert revokerChanged && nonClaimRoot => !otherRevokerChanged;
-    assert granterChanged && nonClaimRoot => !otherGranterChanged;
+    assert cancelerChanged => !otherCancelerChanged;
+    assert revokerChanged => !otherRevokerChanged;
+    assert granterChanged => !otherGranterChanged;
 }
 
 
@@ -523,7 +523,8 @@ rule pendingRootChangesOnlyWithSetPendingRootOrClaimRoot(env e, method f) {
         e.msg.sender == pendingRootBefore ||
         e.msg.sender == executionHelper,
         "Pending root changed by somebody, who was not root or executor.";
-    assert (pendingRootBefore == 0 && pendingRootAfter != 0) => e.msg.sender == executionHelper,
+    assert (pendingRootBefore != pendingRootAfter && pendingRootAfter != 0)
+        => e.msg.sender == executionHelper,
         "Pending root changed from 0 by other entity than the executer";
 }
 
@@ -574,7 +575,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
 
 // STATUS - verified
-// An execution can be executed (`canExecute`) only when it has not yet been cancelled
+// An execution can be executed (`canExecute`) when it has not yet been cancelled
 // or executed and its `executableAt` is not greater than current timestamp.
 rule whatCanBeExecuted(env e) {
     uint256 id;
@@ -594,7 +595,7 @@ rule whatCanBeExecuted(env e) {
 // STATUS - verified
 // A protected scheduled execution can be executed only by an executor.
 rule whoCanExecute(env e) {
-    uint256 length = getSchedExeLength();
+    uint256 length;
     uint256 id;
     require(id < length);
 
@@ -800,7 +801,7 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 
 
 // STATUS - verified
-// The `_scheduledExecutions` array only changes it's length
+// The `_scheduledExecutions` array only changes its length
 // when one of the schedule functions is called.
 rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
@@ -826,7 +827,7 @@ rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
 }
 
 // STATUS - verified
-// The grant delay of and action (stored in `_grantDelays`) is changed only
+// The grant delay of an action (stored in `_grantDelays`) is changed only
 // by calling `setGrantDelay` and the caller must be the `_executionHelper`.
 rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     bytes32 actionId;
@@ -838,7 +839,6 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
 
     uint256 delayAfter = getActionIdGrantDelay(actionId);
 
-    // If the number of scheduled executions changed, it was increased by one.
     assert delayBefore != delayAfter =>
         f.selector == sig:setGrantDelay(bytes32, uint256).selector,
         "_grantDelays modified by function other than setGrantDelay.";
@@ -849,7 +849,7 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
 
 
 // STATUS - verified
-// The revoke delay of and action is changed only
+// The revoke delay of an action is changed only
 // by calling `setRevokeDelay` and the caller must be the `_executionHelper`.
 rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
     bytes32 actionId;
@@ -918,7 +918,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
     uint256 calculatedDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
 
-    require(delayBefore <= MAX_DELAY());
+    requireInvariant notGreaterThanMax(actionId);
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 executionDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);

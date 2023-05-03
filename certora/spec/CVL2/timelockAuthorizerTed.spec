@@ -1,6 +1,15 @@
 import "timelockAuthorizerMain.spec";
 
 
+invariant notGreaterThanMaxCopy(bytes32 actionId)
+    (actionId != getSetAuthorizerActionId() && _delaysPerActionId(getSetAuthorizerActionId()) <= MAX_DELAY()) => _delaysPerActionId(actionId) <= MAX_DELAY()
+    {
+        preserved setDelay(bytes32 actionId1, uint256 delay) with (env e2) {
+            require actionId == actionId1;
+        }
+    }
+
+
 // When `isPermissionGrantedOnTarget(id, account, where)` returns `true`, then `hasPermission(id, account, where)` also returns `true`
 invariant hasPermissionIfIsGrantedOnTarget(bytes32 id, address account, address where)
     isPermissionGrantedOnTarget(id, account, where) => hasPermission(id, account, where);
@@ -24,8 +33,9 @@ rule rootNotZero(env e, method f)
 // STATUS - verified
 // When execution function other than the claimRoot, only one of the roles revoker, granter
 // or canceler can change during the function call and this can happen for one entity only.
-rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
-{
+rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f) filtered {
+    f -> f.selector != sig:claimRoot().selector
+} {
     uint256 scheduledExecution; address possibleCanceller;
     bool cancelerBefore = isCanceler(scheduledExecution, possibleCanceller);
     uint256 otherScheduledExecution; address otherPossibleCanceller;
@@ -38,7 +48,6 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
     bool granterBefore = isGranter(actionId, possibleGranter, whereGranter);
     address otherPossibleGranter; address otherWhereGranter; bytes32 otherActionId;
     bool otherGranterBefore = isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
-    bool nonClaimRoot = f.selector != sig:claimRoot().selector;
 
     require(possibleCanceller != otherPossibleCanceller);
     require(possibleRevoker != otherPossibleRevoker);
@@ -52,17 +61,17 @@ rule onlyOneRoleChangeAtATimeForNonClaimRoot(env e, method f)
     bool revokerChanged = revokerBefore != isRevoker(possibleRevoker, whereRevoker);
     bool granterChanged = granterBefore != isGranter(actionId, possibleGranter, whereGranter);
 
-    assert cancelerChanged && nonClaimRoot => !revokerChanged && !granterChanged;
-    assert revokerChanged && nonClaimRoot => !granterChanged && !cancelerChanged;
-    assert granterChanged && nonClaimRoot => !cancelerChanged && !revokerChanged;
+    assert cancelerChanged => !revokerChanged && !granterChanged;
+    assert revokerChanged => !granterChanged && !cancelerChanged;
+    assert granterChanged => !cancelerChanged && !revokerChanged;
 
     bool otherCancelerChanged = otherCancelerBefore != isCanceler(otherScheduledExecution, otherPossibleCanceller);
     bool otherRevokerChanged = otherRevokerBefore != isRevoker(otherPossibleRevoker, otherWhereRevoker);
     bool otherGranterChanged = otherGranterBefore != isGranter(otherActionId, otherPossibleGranter, otherWhereGranter);
 
-    assert cancelerChanged && nonClaimRoot => !otherCancelerChanged;
-    assert revokerChanged && nonClaimRoot => !otherRevokerChanged;
-    assert granterChanged && nonClaimRoot => !otherGranterChanged;
+    assert cancelerChanged => !otherCancelerChanged;
+    assert revokerChanged => !otherRevokerChanged;
+    assert granterChanged => !otherGranterChanged;
 }
 
 
@@ -171,7 +180,7 @@ rule cannotBecomeExecutorForAlreadyScheduledExecution(env e, method f) {
 
 
 // STATUS - verified
-// An execution can be executed (`canExecute`) only when it has not yet been cancelled
+// An execution can be executed (`canExecute`) when it has not yet been cancelled
 // or executed and its `executableAt` is not greater than current timestamp.
 rule whatCanBeExecuted(env e) {
     uint256 id;
@@ -397,7 +406,7 @@ rule scheduledExecutionsArrayIsNeverShortened(env e, method f) {
 
 
 // STATUS - verified
-// The `_scheduledExecutions` array only changes it's length
+// The `_scheduledExecutions` array only changes its length
 // when one of the schedule functions is called.
 rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
     uint256 lengthBefore = getSchedExeLength();
@@ -423,7 +432,7 @@ rule scheduledExecutionsCanBeChangedOnlyByScheduleFunctions(env e, method f) {
 }
 
 // STATUS - verified
-// The grant delay of and action (stored in `_grantDelays`) is changed only
+// The grant delay of an action (stored in `_grantDelays`) is changed only
 // by calling `setGrantDelay` and the caller must be the `_executionHelper`.
 rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
     bytes32 actionId;
@@ -435,7 +444,6 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
 
     uint256 delayAfter = getActionIdGrantDelay(actionId);
 
-    // If the number of scheduled executions changed, it was increased by one.
     assert delayBefore != delayAfter =>
         f.selector == sig:setGrantDelay(bytes32, uint256).selector,
         "_grantDelays modified by function other than setGrantDelay.";
@@ -446,7 +454,7 @@ rule grantDelaysCanBeChangedOnlyBySetGrantDelay(env e, method f) {
 
 
 // STATUS - verified
-// The revoke delay of and action is changed only
+// The revoke delay of an action is changed only
 // by calling `setRevokeDelay` and the caller must be the `_executionHelper`.
 rule revokeDelaysCanBeChangedOnlyBySetRevokeDelay(env e, method f) {
     bytes32 actionId;
@@ -515,7 +523,7 @@ rule scheduleDelayChangeHasProperDelay(env e, bytes32 actionId) {
     uint256 numberOfScheduledExecutionsBefore = getSchedExeLength();
     uint256 calculatedDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
 
-    require(delayBefore <= MAX_DELAY());
+    requireInvariant notGreaterThanMaxCopy(actionId);
     require(numberOfScheduledExecutionsBefore < max_uint256);
 
     uint256 executionDelay = _getDelayChangeExecutionDelay(delayBefore, newDelay);
