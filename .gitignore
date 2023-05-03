@@ -25,3 +25,13 @@ pkg/balancer-js/src/typechain/*
 # Forge
 forge-artifacts/
 forge-cache/
+
+.DS_Store
+
+# Certora
+.certora*
+.last_confs
+certora_*
+out/*
+
+

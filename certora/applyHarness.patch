@@ -1,0 +1,133 @@
+diff -ruN ../pkg/.gitignore .gitignore
+--- ../pkg/.gitignore	1970-01-01 01:00:00
++++ .gitignore	2023-03-27 11:59:28
+@@ -0,0 +1 @@
++!.gitignore
+\ No newline at end of file
+diff -ruN ../pkg/solidity-utils/contracts/openzeppelin/Address.sol solidity-utils/contracts/openzeppelin/Address.sol
+--- ../pkg/solidity-utils/contracts/openzeppelin/Address.sol	2023-04-24 21:48:25
++++ solidity-utils/contracts/openzeppelin/Address.sol	2023-03-26 20:34:40
+@@ -86,8 +86,7 @@
+      */
+     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
+         // solhint-disable-next-line avoid-low-level-calls
+-        bool success; bytes memory returndata;
+-        // (bool success, bytes memory returndata) = target.call(data);
++        (bool success, bytes memory returndata) = target.call(data);
+         return verifyCallResult(success, returndata);
+     }
+ 
+diff -ruN ../pkg/vault/contracts/authorizer/TimelockAuthorizer.sol vault/contracts/authorizer/TimelockAuthorizer.sol
+--- ../pkg/vault/contracts/authorizer/TimelockAuthorizer.sol	2023-03-26 20:33:29
++++ vault/contracts/authorizer/TimelockAuthorizer.sol	2023-04-25 11:47:59
+@@ -21,7 +21,8 @@
+ 
+ import "@balancer-labs/v2-solidity-utils/contracts/helpers/InputHelpers.sol";
+ import "@balancer-labs/v2-solidity-utils/contracts/math/Math.sol";
+-import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++// import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++import "../../../../harness/Address.sol";   // HARNESS: Using harnessed Address.sol (harnessing low-level code) instead of OZ(above)
+ import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol";
+ import "./TimelockExecutionHelper.sol";
+ import "./TimelockAuthorizerManagement.sol";
+@@ -55,22 +56,22 @@
+  */
+ contract TimelockAuthorizer is IAuthorizer, TimelockAuthorizerManagement {
+     // solhint-disable-next-line const-name-snakecase
+-    uint256 private constant _MAX_DELAY = 2 * (365 days);
++    uint256 public constant _MAX_DELAY = 2 * (365 days);   // HARNESS: private -> public
+ 
+     // solhint-disable-next-line const-name-snakecase
+-    uint256 private constant _MINIMUM_CHANGE_DELAY_EXECUTION_DELAY = 5 days;
++    uint256 public constant _MINIMUM_CHANGE_DELAY_EXECUTION_DELAY = 5 days;    // HARNESS: private -> public
+ 
+-    IAuthorizerAdaptorEntrypoint private immutable _authorizerAdaptorEntrypoint;
+-    IAuthorizerAdaptor private immutable _authorizerAdaptor;
++    IAuthorizerAdaptorEntrypoint public immutable _authorizerAdaptorEntrypoint;    //HARNESS: private -> public
++    IAuthorizerAdaptor public immutable _authorizerAdaptor;        //HARNESS: private -> public
+ 
+     // action id => delay
+-    mapping(bytes32 => uint256) private _grantDelays;
++    mapping(bytes32 => uint256) public _grantDelays;       // HARNESS: private -> public
+     // action id => delay
+-    mapping(bytes32 => uint256) private _revokeDelays;
++    mapping(bytes32 => uint256) public _revokeDelays;      // HARNESS: private -> public
+ 
+     // External permissions
+-    mapping(bytes32 => bool) private _isPermissionGranted;
+-    mapping(bytes32 => uint256) private _delaysPerActionId;
++    mapping(bytes32 => bool) public _isPermissionGranted;      // HARNESS: private -> public
++    mapping(bytes32 => uint256) public _delaysPerActionId;     // HARNESS: private -> public
+ 
+     constructor(
+         address initialRoot,
+@@ -451,7 +452,7 @@
+         }
+     }
+ 
+-    function _getDelayChangeExecutionDelay(uint256 currentDelay, uint256 newDelay) private pure returns (uint256) {
++    function _getDelayChangeExecutionDelay(uint256 currentDelay, uint256 newDelay) public pure returns (uint256) { // made public
+         // The delay change is scheduled so that it's never possible to execute an action in a shorter time than the
+         // current delay.
+         //
+diff -ruN ../pkg/vault/contracts/authorizer/TimelockAuthorizerManagement.sol vault/contracts/authorizer/TimelockAuthorizerManagement.sol
+--- ../pkg/vault/contracts/authorizer/TimelockAuthorizerManagement.sol	2023-03-26 20:33:29
++++ vault/contracts/authorizer/TimelockAuthorizerManagement.sol	2023-04-25 11:48:04
+@@ -20,7 +20,8 @@
+ import "@balancer-labs/v2-interfaces/contracts/vault/IAuthorizer.sol";
+ import "@balancer-labs/v2-interfaces/contracts/vault/ITimelockAuthorizer.sol";
+ 
+-import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++// import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++import "../../../../harness/Address.sol";   // HARNESS: Using harnessed Address.sol (harnessing low-level code) instead of OZ(above)
+ import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol";
+ import "./TimelockExecutionHelper.sol";
+ 
+@@ -43,25 +44,25 @@
+     // solhint-disable-next-line const-name-snakecase
+     uint256 internal constant _GLOBAL_CANCELER_SCHEDULED_EXECUTION_ID = type(uint256).max;
+ 
+-    TimelockExecutionHelper private immutable _executionHelper;
+-    IAuthentication private immutable _vault;
++    TimelockExecutionHelper public immutable _executionHelper;     // HARNESS: removed immutable, private -> public
++    IAuthentication internal immutable _vault;                       // HARNESS: removed immutable, private -> internal
+     uint256 private immutable _rootTransferDelay;
+ 
+     // Authorizer permissions
+-    address private _root;
+-    address private _pendingRoot;
++    address public _root;                   // HARNESS: private -> public
++    address public _pendingRoot;            // HARNESS: private -> public
+ 
+     // scheduled execution id => account => is executor
+-    mapping(uint256 => mapping(address => bool)) private _isExecutor;
++    mapping(uint256 => mapping(address => bool)) public _isExecutor;           // HARNESS: private -> public
+ 
+     // action id => account => where => is granter
+-    mapping(bytes32 => mapping(address => mapping(address => bool))) private _isGranter;
++    mapping(bytes32 => mapping(address => mapping(address => bool))) public _isGranter;        // HARNESS: private -> public
+     // account => where => is revoker
+-    mapping(address => mapping(address => bool)) private _isRevoker;
++    mapping(address => mapping(address => bool)) public _isRevoker;            // HARNESS: private -> public
+     // scheduled execution id => account => is canceler
+-    mapping(uint256 => mapping(address => bool)) private _isCanceler;
++    mapping(uint256 => mapping(address => bool)) public _isCanceler;           // HARNESS: private -> public
+ 
+-    ITimelockAuthorizer.ScheduledExecution[] private _scheduledExecutions;
++    ITimelockAuthorizer.ScheduledExecution[] public _scheduledExecutions;       // HARNESS: private -> public
+ 
+     /**
+      * @dev Prevents a TimelockAuthorizer function from being called directly, making it only possible to call it by
+diff -ruN ../pkg/vault/contracts/authorizer/TimelockExecutionHelper.sol vault/contracts/authorizer/TimelockExecutionHelper.sol
+--- ../pkg/vault/contracts/authorizer/TimelockExecutionHelper.sol	2023-03-26 20:33:29
++++ vault/contracts/authorizer/TimelockExecutionHelper.sol	2023-04-25 11:48:07
+@@ -14,7 +14,8 @@
+ 
+ pragma solidity ^0.7.0;
+ 
+-import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++// import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/Address.sol";
++import "../../../../harness/Address.sol";   // HARNESS: Using harnessed Address.sol (harnessing low-level code) instead of OZ(above) 
+ import "@balancer-labs/v2-solidity-utils/contracts/openzeppelin/ReentrancyGuard.sol";
+ 
+ import "@balancer-labs/v2-interfaces/contracts/vault/IAuthorizer.sol";

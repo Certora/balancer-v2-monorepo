@@ -1,0 +1,13 @@
+{
+    "topics": [
+        {
+            "name": "type_check",
+            "messages": [
+                {
+                    "message": "certora/spec/CVL2/timelockAuthorizerAlex.spec:1:37: Syntax error: unexpected token near ;",
+                    "location": []
+                }
+            ]
+        }
+    ]
+}
