@@ -28,8 +28,8 @@ library SafeCast {
      * - input must be less than or equal to maxInt256.
      */
     function toInt256(uint256 value) internal pure returns (int256) {
-        _require(value >> 255 == 0, Errors.SAFE_CAST_VALUE_CANT_FIT_INT256);
-        return int256(value);
+        _require(value /** @rounds=indeterminate */ >> 255 /** @rounds=indeterminate */ /** @rounds=exact */ == 0 /** @rounds=exact */, Errors /** @rounds=indeterminate */.SAFE_CAST_VALUE_CANT_FIT_INT256 /** @rounds=indeterminate */);
+        return int256(value /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     /**
@@ -40,7 +40,7 @@ library SafeCast {
      * - input must be less than or equal to maxUint64.
      */
     function toUint64(uint256 value) internal pure returns (uint64) {
-        _require(value <= type(uint64).max, Errors.SAFE_CAST_VALUE_CANT_FIT_UINT64);
-        return uint64(value);
+        _require(value /** @rounds=indeterminate */ <= type(uint64) /** @rounds=indeterminate */.max /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.SAFE_CAST_VALUE_CANT_FIT_UINT64 /** @rounds=indeterminate */);
+        return uint64(value /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 }

@@ -29,10 +29,10 @@ library SafeMath {
      * - Addition cannot overflow.
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        _require(c >= a, Errors.ADD_OVERFLOW);
+        uint256 c = a /** @rounds=indeterminate */ + b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require(c /** @rounds=indeterminate */ >= a /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ADD_OVERFLOW /** @rounds=indeterminate */);
 
-        return c;
+        return c /** @rounds=indeterminate */;
     }
 
     /**
@@ -46,7 +46,7 @@ library SafeMath {
      * - Subtraction cannot overflow.
      */
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, Errors.SUB_OVERFLOW);
+        return sub(a /** @rounds=indeterminate */, b /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.SUB_OVERFLOW /** @rounds=indeterminate */) /** @rounds=down */;
     }
 
     /**
@@ -64,9 +64,9 @@ library SafeMath {
         uint256 b,
         uint256 errorCode
     ) internal pure returns (uint256) {
-        _require(b <= a, errorCode);
-        uint256 c = a - b;
+        _require(b /** @rounds=indeterminate */ <= a /** @rounds=indeterminate */, errorCode /** @rounds=indeterminate */);
+        uint256 c = a /** @rounds=indeterminate */ - b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
 
-        return c;
+        return c /** @rounds=indeterminate */;
     }
 }

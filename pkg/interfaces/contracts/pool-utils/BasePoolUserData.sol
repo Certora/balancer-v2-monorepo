@@ -22,7 +22,7 @@ library BasePoolUserData {
     // Return true if this is the special exit kind.
     function isRecoveryModeExitKind(bytes memory self) internal pure returns (bool) {
         // Check for the "no data" case, or abi.decode would revert
-        return self.length > 0 && abi.decode(self, (uint8)) == RECOVERY_MODE_EXIT_KIND;
+        return self /** @rounds=indeterminate */.length /** @rounds=indeterminate */ > 0 /** @rounds=exact */ && abi.decode(self, (uint8)) /** @rounds=indeterminate */ == RECOVERY_MODE_EXIT_KIND /** @rounds=indeterminate */;
     }
 
     // Parse the bptAmountIn out of the userData

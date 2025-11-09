@@ -102,16 +102,16 @@ abstract contract RecoveryMode is IRecoveryMode, BasePoolAuthorization {
         // outside of recovery mode, these state changes might lead to unexpected behavior.
         _ensureInRecoveryMode();
 
-        VaultReentrancyLib.ensureNotInVaultContext(_getVault());
+    /** @rounds=indeterminate */     VaultReentrancyL /** @rounds=indeterminate */ib.ensureNotInVaultContext(_getVault());
 
         _setRecoveryMode(false);
 
         emit RecoveryModeStateChanged(false);
     }
 
-    // Defer implementation for functions that require storage
+    // Defer implementation for functions that requi /** @rounds=indeterminate */re storage
 
-    /**
+    / /** @rounds=indeterminate */**
      * @notice Override to check storage and return whether the pool is in Recovery Mode
      */
     function inRecoveryMode() public view virtual override returns (bool);

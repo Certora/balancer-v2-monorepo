@@ -53,11 +53,11 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
     event AmpUpdateStopped(uint256 currentValue);
 
     constructor(uint256 amplificationParameter) {
-        _require(amplificationParameter >= StableMath._MIN_AMP, Errors.MIN_AMP);
-        _require(amplificationParameter <= StableMath._MAX_AMP, Errors.MAX_AMP);
+        _require(amplificationParameter /** @rounds=indeterminate */ >= StableMath /** @rounds=indeterminate */._MIN_AMP /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.MIN_AMP /** @rounds=indeterminate */);
+        _require(amplificationParameter /** @rounds=indeterminate */ <= StableMath /** @rounds=indeterminate */._MAX_AMP /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.MAX_AMP /** @rounds=indeterminate */);
 
-        uint256 initialAmp = Math.mul(amplificationParameter, StableMath._AMP_PRECISION);
-        _setAmplificationData(initialAmp);
+        uint256 initialAmp = Math.mul(amplificationParameter /** @rounds=indeterminate */, StableMath /** @rounds=indeterminate */._AMP_PRECISION /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        _setAmplificationData(initialAmp /** @rounds=indeterminate */);
     }
 
     function getAmplificationParameter()
@@ -70,17 +70,17 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
         )
     {
         (value, isUpdating) = _getAmplificationParameter();
-        precision = StableMath._AMP_PRECISION;
+        precision = StableMath /** @rounds=indeterminate */._AMP_PRECISION /** @rounds=indeterminate */;
     }
 
     // Return the current amp value, which will be an interpolation if there is an ongoing amp update.
     // Also return a flag indicating whether there is an ongoing update.
     function _getAmplificationParameter() internal view returns (uint256 value, bool isUpdating) {
-        (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData();
+        (uint256 startValue, uint256 endValue, uint256 startTime, uint256 endTime) = _getAmplificationData() /** @rounds=indeterminate */;
 
         // Note that block.timestamp >= startTime, since startTime is set to the current time when an update starts
 
-        if (block.timestamp < endTime) {
+        if (block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */ < endTime /** @rounds=indeterminate */) {
             isUpdating = true;
 
             // We can skip checked arithmetic as:
@@ -89,14 +89,14 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
             //  - the value delta is bounded by the largest amplification parameter, which never causes the
             //    multiplication to overflow.
             // This also means that the following computation will never revert nor yield invalid results.
-            if (endValue > startValue) {
-                value = startValue + ((endValue - startValue) * (block.timestamp - startTime)) / (endTime - startTime);
+            if (endValue /** @rounds=indeterminate */ > startValue /** @rounds=indeterminate */) {
+                value = startValue /** @rounds=indeterminate */ + ((endValue /** @rounds=indeterminate */ - startValue /** @rounds=indeterminate */) /** @rounds=indeterminate */ * (block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */ - startTime /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=indeterminate */ / (endTime /** @rounds=indeterminate */ - startTime /** @rounds=indeterminate */) /** @rounds=indeterminate */ /** @rounds=down */ /** @rounds=indeterminate */;
             } else {
-                value = startValue - ((startValue - endValue) * (block.timestamp - startTime)) / (endTime - startTime);
+                value = startValue /** @rounds=indeterminate */ - ((startValue /** @rounds=indeterminate */ - endValue /** @rounds=indeterminate */) /** @rounds=indeterminate */ * (block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */ - startTime /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=indeterminate */ / (endTime /** @rounds=indeterminate */ - startTime /** @rounds=indeterminate */) /** @rounds=indeterminate */ /** @rounds=down */ /** @rounds=indeterminate */;
             }
         } else {
             isUpdating = false;
-            value = endValue;
+            value = endValue /** @rounds=indeterminate */;
         }
     }
 
@@ -111,10 +111,10 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
             uint256 endTime
         )
     {
-        startValue = _packedAmplificationData.decodeUint(_AMP_START_VALUE_OFFSET, _AMP_VALUE_BIT_LENGTH);
-        endValue = _packedAmplificationData.decodeUint(_AMP_END_VALUE_OFFSET, _AMP_VALUE_BIT_LENGTH);
-        startTime = _packedAmplificationData.decodeUint(_AMP_START_TIME_OFFSET, _AMP_TIMESTAMP_BIT_LENGTH);
-        endTime = _packedAmplificationData.decodeUint(_AMP_END_TIME_OFFSET, _AMP_TIMESTAMP_BIT_LENGTH);
+        startValue = _packedAmplificationData.decodeUint(_AMP_START_VALUE_OFFSET /** @rounds=indeterminate */, _AMP_VALUE_BIT_LENGTH /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        endValue = _packedAmplificationData.decodeUint(_AMP_END_VALUE_OFFSET /** @rounds=indeterminate */, _AMP_VALUE_BIT_LENGTH /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        startTime = _packedAmplificationData.decodeUint(_AMP_START_TIME_OFFSET /** @rounds=indeterminate */, _AMP_TIMESTAMP_BIT_LENGTH /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        endTime = _packedAmplificationData.decodeUint(_AMP_END_TIME_OFFSET /** @rounds=indeterminate */, _AMP_TIMESTAMP_BIT_LENGTH /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     /**
@@ -125,41 +125,41 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
      * `getAmplificationParameter` have to be corrected to account for this when comparing to `rawEndValue`.
      */
     function startAmplificationParameterUpdate(uint256 rawEndValue, uint256 endTime) external authenticate {
-        _require(rawEndValue >= StableMath._MIN_AMP, Errors.MIN_AMP);
-        _require(rawEndValue <= StableMath._MAX_AMP, Errors.MAX_AMP);
+        _require(rawEndValue /** @rounds=indeterminate */ >= StableMath /** @rounds=indeterminate */._MIN_AMP /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.MIN_AMP /** @rounds=indeterminate */);
+        _require(rawEndValue /** @rounds=indeterminate */ <= StableMath /** @rounds=indeterminate */._MAX_AMP /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.MAX_AMP /** @rounds=indeterminate */);
 
-        uint256 duration = Math.sub(endTime, block.timestamp);
-        _require(duration >= _MIN_UPDATE_TIME, Errors.AMP_END_TIME_TOO_CLOSE);
+        uint256 duration = Math.sub(endTime /** @rounds=indeterminate */, block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */) /** @rounds=down */;
+        _require(duration /** @rounds=indeterminate */ >= _MIN_UPDATE_TIME /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.AMP_END_TIME_TOO_CLOSE /** @rounds=indeterminate */);
 
-        (uint256 currentValue, bool isUpdating) = _getAmplificationParameter();
-        _require(!isUpdating, Errors.AMP_ONGOING_UPDATE);
+        (uint256 currentValue, bool isUpdating) = _getAmplificationParameter() /** @rounds=indeterminate */;
+        _require(!isUpdating, Errors /** @rounds=indeterminate */.AMP_ONGOING_UPDATE /** @rounds=indeterminate */);
 
-        uint256 endValue = Math.mul(rawEndValue, StableMath._AMP_PRECISION);
+        uint256 endValue = Math.mul(rawEndValue /** @rounds=indeterminate */, StableMath /** @rounds=indeterminate */._AMP_PRECISION /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // daily rate = (endValue / currentValue) / duration * 1 day
         // We perform all multiplications first to not reduce precision, and round the division up as we want to avoid
         // large rates. Note that these are regular integer multiplications and divisions, not fixed point.
-        uint256 dailyRate = endValue > currentValue
-            ? Math.divUp(Math.mul(1 days, endValue), Math.mul(currentValue, duration))
-            : Math.divUp(Math.mul(1 days, currentValue), Math.mul(endValue, duration));
-        _require(dailyRate <= _MAX_AMP_UPDATE_DAILY_RATE, Errors.AMP_RATE_TOO_HIGH);
+        uint256 dailyRate = endValue /** @rounds=indeterminate */ > currentValue /** @rounds=indeterminate */
+            ? Math.divUp(Math.mul(1 days /** @rounds=exact */, endValue /** @rounds=indeterminate */) /** @rounds=indeterminate */, Math.mul(currentValue /** @rounds=indeterminate */, duration /** @rounds=indeterminate */) /** @rounds=indeterminate */)
+            : Math.divUp(Math.mul(1 days /** @rounds=exact */, currentValue /** @rounds=indeterminate */) /** @rounds=indeterminate */, Math.mul(endValue /** @rounds=indeterminate */, duration /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        _require(dailyRate /** @rounds=indeterminate */ <= _MAX_AMP_UPDATE_DAILY_RATE /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.AMP_RATE_TOO_HIGH /** @rounds=indeterminate */);
 
-        _setAmplificationData(currentValue, endValue, block.timestamp, endTime);
+        _setAmplificationData(currentValue /** @rounds=indeterminate */, endValue /** @rounds=indeterminate */, block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */, endTime /** @rounds=indeterminate */);
     }
 
     /**
      * @dev Stops the amplification parameter change process, keeping the current value.
      */
     function stopAmplificationParameterUpdate() external authenticate {
-        (uint256 currentValue, bool isUpdating) = _getAmplificationParameter();
-        _require(isUpdating, Errors.AMP_NO_ONGOING_UPDATE);
+        (uint256 currentValue, bool isUpdating) = _getAmplificationParameter() /** @rounds=indeterminate */;
+        _require(isUpdating, Errors /** @rounds=indeterminate */.AMP_NO_ONGOING_UPDATE /** @rounds=indeterminate */);
 
-        _setAmplificationData(currentValue);
+        _setAmplificationData(currentValue /** @rounds=indeterminate */);
     }
 
     function _setAmplificationData(uint256 value) private {
-        _storeAmplificationData(value, value, block.timestamp, block.timestamp);
-        emit AmpUpdateStopped(value);
+        _storeAmplificationData(value /** @rounds=indeterminate */, value /** @rounds=indeterminate */, block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */, block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */);
+        emit AmpUpdateStopped(value /** @rounds=indeterminate */);
     }
 
     function _setAmplificationData(
@@ -168,8 +168,8 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
         uint256 startTime,
         uint256 endTime
     ) private {
-        _storeAmplificationData(startValue, endValue, startTime, endTime);
-        emit AmpUpdateStarted(startValue, endValue, startTime, endTime);
+        _storeAmplificationData(startValue /** @rounds=indeterminate */, endValue /** @rounds=indeterminate */, startTime /** @rounds=indeterminate */, endTime /** @rounds=indeterminate */);
+        emit AmpUpdateStarted(startValue /** @rounds=indeterminate */, endValue /** @rounds=indeterminate */, startTime /** @rounds=indeterminate */, endTime /** @rounds=indeterminate */);
     }
 
     function _storeAmplificationData(
@@ -179,10 +179,10 @@ abstract contract StablePoolAmplification is BasePoolAuthorization {
         uint256 endTime
     ) private {
         _packedAmplificationData =
-            WordCodec.encodeUint(startValue, _AMP_START_VALUE_OFFSET, _AMP_VALUE_BIT_LENGTH) |
-            WordCodec.encodeUint(endValue, _AMP_END_VALUE_OFFSET, _AMP_VALUE_BIT_LENGTH) |
-            WordCodec.encodeUint(startTime, _AMP_START_TIME_OFFSET, _AMP_TIMESTAMP_BIT_LENGTH) |
-            WordCodec.encodeUint(endTime, _AMP_END_TIME_OFFSET, _AMP_TIMESTAMP_BIT_LENGTH);
+            WordCodec.encodeUint(startValue /** @rounds=indeterminate */, _AMP_START_VALUE_OFFSET /** @rounds=indeterminate */, _AMP_VALUE_BIT_LENGTH /** @rounds=indeterminate */) |
+            WordCodec.encodeUint(endValue /** @rounds=indeterminate */, _AMP_END_VALUE_OFFSET /** @rounds=indeterminate */, _AMP_VALUE_BIT_LENGTH /** @rounds=indeterminate */) |
+            WordCodec.encodeUint(startTime /** @rounds=indeterminate */, _AMP_START_TIME_OFFSET /** @rounds=indeterminate */, _AMP_TIMESTAMP_BIT_LENGTH /** @rounds=indeterminate */) |
+            WordCodec.encodeUint(endTime /** @rounds=indeterminate */, _AMP_END_TIME_OFFSET /** @rounds=indeterminate */, _AMP_TIMESTAMP_BIT_LENGTH /** @rounds=indeterminate */);
     }
 
     // Permissioned functions

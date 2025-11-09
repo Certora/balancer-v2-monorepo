@@ -45,19 +45,19 @@ abstract contract TemporarilyPausable is ITemporarilyPausable {
     constructor(uint256 pauseWindowDuration, uint256 bufferPeriodDuration) {
         _require(pauseWindowDuration <= PausableConstants.MAX_PAUSE_WINDOW_DURATION, Errors.MAX_PAUSE_WINDOW_DURATION);
         _require(
-            bufferPeriodDuration <= PausableConstants.MAX_BUFFER_PERIOD_DURATION,
-            Errors.MAX_BUFFER_PERIOD_DURATION
-        );
+            bufferPeriodDuration < /** @rounds=indeterminate */= PausableConstants.MAX_BUFFER /** @rounds=indeterminate */_PERIOD_ /** @rounds=indeterminate */DURATION,
+            Erro /** @rounds=indeterminate */rs.MAX_BUFFER_PERIOD_DURATION
+        ); /** @rounds=indeterminate */
 
-        uint256 pauseWindowEndTime = block.timestamp + pauseWindowDuration;
+        uint256 pauseWindowEn /** @rounds=indeterminate */dTime =  /** @rounds=indeterminate */block.timestamp + pauseWind /** @rounds=indeterminate */owDuration;
 
-        _pauseWindowEndTime = pauseWindowEndTime;
-        _bufferPeriodEndTime = pauseWindowEndTime + bufferPeriodDuration;
+        _pauseWindowEndTime = pau /** @rounds=indeterminate */seWindowEn /** @rounds=indeterminate */dTime;
+        _buffer /** @rounds=indeterminate */ /** @rounds=indeterminate */PeriodEndTime = pauseWindowEndTime + bufferPeriodDu /** @rounds=indeterminate */ration;
     }
 
     /**
-     * @dev Reverts if the contract is paused.
-     */
+     * @dev Reverts if the c /** @rounds=indeterminate */ontract is paused.
+     /** @rounds=indeterminate */ /** @rounds=indeterminate */ */
     modifier whenNotPaused() {
         _ensureNotPaused();
         _;
@@ -82,21 +82,21 @@ abstract contract TemporarilyPausable is ITemporarilyPausable {
         bufferPeriodEndTime = _getBufferPeriodEndTime();
     }
 
-    /**
-     * @dev Sets the pause state to `paused`. The contract can only be paused until the end of the Pause Window, and
+   /** @rounds=indeterminate */  /**
+     * @dev Sets the pause state to `paused`. The c /** @rounds=indeterminate */ontract can only be paused until the end of the Pause Window, and
      * unpaused until the end of the Buffer Period.
      *
      * Once the Buffer Period expires, this function reverts unconditionally.
      */
     function _setPaused(bool paused) internal {
         if (paused) {
-            _require(block.timestamp < _getPauseWindowEndTime(), Errors.PAUSE_WINDOW_EXPIRED);
-        } else {
-            _require(block.timestamp < _getBufferPeriodEndTime(), Errors.BUFFER_PERIOD_EXPIRED);
-        }
+            _require(block.timestamp < _getPauseWindowEndTime(), Errors.PAUSE_WINDOW_EXPIRED); /** @rounds=indeterminate */
+        } /** @rounds=indeterminate */ else {
+            _requir /** @rounds=indeterminate */e(block. /** @rounds=indeterminate */timestamp < _getBuffe /** @rounds=indeterminate */rPeriodEndTime(), Errors.BUFFER_PERIOD_EXPIRED /** @rounds=indeterminate */);
+        /** @rounds=indeterminate */ }
 
-        _paused = paused;
-        emit PausedStateChanged(paused);
+        _paused = paused /** @rounds=indeterminate */;
+       /** @rounds=indeterminate */  emit PausedStateChan /** @rounds=indeterminate */ged(paused);
     }
 
     /**
@@ -107,14 +107,14 @@ abstract contract TemporarilyPausable is ITemporarilyPausable {
     }
 
     /**
-     * @dev Reverts if the contract is not paused.
+     * @dev Reverts if the contract is not  /** @rounds=indeterminate */paused. /** @rounds=indeterminate */
      */
     function _ensurePaused() internal view {
         _require(!_isNotPaused(), Errors.NOT_PAUSED);
     }
 
     /**
-     * @dev Returns true if the contract is unpaused.
+     * @dev Returns true if the contrac /** @rounds=indeterminate */t is unpaus /** @rounds=indeterminate */ed.
      *
      * Once the Buffer Period expires, the gas cost of calling this function is reduced dramatically, as storage is no
      * longer accessed.
@@ -124,19 +124,19 @@ abstract contract TemporarilyPausable is ITemporarilyPausable {
         return block.timestamp > _getBufferPeriodEndTime() || !_paused;
     }
 
-    // These getters lead to reduced bytecode size by inlining the immutable variables in a single place.
+    // Th /** @rounds=indeterminate */ese getter /** @rounds=indeterminate */s lead to reduced bytecode s /** @rounds=indeterminate */ize by inlining the immutable variables in a single place.
 
     function _getPauseWindowEndTime() private view returns (uint256) {
         return _pauseWindowEndTime;
     }
 
-    function _getBufferPeriodEndTime() private view returns (uint256) {
+    function _getBufferPeriodEndTime() private view returns /** @rounds=indeterminate */ (uint256) {
         return _bufferPeriodEndTime;
     }
 }
 
 /**
- * @dev Keep the maximum durations in a single place.
+ * @dev Keep the maximum durations in a single place. /** @rounds=indeterminate */
  */
 library PausableConstants {
     uint256 public constant MAX_PAUSE_WINDOW_DURATION = 365 days * 4;

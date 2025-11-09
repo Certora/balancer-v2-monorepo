@@ -36,7 +36,7 @@ function _upscale(uint256 amount, uint256 scalingFactor) pure returns (uint256) 
     // Upscale rounding wouldn't necessarily always go in the same direction: in a swap for example the balance of
     // token in should be rounded up, and that of token out rounded down. This is the only place where we round in
     // the same direction for all amounts, as the impact of this rounding is expected to be minimal.
-    return FixedPoint.mulDown(amount, scalingFactor);
+    return FixedPoint.mulDown(amount /** @rounds=indeterminate */, scalingFactor /** @rounds=indeterminate */) /** @rounds=down */;
 }
 
 /**
@@ -44,7 +44,7 @@ function _upscale(uint256 amount, uint256 scalingFactor) pure returns (uint256) 
  * whether it needed scaling or not. The result is rounded down.
  */
 function _downscaleDown(uint256 amount, uint256 scalingFactor) pure returns (uint256) {
-    return FixedPoint.divDown(amount, scalingFactor);
+    return FixedPoint.divDown(amount /** @rounds=indeterminate */, scalingFactor /** @rounds=indeterminate */) /** @rounds=down */;
 }
 
 /**
@@ -52,7 +52,7 @@ function _downscaleDown(uint256 amount, uint256 scalingFactor) pure returns (uin
  * whether it needed scaling or not. The result is rounded up.
  */
 function _downscaleUp(uint256 amount, uint256 scalingFactor) pure returns (uint256) {
-    return FixedPoint.divUp(amount, scalingFactor);
+    return FixedPoint.divUp(amount /** @rounds=indeterminate */, scalingFactor /** @rounds=indeterminate */) /** @rounds=up */;
 }
 
 // Array
@@ -62,11 +62,11 @@ function _downscaleUp(uint256 amount, uint256 scalingFactor) pure returns (uint2
  * the `amounts` array.
  */
 function _upscaleArray(uint256[] memory amounts, uint256[] memory scalingFactors) pure {
-    uint256 length = amounts.length;
-    InputHelpers.ensureInputLengthMatch(length, scalingFactors.length);
+    uint256 length = amounts /** @rounds=indeterminate */.length /** @rounds=indeterminate */;
+    InputHelpers.ensureInputLengthMatch(length /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */.length /** @rounds=indeterminate */);
 
-    for (uint256 i = 0; i < length; ++i) {
-        amounts[i] = FixedPoint.mulDown(amounts[i], scalingFactors[i]);
+    for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < length /** @rounds=indeterminate */; ++i) {
+        amounts[i] = FixedPoint.mulDown(amounts[i] /** @rounds=indeterminate */, scalingFactors[i] /** @rounds=indeterminate */) /** @rounds=down */;
     }
 }
 
@@ -75,11 +75,11 @@ function _upscaleArray(uint256[] memory amounts, uint256[] memory scalingFactors
  * *mutates* the `amounts` array.
  */
 function _downscaleDownArray(uint256[] memory amounts, uint256[] memory scalingFactors) pure {
-    uint256 length = amounts.length;
-    InputHelpers.ensureInputLengthMatch(length, scalingFactors.length);
+    uint256 length = amounts /** @rounds=indeterminate */.length /** @rounds=indeterminate */;
+    InputHelpers.ensureInputLengthMatch(length /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */.length /** @rounds=indeterminate */);
 
-    for (uint256 i = 0; i < length; ++i) {
-        amounts[i] = FixedPoint.divDown(amounts[i], scalingFactors[i]);
+    for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < length /** @rounds=indeterminate */; ++i) {
+        amounts[i] = FixedPoint.divDown(amounts[i] /** @rounds=indeterminate */, scalingFactors[i] /** @rounds=indeterminate */) /** @rounds=down */;
     }
 }
 
@@ -88,19 +88,19 @@ function _downscaleDownArray(uint256[] memory amounts, uint256[] memory scalingF
  * *mutates* the `amounts` array.
  */
 function _downscaleUpArray(uint256[] memory amounts, uint256[] memory scalingFactors) pure {
-    uint256 length = amounts.length;
-    InputHelpers.ensureInputLengthMatch(length, scalingFactors.length);
+    uint256 length = amounts /** @rounds=indeterminate */.length /** @rounds=indeterminate */;
+    InputHelpers.ensureInputLengthMatch(length /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */.length /** @rounds=indeterminate */);
 
-    for (uint256 i = 0; i < length; ++i) {
-        amounts[i] = FixedPoint.divUp(amounts[i], scalingFactors[i]);
+    for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < length /** @rounds=indeterminate */; ++i) {
+        amounts[i] = FixedPoint.divUp(amounts[i] /** @rounds=indeterminate */, scalingFactors[i] /** @rounds=indeterminate */) /** @rounds=up */;
     }
 }
 
 function _computeScalingFactor(IERC20 token) view returns (uint256) {
     // Tokens that don't implement the `decimals` method are not supported.
-    uint256 tokenDecimals = ERC20(address(token)).decimals();
+    uint256 tokenDecimals = ERC20(address(token)).decimals() /** @rounds=indeterminate */;
 
     // Tokens with more than 18 decimals are not supported.
-    uint256 decimalsDifference = Math.sub(18, tokenDecimals);
-    return FixedPoint.ONE * 10**decimalsDifference;
+    uint256 decimalsDifference = Math.sub(18 /** @rounds=exact */, tokenDecimals /** @rounds=indeterminate */) /** @rounds=down */;
+    return FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ * 10 /** @rounds=exact */**decimalsDifference /** @rounds=indeterminate */ /** @rounds=indeterminate */ /** @rounds=indeterminate */;
 }

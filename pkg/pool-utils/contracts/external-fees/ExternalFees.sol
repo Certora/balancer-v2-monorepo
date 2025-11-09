@@ -37,6 +37,6 @@ library ExternalFees {
         // `poolOwnershipPercentage = bptAmount / (totalSupply + bptAmount)`.
         // Solving for `bptAmount`, we arrive at:
         // `bptAmount = totalSupply * poolOwnershipPercentage / (1 - poolOwnershipPercentage)`.
-        return Math.divDown(Math.mul(totalSupply, poolOwnershipPercentage), poolOwnershipPercentage.complement());
+        return Math.divDown(Math.mul(totalSupply /** @rounds=indeterminate */, poolOwnershipPercentage /** @rounds=indeterminate */) /** @rounds=indeterminate */, poolOwnershipPercentage.complement() /** @rounds=up */) /** @rounds=down */;
     }
 }

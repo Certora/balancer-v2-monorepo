@@ -25,7 +25,7 @@ library PoolRegistrationLib {
         IVault.PoolSpecialization specialization,
         IERC20[] memory tokens
     ) internal returns (bytes32) {
-        return registerPoolWithAssetManagers(vault, specialization, tokens, new address[](tokens.length));
+        return registerPoolWithAssetManagers(vault, specialization, tokens, new address[](tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */));
     }
 
     function registerPoolWithAssetManagers(
@@ -57,21 +57,21 @@ library PoolRegistrationLib {
         // as tokens which are added to the Pool after deployment are always added to the end of the array.
         InputHelpers.ensureArrayIsSorted(tokens);
 
-        IERC20[] memory composableTokens = new IERC20[](tokens.length + 1);
+        IERC20[] memory composableTokens = new IERC20[](tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */ + 1 /** @rounds=indeterminate */ /** @rounds=exact */);
         // We insert the Pool's BPT address into the first position.
         // This allows us to know the position of the BPT token in the tokens array without explicitly tracking it.
         // When deregistering a token, the token at the end of the array is moved into the index of the deregistered
         // token, changing its index. By placing BPT at the beginning of the tokens array we can be sure that its index
         // will never change unless it is deregistered itself (something which composable pools must prevent anyway).
         composableTokens[0] = IERC20(address(this));
-        for (uint256 i = 0; i < tokens.length; i++) {
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
             composableTokens[i + 1] = tokens[i];
         }
 
-        address[] memory composableAssetManagers = new address[](assetManagers.length + 1);
+        address[] memory composableAssetManagers = new address[](assetManagers /** @rounds=indeterminate */.length /** @rounds=indeterminate */ + 1 /** @rounds=indeterminate */ /** @rounds=exact */);
         // We do not allow an asset manager for the Pool's BPT.
-        composableAssetManagers[0] = address(0);
-        for (uint256 i = 0; i < assetManagers.length; i++) {
+        composableAssetManagers[0] = address(0 /** @rounds=exact */);
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < assetManagers /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
             composableAssetManagers[i + 1] = assetManagers[i];
         }
         return _registerPool(vault, specialization, composableTokens, composableAssetManagers);
@@ -98,10 +98,10 @@ library PoolRegistrationLib {
         IERC20 token,
         address assetManager
     ) internal {
-        IERC20[] memory tokens = new IERC20[](1);
+        IERC20[] memory tokens = new IERC20[](1 /** @rounds=exact */);
         tokens[0] = token;
 
-        address[] memory assetManagers = new address[](1);
+        address[] memory assetManagers = new address[](1 /** @rounds=exact */);
         assetManagers[0] = assetManager;
 
         vault.registerTokens(poolId, tokens, assetManagers);
@@ -112,7 +112,7 @@ library PoolRegistrationLib {
         bytes32 poolId,
         IERC20 token
     ) internal {
-        IERC20[] memory tokens = new IERC20[](1);
+        IERC20[] memory tokens = new IERC20[](1 /** @rounds=exact */);
         tokens[0] = token;
 
         vault.deregisterTokens(poolId, tokens);

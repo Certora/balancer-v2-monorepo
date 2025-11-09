@@ -57,9 +57,9 @@ contract BalancerPoolToken is ERC20Permit {
      */
     function allowance(address owner, address spender) public view override returns (uint256) {
         if (spender == address(getVault())) {
-            return uint256(-1);
+            return uint256(-1 /** @rounds=exact */) /** @rounds=indeterminate */;
         } else {
-            return super.allowance(owner, spender);
+            return super.allowance(owner, spender) /** @rounds=indeterminate */;
         }
     }
 
@@ -71,14 +71,14 @@ contract BalancerPoolToken is ERC20Permit {
         address recipient,
         uint256 amount
     ) public override returns (bool) {
-        uint256 currentAllowance = allowance(sender, msg.sender);
-        _require(msg.sender == sender || currentAllowance >= amount, Errors.ERC20_TRANSFER_EXCEEDS_ALLOWANCE);
+        uint256 currentAllowance = allowance(sender, msg.sender) /** @rounds=indeterminate */;
+        _require(msg.sender == sender || currentAllowance /** @rounds=indeterminate */ >= amount /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ERC20_TRANSFER_EXCEEDS_ALLOWANCE /** @rounds=indeterminate */);
 
-        _transfer(sender, recipient, amount);
+        _transfer(sender, recipient, amount /** @rounds=indeterminate */);
 
-        if (msg.sender != sender && currentAllowance != uint256(-1)) {
+        if (msg.sender != sender && currentAllowance /** @rounds=indeterminate */ != uint256(-1 /** @rounds=exact */) /** @rounds=indeterminate */) {
             // Because of the previous require, we know that if msg.sender != sender then currentAllowance >= amount
-            _approve(sender, msg.sender, currentAllowance - amount);
+            _approve(sender, msg.sender, currentAllowance /** @rounds=indeterminate */ - amount /** @rounds=indeterminate */ /** @rounds=indeterminate */);
         }
 
         return true;
@@ -88,13 +88,13 @@ contract BalancerPoolToken is ERC20Permit {
      * @dev Override to allow decreasing allowance by more than the current amount (setting it to zero)
      */
     function decreaseAllowance(address spender, uint256 amount) public override returns (bool) {
-        uint256 currentAllowance = allowance(msg.sender, spender);
+        uint256 currentAllowance = allowance(msg.sender, spender) /** @rounds=indeterminate */;
 
-        if (amount >= currentAllowance) {
-            _approve(msg.sender, spender, 0);
+        if (amount /** @rounds=indeterminate */ >= currentAllowance /** @rounds=indeterminate */) {
+            _approve(msg.sender, spender, 0 /** @rounds=exact */);
         } else {
             // No risk of underflow due to if condition
-            _approve(msg.sender, spender, currentAllowance - amount);
+            _approve(msg.sender, spender, currentAllowance /** @rounds=indeterminate */ - amount /** @rounds=indeterminate */ /** @rounds=indeterminate */);
         }
 
         return true;
@@ -103,10 +103,10 @@ contract BalancerPoolToken is ERC20Permit {
     // Internal functions
 
     function _mintPoolTokens(address recipient, uint256 amount) internal {
-        _mint(recipient, amount);
+        _mint(recipient, amount /** @rounds=indeterminate */);
     }
 
     function _burnPoolTokens(address sender, uint256 amount) internal {
-        _burn(sender, amount);
+        _burn(sender, amount /** @rounds=indeterminate */);
     }
 }

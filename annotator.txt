@@ -1,0 +1,154 @@
+Loading AST from: /Users/shelly/Certora/ShellyNotebook/Rounding/ComposableStablePool.ast.json
+Processing: pkg/interfaces/contracts/pool-stable/StablePoolUserData.sol
+Processing: pkg/interfaces/contracts/pool-utils/BasePoolUserData.sol
+Processing: pkg/interfaces/contracts/pool-utils/IControlledPool.sol
+Processing: pkg/interfaces/contracts/pool-utils/IRateProvider.sol
+Processing: pkg/interfaces/contracts/pool-utils/IRecoveryMode.sol
+Processing: pkg/interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
+Processing: pkg/interfaces/contracts/solidity-utils/helpers/IAuthentication.sol
+Processing: pkg/interfaces/contracts/solidity-utils/helpers/ISignaturesValidator.sol
+Processing: pkg/interfaces/contracts/solidity-utils/helpers/ITemporarilyPausable.sol
+Processing: pkg/interfaces/contracts/solidity-utils/misc/IWETH.sol
+Processing: pkg/interfaces/contracts/solidity-utils/openzeppelin/IERC20.sol
+Processing: pkg/interfaces/contracts/solidity-utils/openzeppelin/IERC20Permit.sol
+Processing: pkg/interfaces/contracts/standalone-utils/IProtocolFeePercentagesProvider.sol
+Processing: pkg/interfaces/contracts/vault/IAsset.sol
+Processing: pkg/interfaces/contracts/vault/IAuthorizer.sol
+Processing: pkg/interfaces/contracts/vault/IBasePool.sol
+Processing: pkg/interfaces/contracts/vault/IFlashLoanRecipient.sol
+Processing: pkg/interfaces/contracts/vault/IGeneralPool.sol
+Processing: pkg/interfaces/contracts/vault/IPoolSwapStructs.sol
+Processing: pkg/interfaces/contracts/vault/IProtocolFeesCollector.sol
+Processing: pkg/interfaces/contracts/vault/IVault.sol
+Processing: pkg/pool-stable/contracts/ComposableStablePool.sol
+Processing: pkg/pool-stable/contracts/ComposableStablePoolProtocolFees.sol
+Processing: pkg/pool-stable/contracts/ComposableStablePoolRates.sol
+Processing: pkg/pool-stable/contracts/ComposableStablePoolStorage.sol
+Processing: pkg/pool-stable/contracts/StableMath.sol
+Processing: pkg/pool-stable/contracts/StablePoolAmplification.sol
+Processing: pkg/pool-utils/contracts/BalancerPoolToken.sol
+Processing: pkg/pool-utils/contracts/BaseGeneralPool.sol
+Processing: pkg/pool-utils/contracts/BasePool.sol
+Processing: pkg/pool-utils/contracts/BasePoolAuthorization.sol
+Processing: pkg/pool-utils/contracts/RecoveryMode.sol
+Processing: pkg/pool-utils/contracts/external-fees/ExternalFees.sol
+Processing: pkg/pool-utils/contracts/external-fees/InvariantGrowthProtocolSwapFees.sol
+Processing: pkg/pool-utils/contracts/external-fees/ProtocolFeeCache.sol
+Processing: pkg/pool-utils/contracts/lib/PoolRegistrationLib.sol
+Processing: pkg/pool-utils/contracts/rates/PriceRateCache.sol
+Processing: pkg/solidity-utils/contracts/helpers/Authentication.sol
+Processing: pkg/solidity-utils/contracts/helpers/EOASignaturesValidator.sol
+Processing: pkg/solidity-utils/contracts/helpers/ERC20Helpers.sol
+Processing: pkg/solidity-utils/contracts/helpers/InputHelpers.sol
+Processing: pkg/solidity-utils/contracts/helpers/ScalingHelpers.sol
+Processing: pkg/solidity-utils/contracts/helpers/TemporarilyPausable.sol
+Processing: pkg/solidity-utils/contracts/helpers/WordCodec.sol
+Processing: pkg/solidity-utils/contracts/math/FixedPoint.sol
+Processing: pkg/solidity-utils/contracts/math/LogExpMath.sol
+Processing: pkg/solidity-utils/contracts/math/Math.sol
+Processing: pkg/solidity-utils/contracts/openzeppelin/EIP712.sol
+Processing: pkg/solidity-utils/contracts/openzeppelin/ERC20.sol
+Processing: pkg/solidity-utils/contracts/openzeppelin/ERC20Permit.sol
+Processing: pkg/solidity-utils/contracts/openzeppelin/SafeCast.sol
+Processing: pkg/solidity-utils/contracts/openzeppelin/SafeMath.sol
+DEBUG: Total annotations collected: 2720
+DEBUG: File ID map: [(0, 'pkg/interfaces/contracts/pool-stable/StablePoolUserData.sol'), (1, 'pkg/interfaces/contracts/pool-utils/BasePoolUserData.sol'), (2, 'pkg/interfaces/contracts/pool-utils/IControlledPool.sol'), (3, 'pkg/interfaces/contracts/pool-utils/IRateProvider.sol'), (4, 'pkg/interfaces/contracts/pool-utils/IRecoveryMode.sol')]
+DEBUG: Sample annotation file IDs: [1, 1, 1, 1, 1]
+
+Annotating pkg/interfaces/contracts/pool-utils/BasePoolUserData.sol with 5 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/interfaces/contracts/pool-utils/BasePoolUserData.sol
+
+Annotating pkg/interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol with 6 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/interfaces/contracts/solidity-utils/helpers/BalancerErrors.sol
+
+Annotating pkg/pool-stable/contracts/ComposableStablePool.sol with 392 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/ComposableStablePool.sol
+
+Annotating pkg/pool-stable/contracts/ComposableStablePoolProtocolFees.sol with 80 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/ComposableStablePoolProtocolFees.sol
+
+Annotating pkg/pool-stable/contracts/ComposableStablePoolRates.sol with 121 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/ComposableStablePoolRates.sol
+
+Annotating pkg/pool-stable/contracts/ComposableStablePoolStorage.sol with 186 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/ComposableStablePoolStorage.sol
+
+Annotating pkg/pool-stable/contracts/StableMath.sol with 323 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/StableMath.sol
+
+Annotating pkg/pool-stable/contracts/StablePoolAmplification.sol with 144 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-stable/contracts/StablePoolAmplification.sol
+
+Annotating pkg/pool-utils/contracts/BalancerPoolToken.sol with 24 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/BalancerPoolToken.sol
+
+Annotating pkg/pool-utils/contracts/BaseGeneralPool.sol with 50 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/BaseGeneralPool.sol
+
+Annotating pkg/pool-utils/contracts/BasePool.sol with 121 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/BasePool.sol
+
+Annotating pkg/pool-utils/contracts/RecoveryMode.sol with 4 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/RecoveryMode.sol
+
+Annotating pkg/pool-utils/contracts/external-fees/ExternalFees.sol with 5 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/external-fees/ExternalFees.sol
+
+Annotating pkg/pool-utils/contracts/external-fees/InvariantGrowthProtocolSwapFees.sol with 20 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/external-fees/InvariantGrowthProtocolSwapFees.sol
+
+Annotating pkg/pool-utils/contracts/external-fees/ProtocolFeeCache.sol with 68 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/external-fees/ProtocolFeeCache.sol
+
+Annotating pkg/pool-utils/contracts/lib/PoolRegistrationLib.sol with 22 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/lib/PoolRegistrationLib.sol
+
+Annotating pkg/pool-utils/contracts/rates/PriceRateCache.sol with 44 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/pool-utils/contracts/rates/PriceRateCache.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/Authentication.sol with 2 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/Authentication.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/EOASignaturesValidator.sol with 19 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/EOASignaturesValidator.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/ERC20Helpers.sol with 23 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/ERC20Helpers.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/InputHelpers.sol with 19 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/InputHelpers.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/ScalingHelpers.sol with 52 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/ScalingHelpers.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/TemporarilyPausable.sol with 37 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/TemporarilyPausable.sol
+
+Annotating pkg/solidity-utils/contracts/helpers/WordCodec.sol with 125 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/helpers/WordCodec.sol
+
+Annotating pkg/solidity-utils/contracts/math/FixedPoint.sol with 131 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/math/FixedPoint.sol
+
+Annotating pkg/solidity-utils/contracts/math/LogExpMath.sol with 523 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/math/LogExpMath.sol
+
+Annotating pkg/solidity-utils/contracts/math/Math.sol with 72 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/math/Math.sol
+
+Annotating pkg/solidity-utils/contracts/openzeppelin/EIP712.sol with 1 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/openzeppelin/EIP712.sol
+
+Annotating pkg/solidity-utils/contracts/openzeppelin/ERC20.sol with 57 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/openzeppelin/ERC20.sol
+
+Annotating pkg/solidity-utils/contracts/openzeppelin/ERC20Permit.sol with 9 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/openzeppelin/ERC20Permit.sol
+
+Annotating pkg/solidity-utils/contracts/openzeppelin/SafeCast.sol with 15 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/openzeppelin/SafeCast.sol
+
+Annotating pkg/solidity-utils/contracts/openzeppelin/SafeMath.sol with 20 annotations
+✓ Updated /Users/shelly/Certora/CustomerProjects/Balancer/balancer-v2-monorepo/pkg/solidity-utils/contracts/openzeppelin/SafeMath.sol
+
+✓ Done! Annotated 32 file(s)

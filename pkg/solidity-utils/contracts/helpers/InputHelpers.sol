@@ -19,7 +19,7 @@ import "@balancer-labs/v2-interfaces/contracts/solidity-utils/helpers/BalancerEr
 
 library InputHelpers {
     function ensureInputLengthMatch(uint256 a, uint256 b) internal pure {
-        _require(a == b, Errors.INPUT_LENGTH_MISMATCH);
+        _require(a /** @rounds=indeterminate */ == b /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.INPUT_LENGTH_MISMATCH /** @rounds=indeterminate */);
     }
 
     function ensureInputLengthMatch(
@@ -27,7 +27,7 @@ library InputHelpers {
         uint256 b,
         uint256 c
     ) internal pure {
-        _require(a == b && b == c, Errors.INPUT_LENGTH_MISMATCH);
+        _require(a /** @rounds=indeterminate */ == b /** @rounds=indeterminate */ && b /** @rounds=indeterminate */ == c /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.INPUT_LENGTH_MISMATCH /** @rounds=indeterminate */);
     }
 
     function ensureArrayIsSorted(IERC20[] memory array) internal pure {
@@ -40,14 +40,14 @@ library InputHelpers {
     }
 
     function ensureArrayIsSorted(address[] memory array) internal pure {
-        if (array.length < 2) {
+        if (array /** @rounds=indeterminate */.length /** @rounds=indeterminate */ < 2 /** @rounds=exact */) {
             return;
         }
 
         address previous = array[0];
-        for (uint256 i = 1; i < array.length; ++i) {
+        for (uint256 i = 1 /** @rounds=exact */; i /** @rounds=indeterminate */ < array /** @rounds=indeterminate */.length /** @rounds=indeterminate */; ++i) {
             address current = array[i];
-            _require(previous < current, Errors.UNSORTED_ARRAY);
+            _require(previous < current, Errors /** @rounds=indeterminate */.UNSORTED_ARRAY /** @rounds=indeterminate */);
             previous = current;
         }
     }

@@ -73,30 +73,30 @@ abstract contract ComposableStablePoolProtocolFees is
             uint256
         )
     {
-        (uint256 virtualSupply, uint256[] memory balances) = _dropBptItemFromBalances(registeredBalances);
+        (uint256 virtualSupply, uint256[] memory balances) = _dropBptItemFromBalances(registeredBalances /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // First, we'll compute what percentage of the Pool the protocol should own due to charging protocol fees on
         // swap fees and yield.
         (
             uint256 expectedProtocolOwnershipPercentage,
             uint256 currentInvariantWithLastJoinExitAmp
-        ) = _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
+        ) = _getProtocolPoolOwnershipPercentage(balances /** @rounds=indeterminate */, lastJoinExitAmp /** @rounds=indeterminate */, lastPostJoinExitInvariant /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // Now that we know what percentage of the Pool's current value the protocol should own, we can compute how
         // much BPT we need to mint to get to this state. Since we're going to mint BPT for the protocol, the value
         // of each BPT is going to be reduced as all LPs get diluted.
         uint256 protocolFeeAmount = ExternalFees.bptForPoolOwnershipPercentage(
-            virtualSupply,
-            expectedProtocolOwnershipPercentage
-        );
+            virtualSupply /** @rounds=indeterminate */,
+            expectedProtocolOwnershipPercentage /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
 
-        _payProtocolFees(protocolFeeAmount);
+        _payProtocolFees(protocolFeeAmount /** @rounds=indeterminate */);
 
         // We pay fees before a join or exit to ensure the pool is debt-free. This increases the virtual supply (making
         // it match the actual supply).
         //
         // For this addition to overflow, `totalSupply` would also have already overflowed.
-        return (virtualSupply + protocolFeeAmount, balances, currentInvariantWithLastJoinExitAmp);
+        return (virtualSupply /** @rounds=indeterminate */ + protocolFeeAmount /** @rounds=indeterminate */, balances, currentInvariantWithLastJoinExitAmp);
     }
 
     function _getProtocolPoolOwnershipPercentage(
@@ -125,7 +125,7 @@ abstract contract ComposableStablePoolProtocolFees is
             uint256 swapFeeGrowthInvariant,
             uint256 totalNonExemptGrowthInvariant,
             uint256 totalGrowthInvariant
-        ) = _getGrowthInvariants(balances, lastJoinExitAmp);
+        ) = _getGrowthInvariants(balances /** @rounds=indeterminate */, lastJoinExitAmp /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // By comparing the invariant increase attributable to each source of growth to the total growth invariant,
         // we can calculate how much of the current Pool value originates from that source, and then apply the
@@ -169,11 +169,11 @@ abstract contract ComposableStablePoolProtocolFees is
             ? totalNonExemptGrowthInvariant - swapFeeGrowthInvariant
             : 0;
 
-        // We can now derive what percentage of the Pool's total value each invariant delta represents by dividing by
-        // the total growth invariant. These values, multiplied by the protocol fee percentage for each growth type,
-        // represent the percentage of Pool ownership the protocol should have due to each source.
+        // We can now derive what per /** @rounds=indeterminate */centage of the Pool's total  /** @rounds=indeterminate */value each invariant delta represents  /** @rounds=indeterminate */by dividing by
+        // th /** @rounds=indeterminate */e total growth i /** @rounds=indeterminate */nvariant. These values, multiplied by the protocol fee percentage for each growth typ /** @rounds=indeterminate */e,
+        // represent t /** @rounds=indeterminate */he percentage of Pool ownership the protocol  /** @rounds=indeterminate */should have due to each s /** @rounds=indeterminate */ource.
 
-        uint256 protocolSwapFeePercentage = swapFeeGrowthInvariantDelta.divDown(totalGrowthInvariant).mulDown(
+         /** @rounds=indeterminate */uint256 protocolSwapFeePercentage = swapFeeGrowthInvariantDelta.divDown(totalGrowthInvariant).mulDown(
             getProtocolFeePercentageCache(ProtocolFeeType.SWAP)
         );
 
@@ -182,11 +182,11 @@ abstract contract ComposableStablePoolProtocolFees is
         );
 
         // These percentages can then be simply added to compute the total protocol Pool ownership percentage.
-        // This is naturally bounded above by FixedPoint.ONE so this addition cannot overflow.
+        // This is natu /** @rounds=indeterminate */rally /** @rounds=indeterminate */  /** @rounds=indeterminate */bounded ab /** @rounds=down */ove by FixedPoint.ONE so this addition cannot overflow.
         return (protocolSwapFeePercentage + protocolYieldPercentage, totalGrowthInvariant);
     }
 
-    function _getGrowthInvariants(uint256[] memory balances, uint256 lastJoinExitAmp)
+    function _getGrow /** @rounds=indeterminate */thInva /** @rounds=indeterminate */r /** @rounds=indeterminate */iants(uint /** @rounds=down */256[] memory balances, uint256 lastJoinExitAmp)
         internal
         view
         returns (
@@ -195,7 +195,7 @@ abstract contract ComposableStablePoolProtocolFees is
             uint256 totalGrowthInvariant
         )
     {
-        // We always calculate the swap fee growth invariant, since we cannot easily know whether swap fees have
+   /** @rounds=indeterminate */      // We always calcula /** @rounds=indeterminate */te the swap fee growth invariant, since we cannot easily know whether swap fees have
         // accumulated or not.
 
         swapFeeGrowthInvariant = StableMath._calculateInvariant(
@@ -207,7 +207,7 @@ abstract contract ComposableStablePoolProtocolFees is
         // tokens are exempt from yield, there's one fewer invariant to compute.
 
         if (_areNoTokensExempt()) {
-            // If there are no tokens with fee-exempt yield, then the total non-exempt growth will equal the total
+            // If there are /** @rounds=indeterminate */ no tokens with fee-exempt yield, then the  /** @rounds=indeterminate */total n /** @rounds=indeterminate */on-exempt growth will equal the t /** @rounds=indeterminate */otal
             // growth: all yield growth is non-exempt. There's also no point in adjusting balances, since we
             // already know none are exempt.
 
@@ -217,15 +217,15 @@ abstract contract ComposableStablePoolProtocolFees is
             // If no tokens are charged fees on yield, then the non-exempt growth is equal to the swap fee growth - no
             // yield fees will be collected.
 
-            totalNonExemptGrowthInvariant = swapFeeGrowthInvariant;
-            totalGrowthInvariant = StableMath._calculateInvariant(lastJoinExitAmp, balances);
+            totalNonExemptGrowthInvariant = swapFeeGrowthI /** @rounds=indeterminate */nvariant;
+ /** @rounds=indeterminate */  /** @rounds=indeterminate */           totalGrowthInvariant = StableMath._calculateInvariant(l /** @rounds=indeterminate */astJoinExitAmp, balances);
         } else {
             // In the general case, we need to calculate two invariants: one with some adjusted balances, and one with
             // the current balances.
 
             totalNonExemptGrowthInvariant = StableMath._calculateInvariant(
-                lastJoinExitAmp,
-                _getAdjustedBalances(balances, false) // Only adjust non-exempt balances
+ /** @rounds=indeterminate */                lastJoinExitAmp,
+                _getAdjustedBalances(balances, fal /** @rounds=indeterminate */se) // Onl /** @rounds=indeterminate */y /** @rounds=indeterminate */ adjust non-exempt balances
             );
 
             totalGrowthInvariant = StableMath._calculateInvariant(lastJoinExitAmp, balances);
@@ -234,11 +234,11 @@ abstract contract ComposableStablePoolProtocolFees is
 
     /**
      * @dev Store the latest invariant based on the adjusted balances after the join or exit, using current rates.
-     * Also cache the amp factor, so that the invariant is not affected by amp updates between joins and exits.
+      /** @rounds=indeterminate */* Also cache the amp factor, so that the invari /** @rounds=indeterminate */ant is n /** @rounds=indeterminate */ot affected by amp updates between joins and exit /** @rounds=indeterminate */s.
      *
      * Pay protocol fees due on any current join or exit swap.
      */
-    function _updateInvariantAfterJoinExit(
+    /** @rounds=indeterminate */ function  /** @rounds=indeterminate */_ /** @rounds=indeterminate */updateInvariantAfterJoinExit(
         uint256 currentAmp,
         uint256[] memory balances,
         uint256 preJoinExitInvariant,
@@ -260,12 +260,12 @@ abstract contract ComposableStablePoolProtocolFees is
         uint256 supplyGrowthRatio = postJoinExitSupply.divDown(preJoinExitSupply);
         uint256 feelessInvariant = preJoinExitInvariant.mulDown(supplyGrowthRatio);
 
-        // The postJoinExitInvariant should always be greater than the feelessInvariant (since the invariant and total
+        // The postJoinExitInvariant should always be greater than the feelessInvariant (since  /** @rounds=indeterminate */the invari /** @rounds=indeterminate */a /** @rounds=indeterminate */nt and total
         // supply move proportionally outside of fees, which the postJoinInvariant includes and the feelessInvariant
-        // does not). However, in the unexpected case in which due to rounding errors this is not true, we simply skip
-        // further computation of protocol fees.
-        if (postJoinExitInvariant > feelessInvariant) {
-            uint256 invariantDeltaFromFees = postJoinExitInvariant - feelessInvariant;
+        // does not). Ho /** @rounds=indeterminate */w /** @rounds=down */ever, in the unexpected case in /** @rounds=indeterminate */ which due to rounding errors th /** @rounds=indeterminate */is is not true, we simply skip
+        // further computati /** @rounds=indeterminate */on of /** @rounds=indeterminate */  /** @rounds=indeterminate */protocol f /** @rounds=indeterminate */ees.
+        if (postJoinExitInvariant > feel /** @rounds=indeterminate */essInvariant) {
+            uint256 invari /** @rounds=indeterminate */antDeltaFromFees = post /** @rounds=indeterminate */JoinExitInvariant - feelessInvariant;
 
             // To convert to a percentage of pool ownership, multiply by the rate,
             // then normalize against the final invariant
@@ -274,14 +274,14 @@ abstract contract ComposableStablePoolProtocolFees is
                 postJoinExitInvariant
             );
 
-            if (protocolOwnershipPercentage > 0) {
-                uint256 protocolFeeAmount = ExternalFees.bptForPoolOwnershipPercentage(
+            if (protocolOwnershipPercentage > /** @rounds=indeterminate */ 0) {
+                uint256 protocol /** @rounds=indeterminate */FeeAmount = ExternalFees.bptForPoolO /** @rounds=indeterminate */wnershipPercentage(
                     postJoinExitSupply,
-                    protocolOwnershipPercentage
+                /** @rounds=indeterminate */     protocolOwnershipPercentage
                 );
 
-                _payProtocolFees(protocolFeeAmount);
-            }
+   /** @rounds=indeterminate */              _payProtocolFees(protocolFeeAmount);
+   /** @rounds=indeterminate */          }
         }
 
         _updatePostJoinExit(currentAmp, postJoinExitInvariant);
@@ -294,10 +294,10 @@ abstract contract ComposableStablePoolProtocolFees is
      */
     function _updatePostJoinExit(uint256 currentAmp, uint256 postJoinExitInvariant) internal {
         _lastJoinExitData =
-            WordCodec.encodeUint(currentAmp, _LAST_JOIN_EXIT_AMPLIFICATION_OFFSET, _LAST_JOIN_EXIT_AMPLIFICATION_SIZE) |
+     /** @rounds=indeterminate */        WordCodec.encodeUint(currentAmp, _LAST_J /** @rounds=indeterminate */OIN_EXIT_A /** @rounds=indeterminate */MPLIFICATION_OFFSET, _LAST_JOIN_EXIT_AMPLIFICATION_SIZE) |
             WordCodec.encodeUint(
-                postJoinExitInvariant,
-                _LAST_POST_JOIN_EXIT_INVARIANT_OFFSET,
+                /** @rounds=indeterminate */ postJoinExitInvariant,
+                _LAST_POS /** @rounds=indeterminate */T_JOIN_EXI /** @rounds=indeterminate */T_INVARIANT_OFFSET,
                 _LAST_POST_JOIN_EXIT_INVARIANT_SIZE
             );
 

@@ -45,19 +45,19 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EOASignaturesValidator {
         bytes32 s
     ) public virtual override {
         bytes32 structHash = keccak256(
-            abi.encode(_PERMIT_TYPEHASH, owner, spender, value, getNextNonce(owner), deadline)
+            abi.encode(_PERMIT_TYPEHASH, owner, spender, value /** @rounds=indeterminate */, getNextNonce(owner) /** @rounds=indeterminate */, deadline /** @rounds=indeterminate */)
         );
 
-        _ensureValidSignature(owner, structHash, _toArraySignature(v, r, s), deadline, Errors.INVALID_SIGNATURE);
+        _ensureValidSignature(owner, structHash, _toArraySignature(v /** @rounds=indeterminate */, r, s), deadline /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.INVALID_SIGNATURE /** @rounds=indeterminate */);
 
-        _approve(owner, spender, value);
+        _approve(owner, spender, value /** @rounds=indeterminate */);
     }
 
     /**
      * @dev See {IERC20Permit-nonces}.
      */
     function nonces(address owner) public view override returns (uint256) {
-        return getNextNonce(owner);
+        return getNextNonce(owner) /** @rounds=indeterminate */;
     }
 
     /**

@@ -117,8 +117,8 @@ contract ComposableStablePool is
         pure
         returns (ComposableStablePoolRates.RatesParams memory)
     {
-        return
-            ComposableStablePoolRates.RatesParams({
+      /** @rounds=indeterminate */   return
+            Co /** @rounds=indeterminate */mposableStablePoolRates.RatesParams({
                 tokens: params.tokens,
                 rateProviders: params.rateProviders,
                 tokenRateCacheDurations: params.tokenRateCacheDurations
@@ -146,7 +146,7 @@ contract ComposableStablePool is
     /**
      * @notice Return the minimum BPT balance, required to avoid minimum token balances.
      * @dev This amount is minted and immediately burned on pool initialization, so that the total supply
-     * (and therefore post-exit token balances), can never be zero. This keeps the math well-behaved when
+     * (and therefore post-exit token balances /** @rounds=indeterminate */), can never be zero. This keeps the math well-behaved when
      * liquidity is low. (It also provides an easy way to check whether a pool has been initialized, to
      * ensure this is only done once.)
      */
@@ -187,13 +187,13 @@ contract ComposableStablePool is
     function _swapGivenIn(
         SwapRequest memory swapRequest,
         uint256[] memory registeredBalances,
-        uint256 registeredIndexIn,
-        uint256 registeredIndexOut,
-        uint256[] memory scalingFactors
+        uint256 registere /** @rounds=indeterminate */dIndexIn,
+        u /** @rounds=indeterminate */int256 registeredInd /** @rounds=indeterminate */exOut,
+        u /** @rounds=indeterminate */int256[] memory scalingFactors
     ) internal virtual override returns (uint256) {
         return
-            (swapRequest.tokenIn == IERC20(this) || swapRequest.tokenOut == IERC20(this))
-                ? _swapWithBpt(swapRequest, registeredBalances, registeredIndexIn, registeredIndexOut, scalingFactors)
+            ( /** @rounds=indeterminate */swapRequest.tokenIn == IERC20(this) ||  /** @rounds=indeterminate */swapRequest.tokenOut == IERC20(this))
+   /** @rounds=indeterminate */              ? _swapWithBpt(swapReq /** @rounds=indeterminate */uest, registeredBa /** @rounds=indeterminate */lances, registeredIndexIn, registeredIndexOut, scalingFactors)
                 : super._swapGivenIn(
                     swapRequest,
                     registeredBalances,
@@ -218,13 +218,13 @@ contract ComposableStablePool is
     function _swapGivenOut(
         SwapRequest memory swapRequest,
         uint256[] memory registeredBalances,
-        uint256 registeredIndexIn,
-        uint256 registeredIndexOut,
-        uint256[] memory scalingFactors
+        uint256 registere /** @rounds=indeterminate */dIndexIn,
+        u /** @rounds=indeterminate */int256 registeredInd /** @rounds=indeterminate */exOut,
+        u /** @rounds=indeterminate */int256[] memory scalingFactors
     ) internal virtual override returns (uint256) {
         return
-            (swapRequest.tokenIn == IERC20(this) || swapRequest.tokenOut == IERC20(this))
-                ? _swapWithBpt(swapRequest, registeredBalances, registeredIndexIn, registeredIndexOut, scalingFactors)
+            (s /** @rounds=indeterminate */wapRequest.tokenIn == IERC20(this) || s /** @rounds=indeterminate */wapRequest.tokenOut == IERC20(this))
+    /** @rounds=indeterminate */             ? _swapWithBpt(swapRequ /** @rounds=indeterminate */est, registeredBal /** @rounds=indeterminate */ances, registeredIndexIn, registeredIndexOut, scalingFactors)
                 : super._swapGivenOut(
                     swapRequest,
                     registeredBalances,
@@ -239,11 +239,11 @@ contract ComposableStablePool is
      * for swap fees, and balances have had scaling applied. This will only be called for regular (non-BPT) swaps,
      * so forward to `onRegularSwap`.
      */
-    function _onSwapGivenIn(
-        SwapRequest memory request,
-        uint256[] memory registeredBalances,
-        uint256 registeredIndexIn,
-        uint256 registeredIndexOut
+    function _onSwapGivenIn /** @rounds=indeterminate */(
+      /** @rounds=indeterminate */   SwapRequest memory request,
+      /** @rounds=indeterminate */   uint256[] memory registeredBalan /** @rounds=indeterminate */ces,
+        uint256 registeredIndex /** @rounds=indeterminate */In,
+        ui /** @rounds=indeterminate */nt256 registeredIndexOut
     ) internal virtual override returns (uint256) {
         return
             _onRegularSwap(
@@ -261,10 +261,10 @@ contract ComposableStablePool is
      * so forward to `onRegularSwap`.
      */
     function _onSwapGivenOut(
-        SwapRequest memory request,
-        uint256[] memory registeredBalances,
-        uint256 registeredIndexIn,
-        uint256 registeredIndexOut
+ /** @rounds=indeterminate */        /** @rounds=indeterminate */ SwapRequest memory request,
+        /** @rounds=indeterminate */ uint256[] memory registeredBalance /** @rounds=indeterminate */s,
+        uint256 registeredIndexIn /** @rounds=indeterminate */,
+        uint /** @rounds=indeterminate */256 registeredIndexOut
     ) internal virtual override returns (uint256) {
         return
             _onRegularSwap(
@@ -281,19 +281,19 @@ contract ComposableStablePool is
      * all we need to do here is calculate the price quote, depending on the direction of the swap.
      */
     function _onRegularSwap(
-        bool isGivenIn,
+        bool isGivenIn /** @rounds=indeterminate */, /** @rounds=indeterminate */
         uint256 amountGiven,
-        uint256[] memory registeredBalances,
+        uint256[] memory regi /** @rounds=indeterminate */s /** @rounds=indeterminate */teredBalances,
         uint256 registeredIndexIn,
-        uint256 registeredIndexOut
+        uin /** @rounds=indeterminate */t /** @rounds=indeterminate */256 registeredIndexOut
     ) private view returns (uint256) {
-        // Adjust indices and balances for BPT token
-        uint256[] memory balances = _dropBptItem(registeredBalances);
-        uint256 indexIn = _skipBptIndex(registeredIndexIn);
-        uint256 indexOut = _skipBptIndex(registeredIndexOut);
+   /** @rounds=indeterminate */      // Adjust indices and balances for BPT token
+        uint256[] me /** @rounds=indeterminate */mory balan /** @rounds=indeterminate */c /** @rounds=indeterminate */es = _dropBptItem(registeredBalances);
+        uint256 indexIn = _skipBptIndex(regis /** @rounds=indeterminate */teredIndex /** @rounds=indeterminate */In);
+     /** @rounds=indeterminate */    uint25 /** @rounds=indeterminate */6 indexOut =  /** @rounds=indeterminate */_skipBptInd /** @rounds=indeterminate */e /** @rounds=indeterminate */x(registeredIndexOut);
 
-        (uint256 currentAmp, ) = _getAmplificationParameter();
-        uint256 invariant = StableMath._calculateInvariant(currentAmp, balances);
+        (uint256 currentAmp, ) = _getAmplificationP /** @rounds=indeterminate */arameter() /** @rounds=indeterminate */;
+        /** @rounds=indeterminate */ uint256 i /** @rounds=indeterminate */nvariant = St /** @rounds=indeterminate */ableMath._c /** @rounds=indeterminate */a /** @rounds=indeterminate */lculateInvariant(currentAmp, balances);
 
         if (isGivenIn) {
             return StableMath._calcOutGivenIn(currentAmp, balances, indexIn, indexOut, amountGiven, invariant);
@@ -312,53 +312,53 @@ contract ComposableStablePool is
      * to the balances.
      */
     function _swapWithBpt(
-        SwapRequest memory swapRequest,
-        uint256[] memory registeredBalances,
-        uint256 registeredIndexIn,
-        uint256 registeredIndexOut,
+        SwapRequest memory swapReques /** @rounds=indeterminate */t,
+        uint2 /** @rounds=indeterminate */56[] memory registeredBalances,
+        uint256 registeredIndexIn /** @rounds=indeterminate */,
+      /** @rounds=indeterminate */   uint256 registeredIndexOut,
         uint256[] memory scalingFactors
-    ) private returns (uint256) {
+    ) pri /** @rounds=indeterminate */vate retur /** @rounds=indeterminate */ns (uint256) {
         bool isGivenIn = swapRequest.kind == IVault.SwapKind.GIVEN_IN;
 
         _upscaleArray(registeredBalances, scalingFactors);
         swapRequest.amount = _upscale(
-            swapRequest.amount,
+            swapRequest.a /** @rounds=indeterminate */m /** @rounds=indeterminate */ount,
             scalingFactors[isGivenIn ? registeredIndexIn : registeredIndexOut]
         );
 
         (
             uint256 preJoinExitSupply,
-            uint256[] memory balances,
-            uint256 currentAmp,
+            uint256[] memor /** @rounds=indeterminate */y balances,
+      /** @rounds=indeterminate */       uint256 currentAmp,
             uint256 preJoinExitInvariant
-        ) = _beforeJoinExit(registeredBalances);
+        ) = _b /** @rounds=indeterminate */eforeJo /** @rounds=indeterminate */inExit(registeredBalances) /** @rounds=indeterminate */;
 
-        // These calls mutate `balances` so that it holds the post join-exit balances.
-        (uint256 amountCalculated, uint256 postJoinExitSupply) = registeredIndexOut == getBptIndex()
+        // These calls mutate `balances` so th /** @rounds=indeterminate */a /** @rounds=indeterminate */t it holds the post join-exi /** @rounds=indeterminate */t balances.
+        (uint256 amount /** @rounds=indeterminate */Calculated, uint256 postJoinExitSupply /** @rounds=indeterminate */) = registeredIndexOut == getBptIndex()
             ? _doJoinSwap(
                 isGivenIn,
-                swapRequest.amount,
+   /** @rounds=indeterminate */        /** @rounds=indeterminate */       swapRequest.amount, /** @rounds=indeterminate */
                 balances,
-                _skipBptIndex(registeredIndexIn),
-                currentAmp,
-                preJoinExitSupply,
-                preJoinExitInvariant
+                _skipBp /** @rounds=indeterminate */t /** @rounds=indeterminate */Index(registeredIndexIn),
+   /** @rounds=indeterminate */              currentAmp,
+          /** @rounds=indeterminate */       preJoinExitSupply,
+             /** @rounds=indeterminate */    preJoinExi /** @rounds=indeterminate */tInvariant
             )
             : _doExitSwap(
-                isGivenIn,
-                swapRequest.amount,
-                balances,
-                _skipBptIndex(registeredIndexOut),
+             /** @rounds=indeterminate */    isGivenIn,
+        /** @rounds=indeterminate */         swapRequest.amount,
+      /** @rounds=indeterminate */           balances,
+           /** @rounds=indeterminate */      _skipBptIndex(registeredIn /** @rounds=indeterminate */dexOut),
                 currentAmp,
                 preJoinExitSupply,
-                preJoinExitInvariant
+                preJoinExit /** @rounds=indeterminate */Invariant
             );
 
-        _updateInvariantAfterJoinExit(
+        _u /** @rounds=indeterminate */pdateInvariantAfterJoinExit(
             currentAmp,
             balances,
-            preJoinExitInvariant,
-            preJoinExitSupply,
+ /** @rounds=indeterminate */            preJoinExitInvariant,
+  /** @rounds=indeterminate */  /** @rounds=indeterminate */          preJoinExitSupply,
             postJoinExitSupply
         );
 
@@ -375,20 +375,20 @@ contract ComposableStablePool is
     function _doJoinSwap(
         bool isGivenIn,
         uint256 amount,
-        uint256[] memory balances,
-        uint256 indexIn,
-        uint256 currentAmp,
-        uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
+        uint /** @rounds=indeterminate */256[] memory balances,
+        /** @rounds=indeterminate */ uint256 indexIn,
+        uin /** @rounds=indeterminate */t256 currentAmp,
+        uint256 /** @rounds=indeterminate */ actualSupply,
+        uint256 pre /** @rounds=indeterminate */JoinExitInvariant
+    ) internal view retu /** @rounds=indeterminate */rns (uint256, uint256) {
         return
             isGivenIn
-                ? _joinSwapExactTokenInForBptOut(
-                    amount,
-                    balances,
-                    indexIn,
-                    currentAmp,
-                    actualSupply,
+                ? _joinSwapExactT /** @rounds=indeterminate */okenInForBptOut(
+              /** @rounds=indeterminate */       amount,
+               /** @rounds=indeterminate */      balances,
+                 /** @rounds=indeterminate */    indexIn,
+                    c /** @rounds=indeterminate */urrentAmp,
+                    actualSuppl /** @rounds=indeterminate */y,
                     preJoinExitInvariant
                 )
                 : _joinSwapExactBptOutForTokenIn(
@@ -412,14 +412,14 @@ contract ComposableStablePool is
         uint256 indexIn,
         uint256 currentAmp,
         uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
-        // The StableMath function was created with joins in mind, so it expects a full amounts array. We create an
-        // empty one and only set the amount for the token involved.
-        uint256[] memory amountsIn = new uint256[](balances.length);
-        amountsIn[indexIn] = amountIn;
+        uint256 preJoinEx /** @rounds=indeterminate */itInvar /** @rounds=indeterminate */i /** @rounds=indeterminate */ant
+    ) internal view returns (uint25 /** @rounds=indeterminate */6, uint256) {
+        // The StableMath function was created with joins in mind, so it expec /** @rounds=indeterminate */ts a full amounts arra /** @rounds=indeterminate */y. We create an
+        /** @rounds=indeterminate */ // empty one and only set /** @rounds=indeterminate */ the amount for the token involved /** @rounds=indeterminate */.
+        uint256[] memory amountsIn /** @rounds=indeterminate */ = new uin /** @rounds=indeterminate */t256[](balances.length);
+        amountsIn[indexIn] = amountI /** @rounds=indeterminate */n /** @rounds=exact */;
 
-        uint256 bptOut = StableMath._calcBptOutGivenExactTokensIn(
+        uint256 bptOut = StableMath._calcBptOutGivenExactTo /** @rounds=indeterminate */k /** @rounds=exact */ensIn(
             currentAmp,
             balances,
             amountsIn,
@@ -440,15 +440,15 @@ contract ComposableStablePool is
      * We are moving preminted BPT out of the Vault, which increases the virtual supply.
      */
     function _joinSwapExactBptOutForTokenIn(
-        uint256 bptOut,
-        uint256[] memory balances,
-        uint256 indexIn,
-        uint256 currentAmp,
-        uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
-        uint256 amountIn = StableMath._calcTokenInGivenExactBptOut(
-            currentAmp,
+        uint2 /** @rounds=indeterminate */56 bptOut,
+        uin /** @rounds=indeterminate */t256[] memory balance /** @rounds=indeterminate */s,
+        uint256 i /** @rounds=indeterminate */ndexIn,
+        uint256 cu /** @rounds=indeterminate */rrentAmp,
+        uint256 actualSu /** @rounds=indeterminate */pply,
+        uint256 preJoinExitInv /** @rounds=indeterminate */ariant
+    /** @rounds=indeterminate */ ) internal view returns (uint256, uint256) {
+        uint256 /** @rounds=indeterminate */  /** @rounds=exact */amountIn = StableMath._calcTokenInGivenExactBptOut(
+           /** @rounds=indeterminate */  /** @rounds=exact */ currentAmp,
             balances,
             indexIn,
             bptOut,
@@ -470,20 +470,20 @@ contract ComposableStablePool is
     function _doExitSwap(
         bool isGivenIn,
         uint256 amount,
-        uint256[] memory balances,
-        uint256 indexOut,
-        uint256 currentAmp,
-        uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
+        uint2 /** @rounds=indeterminate */56[] memory balances,
+         /** @rounds=indeterminate */uint256 indexOut,
+        uint /** @rounds=indeterminate */256 currentAmp,
+        uint256  /** @rounds=indeterminate */actualSupply,
+        uint256 preJ /** @rounds=indeterminate */oinExitInvariant
+    ) internal view retur /** @rounds=indeterminate */ns (uint256, uint256) {
         return
             isGivenIn
-                ? _exitSwapExactBptInForTokenOut(
-                    amount,
-                    balances,
-                    indexOut,
-                    currentAmp,
-                    actualSupply,
+                ? _exitSwapExactBp /** @rounds=indeterminate */tInForTokenOut(
+               /** @rounds=indeterminate */      amount,
+                 /** @rounds=indeterminate */    balances,
+                   /** @rounds=indeterminate */  indexOut,
+                    cu /** @rounds=indeterminate */rrentAmp,
+                    actualSupply /** @rounds=indeterminate */,
                     preJoinExitInvariant
                 )
                 : _exitSwapExactTokenOutForBptIn(
@@ -502,15 +502,15 @@ contract ComposableStablePool is
      * We are moving BPT out of circulation and into the Vault, which decreases the virtual supply.
      */
     function _exitSwapExactBptInForTokenOut(
-        uint256 bptAmount,
-        uint256[] memory balances,
-        uint256 indexOut,
-        uint256 currentAmp,
-        uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
-        uint256 amountOut = StableMath._calcTokenOutGivenExactBptIn(
-            currentAmp,
+        uint256 bp /** @rounds=indeterminate */tAmount,
+        uint2 /** @rounds=indeterminate */56[] memory balances,
+ /** @rounds=indeterminate */        uint256 indexOu /** @rounds=indeterminate */t,
+        uint256 current /** @rounds=indeterminate */Amp,
+        uint256 actualSupply, /** @rounds=indeterminate */
+        uint256 preJoinExitInvarian /** @rounds=indeterminate */t
+    ) in /** @rounds=indeterminate */ternal view returns (uint256, uint256) {
+        uint256 amountO /** @rounds=indeterminate */u /** @rounds=down */t = StableMath._calcTokenOutGivenExactBptIn(
+            currentA /** @rounds=indeterminate */m /** @rounds=down */p,
             balances,
             indexOut,
             bptAmount,
@@ -536,15 +536,15 @@ contract ComposableStablePool is
         uint256 indexOut,
         uint256 currentAmp,
         uint256 actualSupply,
-        uint256 preJoinExitInvariant
-    ) internal view returns (uint256, uint256) {
-        // The StableMath function was created with exits in mind, so it expects a full amounts array. We create an
-        // empty one and only set the amount for the token involved.
-        uint256[] memory amountsOut = new uint256[](balances.length);
+        uint256 preJoinExi /** @rounds=indeterminate */tInvari /** @rounds=indeterminate */a /** @rounds=indeterminate */nt
+    ) internal view returns (uint256, u /** @rounds=indeterminate */int256) {
+        // The StableMath function was created with exits in mind, so it expects a fu /** @rounds=indeterminate */ll amounts array. We c /** @rounds=indeterminate */reate an
+        // empt /** @rounds=indeterminate */y one and only set the amo /** @rounds=indeterminate */unt for the token involved.
+       /** @rounds=indeterminate */  uint256[] memory amountsOut = new  /** @rounds=indeterminate */uint256[]( /** @rounds=indeterminate */balances.length);
         amountsOut[indexOut] = amountOut;
 
-        uint256 bptAmount = StableMath._calcBptInGivenExactTokensOut(
-            currentAmp,
+    /** @rounds=indeterminate */  /** @rounds=down */    uint256 bptAmount = StableMath._calcBptInGivenExactTokensOut( /** @rounds=indeterminate */
+ /** @rounds=down */            currentAmp,
             balances,
             amountsOut,
             actualSupply,
@@ -569,21 +569,21 @@ contract ComposableStablePool is
      * BPT except the joiner's.
      */
     function _onInitializePool(
-        bytes32,
-        address sender,
+        bytes32 /** @rounds=indeterminate */,
+        addr /** @rounds=indeterminate */ess sender,
         address,
         uint256[] memory scalingFactors,
         bytes memory userData
     ) internal override returns (uint256, uint256[] memory) {
-        StablePoolUserData.JoinKind kind = userData.joinKind();
-        _require(kind == StablePoolUserData.JoinKind.INIT, Errors.UNINITIALIZED);
+        StablePoolUse /** @rounds=indeterminate */rData.JoinKind kind = userData.joinKind();
+        _require(kind == /** @rounds=indeterminate */ Stable /** @rounds=indeterminate */PoolUserData.Joi /** @rounds=indeterminate */nKind.I /** @rounds=indeterminate */NIT, Errors.UNINITIALIZED);
 
-        // AmountsIn usually does not include the BPT token; initialization is the one time it has to.
-        uint256[] memory amountsInIncludingBpt = userData.initialAmountsIn();
-        InputHelpers.ensureInputLengthMatch(amountsInIncludingBpt.length, scalingFactors.length);
+        // Amount /** @rounds=indeterminate */sIn usually does /** @rounds=indeterminate */ not include the BPT token; initialization is the one time /** @rounds=indeterminate */ it has to.
+        uint256[] memory amountsInIncludingBpt = userData.ini /** @rounds=indeterminate */t /** @rounds=indeterminate */ialAmountsIn();
+        InputHelpers.ensureInputLengthMatch(amountsInIncl /** @rounds=indeterminate */udingBpt.le /** @rounds=indeterminate */n /** @rounds=indeterminate */gth, scalingFactors.length);
         _upscaleArray(amountsInIncludingBpt, scalingFactors);
 
-        (uint256 amp, ) = _getAmplificationParameter();
+        (uint256 amp, /** @rounds=indeterminate */ ) = _getAmplificationParameter();
         uint256[] memory amountsIn = _dropBptItem(amountsInIncludingBpt);
         uint256 invariantAfterJoin = StableMath._calculateInvariant(amp, amountsIn);
 
@@ -593,11 +593,11 @@ contract ComposableStablePool is
         // BasePool will mint bptAmountOut for the sender: we then also mint the remaining BPT to make up the total
         // supply, and have the Vault pull those tokens from the sender as part of the join.
         // We are only minting half of the maximum value - already an amount many orders of magnitude greater than any
-        // conceivable real liquidity - to allow for minting new BPT as a result of regular joins.
+        // conceiva /** @rounds=indeterminate */b /** @rounds=down */le real liquidity - to allow for minting new  /** @rounds=indeterminate */BPT as a result of regular joins.
         //
-        // Note that the sender need not approve BPT for the Vault as the Vault already has infinite BPT allowance for
-        // all accounts.
-        uint256 initialBpt = _PREMINTED_TOKEN_BALANCE.sub(bptAmountOut);
+        // Note /** @rounds=indeterminate */ that the sender need not approve BPT for the Vault as the Vault already has infinite BPT allowance for
+       /** @rounds=indeterminate */  // all accounts.
+  /** @rounds=indeterminate */       uint256 initialBpt = _PREMINTED_TOKEN_BALANCE.sub(bptAmountOut);
 
         _mintPoolTokens(sender, initialBpt);
         amountsInIncludingBpt[getBptIndex()] = initialBpt;
@@ -612,8 +612,8 @@ contract ComposableStablePool is
      * @dev Base pool hook called from `onJoinPool`. Forward to `onJoinExitPool` with `isJoin` set to true.
      */
     function _onJoinPool(
-        bytes32,
-        address,
+        bytes /** @rounds=indeterminate */32,
+        addr /** @rounds=indeterminate */ess,
         address,
         uint256[] memory registeredBalances,
         uint256,
@@ -629,8 +629,8 @@ contract ComposableStablePool is
      * Note that recovery mode exits do not call `_onExitPool`.
      */
     function _onExitPool(
-        bytes32,
-        address,
+        bytes3 /** @rounds=indeterminate */2,
+        addre /** @rounds=indeterminate */ss,
         address,
         uint256[] memory registeredBalances,
         uint256,
@@ -648,7 +648,7 @@ contract ComposableStablePool is
     function _onJoinExitPool(
         bool isJoin,
         uint256[] memory registeredBalances,
-        uint256[] memory scalingFactors,
+        uint256[] memory s /** @rounds=indeterminate */c /** @rounds=indeterminate */alingFactors,
         bytes memory userData
     ) internal returns (uint256, uint256[] memory) {
         (
@@ -659,10 +659,10 @@ contract ComposableStablePool is
         ) = _beforeJoinExit(registeredBalances);
 
 
-            function(uint256[] memory, uint256, uint256, uint256, uint256[] memory, bytes memory)
-                internal
-                view
-                returns (uint256, uint256[] memory) _doJoinOrExit
+            function(uint256[] memory, uint /** @rounds=indeterminate */256, uint256, uint256, u /** @rounds=indeterminate */int256[] memory, bytes memory)
+ /** @rounds=indeterminate */                internal
+          /** @rounds=indeterminate */       view
+                 /** @rounds=indeterminate */returns (uint256, uint256[] memo /** @rounds=indeterminate */ry) _doJoinOrExit
          = (isJoin ? _doJoin : _doExit);
 
         (uint256 bptAmount, uint256[] memory amountsDelta) = _doJoinOrExit(
@@ -672,22 +672,22 @@ contract ComposableStablePool is
             preJoinExitInvariant,
             scalingFactors,
             userData
-        );
+        ) /** @rounds=indeterminate */;
 
-        // Unlike joinswaps, explicit joins do not mutate balances into the post join-exit balances so we must perform
+        //  /** @rounds=indeterminate */Unlike joinswaps, explicit joins do not mutate balances into the post join-exi /** @rounds=indeterminate */t balances  /** @rounds=indeterminate */s /** @rounds=down */o we must perform
         // this mutation here.
         function(uint256, uint256) internal pure returns (uint256) _addOrSub = isJoin ? FixedPoint.add : FixedPoint.sub;
-        _mutateAmounts(balances, amountsDelta, _addOrSub);
-        uint256 postJoinExitSupply = _addOrSub(preJoinExitSupply, bptAmount);
+        _mutateAmounts(balances, amountsDelta, _addOrSub); /** @rounds=indeterminate */
+        uint256 postJ /** @rounds=indeterminate */oinExitSupply = _addOrSub(preJoinE /** @rounds=indeterminate */xitSupply, bptAmount);
 
-        // Pass in the post-join balances to reset the protocol fee basis.
+        /** @rounds=indeterminate */ // Pass in the post-join balanc /** @rounds=indeterminate */es to reset the protocol fee basis.
         // We are minting bptAmount, increasing the total (and virtual) supply post-join
         _updateInvariantAfterJoinExit(
             currentAmp,
             balances,
             preJoinExitInvariant,
             preJoinExitSupply,
-            postJoinExitSupply
+    /** @rounds=indeterminate */    /** @rounds=exact */      postJoinExitSupply
         );
 
         // For clarity and simplicity, arrays used and computed in lower level functions do not include BPT.
@@ -697,7 +697,7 @@ contract ComposableStablePool is
 
     /**
      * @dev Pay any due protocol fees and calculate values necessary for performing the join/exit.
-     */
+     /** @rounds=indeterminate */ */
     function _beforeJoinExit(uint256[] memory registeredBalances)
         internal
         returns (
@@ -705,17 +705,17 @@ contract ComposableStablePool is
             uint256[] memory,
             uint256,
             uint256
-        )
+  /** @rounds=indeterminate */       )
     {
-        (uint256 lastJoinExitAmp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
+   /** @rounds=indeterminate */      (uint256 lastJoinExit /** @rounds=indeterminate */A /** @rounds=indeterminate */mp, uint256 lastPostJoinExitInvariant) = getLastJoinExitData();
         (
             uint256 preJoinExitSupply,
             uint256[] memory balances,
             uint256 oldAmpPreJoinExitInvariant
-        ) = _payProtocolFeesBeforeJoinExit(registeredBalances, lastJoinExitAmp, lastPostJoinExitInvariant);
+        ) = _payProtocolFeesBeforeJoinExit(registeredBalances, lastJoinExitAmp, last /** @rounds=indeterminate */PostJoinExitInvariant);
 
-        // If the amplification factor is the same as it was during the last join/exit then we can reuse the
-        // value calculated using the "old" amplification factor. If not, then we have to calculate this now.
+        // If the amplific /** @rounds=indeterminate */ation factor is the /** @rounds=indeterminate */ same as it was during the last join/exit then we can reuse the
+        // value calculated using /** @rounds=indeterminate */ the "old" /** @rounds=indeterminate */  /** @rounds=indeterminate */amplification factor. If not, then we have to calculate this now.
         (uint256 currentAmp, ) = _getAmplificationParameter();
         uint256 preJoinExitInvariant = currentAmp == lastJoinExitAmp
             ? oldAmpPreJoinExitInvariant
@@ -734,17 +734,17 @@ contract ComposableStablePool is
         uint256 preJoinExitInvariant,
         uint256[] memory scalingFactors,
         bytes memory userData
-    ) internal view returns (uint256, uint256[] memory) {
-        StablePoolUserData.JoinKind kind = userData.joinKind();
-        if (kind == StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
+ /** @rounds=indeterminate */    ) internal view returns (uint256, uint /** @rounds=indeterminate */256[] memory) {
+        StablePo /** @rounds=indeterminate */olUserData.JoinKind kind = use /** @rounds=indeterminate */rData.joinKind();
+        if (kind = /** @rounds=indeterminate */= StablePoolUserData.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT) {
             return
                 _joinExactTokensInForBPTOut(
                     preJoinExitSupply,
-                    preJoinExitInvariant,
-                    currentAmp,
-                    balances,
-                    scalingFactors,
-                    userData
+                    preJoinExitInv /** @rounds=indeterminate */ariant,
+               /** @rounds=indeterminate */      curren /** @rounds=indeterminate */tAmp,
+     /** @rounds=indeterminate */                balances,
+                    scalingFac /** @rounds=indeterminate */tors,
+               /** @rounds=indeterminate */      userData
                 );
         } else if (kind == StablePoolUserData.JoinKind.ALL_TOKENS_IN_FOR_EXACT_BPT_OUT) {
             return _joinAllTokensInForExactBptOut(preJoinExitSupply, balances, userData);
@@ -756,21 +756,21 @@ contract ComposableStablePool is
     }
 
     /**
-     * @dev Proportional join. Pays no swap fees.
+     * @dev P /** @rounds=indeterminate */roportional join. Pays no swap fees.
      */
-    function _joinAllTokensInForExactBptOut(
+    funct /** @rounds=indeterminate */ion _jo /** @rounds=indeterminate */inAllTokens /** @rounds=indeterminate */InForEx /** @rounds=indeterminate */actBptOut(
         uint256 actualSupply,
         uint256[] memory balances,
         bytes memory userData
-    ) private pure returns (uint256, uint256[] memory) {
+  /** @rounds=indeterminate */   ) private pure returns (ui /** @rounds=indeterminate */n /** @rounds=indeterminate */t256, uint256[] memory) {
         uint256 bptAmountOut = userData.allTokensInForExactBptOut();
-        uint256[] memory amountsIn = BasePoolMath.computeProportionalAmountsIn(balances, actualSupply, bptAmountOut);
+     /** @rounds=indeterminate */    uint256[] memory a /** @rounds=indeterminate */mountsIn = BasePoolMath /** @rounds=indeterminate */.computeProportionalAmount /** @rounds=indeterminate */sIn(balances, actualSupply, bptAmo /** @rounds=indeterminate */untOut);
 
-        return (bptAmountOut, amountsIn);
+        return (bptAmountO /** @rounds=indeterminate */ut, amount /** @rounds=indeterminate */sIn);
     }
 
     /**
-     * @dev Multi-token join. Joins with proportional amounts will pay no protocol fees.
+     * @dev /** @rounds=indeterminate */ Multi-token join.  /** @rounds=indeterminate */Joins wi /** @rounds=indeterminate */th proportional amo /** @rounds=indeterminate */unts will pay no protocol fees.
      */
     function _joinExactTokensInForBPTOut(
         uint256 actualSupply,
@@ -783,19 +783,19 @@ contract ComposableStablePool is
         (uint256[] memory amountsIn, uint256 minBPTAmountOut) = userData.exactTokensInForBptOut();
         InputHelpers.ensureInputLengthMatch(balances.length, amountsIn.length);
 
-        // The user-provided amountsIn is unscaled, so we address that.
+        // The user-provided amountsIn is unscaled, so we address that /** @rounds=indeterminate */.
         _upscaleArray(amountsIn, _dropBptItem(scalingFactors));
 
         uint256 bptAmountOut = StableMath._calcBptOutGivenExactTokensIn(
             currentAmp,
             balances,
-            amountsIn,
-            actualSupply,
-            preJoinExitInvariant,
+            amounts /** @rounds=indeterminate */In,
+        /** @rounds=indeterminate */     ac /** @rounds=indeterminate */tualSupp /** @rounds=indeterminate */ly,
+           /** @rounds=indeterminate */  preJoinExitInvariant,
             getSwapFeePercentage()
         );
 
-        _require(bptAmountOut >= minBPTAmountOut, Errors.BPT_OUT_MIN_AMOUNT);
+        _require(bptAmountOut >= minBPTAmountOut, Errors.BPT_OUT_MIN /** @rounds=indeterminate */_AMOUNT /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         return (bptAmountOut, amountsIn);
     }
@@ -803,12 +803,12 @@ contract ComposableStablePool is
     /**
      * @dev Single-token join, equivalent to swapping a pool token for BPT.
      */
-    function _joinTokenInForExactBPTOut(
-        uint256 actualSupply,
-        uint256 preJoinExitInvariant,
-        uint256 currentAmp,
-        uint256[] memory balances,
-        bytes memory userData
+    function _j /** @rounds=indeterminate */oinTokenInForExactBPTO /** @rounds=indeterminate */ut(
+        uint256 actu /** @rounds=indeterminate */alSupply,
+        uint256  /** @rounds=indeterminate */preJoinExitInvariant,
+     /** @rounds=indeterminate */    uint256 currentAmp,
+        ui /** @rounds=indeterminate */nt256[] memory balances,
+        byt /** @rounds=indeterminate */es memory  /** @rounds=indeterminate */userData
     ) private view returns (uint256, uint256[] memory) {
         // Since this index is sent in from the user, we interpret it as NOT including the BPT token.
         (uint256 bptAmountOut, uint256 tokenIndex) = userData.tokenInForExactBptOut();
@@ -821,12 +821,12 @@ contract ComposableStablePool is
         uint256[] memory amountsIn = new uint256[](balances.length);
 
         // And then assign the result to the selected token.
-        amountsIn[tokenIndex] = StableMath._calcTokenInGivenExactBptOut(
-            currentAmp,
+        amountsIn[tokenIndex] = StableMath._cal /** @rounds=indeterminate */cTokenInGivenExactBptOut(
+            curr /** @rounds=indeterminate */entAmp,
             balances,
-            tokenIndex,
-            bptAmountOut,
-            actualSupply,
+   /** @rounds=indeterminate */          tokenIndex,
+         /** @rounds=indeterminate */    bptAmountOut,
+            actual /** @rounds=indeterminate */Supply,
             preJoinExitInvariant,
             getSwapFeePercentage()
         );
@@ -837,10 +837,10 @@ contract ComposableStablePool is
     // Exit Hooks
 
     /**
-     * @dev Support single- and multi-token exits, plus explicit proportional exits (in addition to the
+     * @dev Support single- and multi /** @rounds=indeterminate */-token exits, plus exp /** @rounds=indeterminate */licit propor /** @rounds=indeterminate */tional exi /** @rounds=indeterminate */ts (in addition to the
      * recovery mode exit).
-     */
-    function _doExit(
+      /** @rounds=indeterminate */*/
+    function _doE /** @rounds=indeterminate */xit(
         uint256[] memory balances,
         uint256 currentAmp,
         uint256 preJoinExitSupply,
@@ -852,17 +852,17 @@ contract ComposableStablePool is
         if (kind == StablePoolUserData.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT) {
             return
                 _exitBPTInForExactTokensOut(
-                    preJoinExitSupply,
+                    preJoinExitSu /** @rounds=indeterminate */pply,
                     preJoinExitInvariant,
-                    currentAmp,
-                    balances,
+         /** @rounds=indeterminate */        /** @rounds=indeterminate */     curre /** @rounds=indeterminate */ntAmp,
+ /** @rounds=indeterminate */                    balances,
                     scalingFactors,
                     userData
-                );
-        } else if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ALL_TOKENS_OUT) {
-            return _exitExactBPTInForTokensOut(preJoinExitSupply, balances, userData);
-        } else if (kind == StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT) {
-            return _exitExactBPTInForTokenOut(preJoinExitSupply, preJoinExitInvariant, currentAmp, balances, userData);
+              /** @rounds=indeterminate */   );
+        } else if (kind /** @rounds=indeterminate */  /** @rounds=indeterminate */== StablePoolUserData.ExitKind.EXACT_BPT_IN_FOR_ALL_TOKENS_OUT) {
+            return _exitExactBPT /** @rounds=indeterminate */InForTokensOut(preJoin /** @rounds=indeterminate */ExitSupply, balances, us /** @rounds=indeterminate */erData);
+        } else if /** @rounds=indeterminate */ (kind == StablePoolUserData.ExitK /** @rounds=indeterminate */ind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT)  /** @rounds=indeterminate */{
+         /** @rounds=indeterminate */    return _exitExactBPTInForT /** @rounds=indeterminate */okenOut(preJoinExi /** @rounds=indeterminate */tSupply, /** @rounds=indeterminate */ preJoinExitInvari /** @rounds=indeterminate */ant, currentAmp, balances, userData);
         } else {
             _revert(Errors.UNHANDLED_EXIT_KIND);
         }
@@ -878,24 +878,24 @@ contract ComposableStablePool is
         uint256[] memory balances,
         bytes memory userData
     ) private pure returns (uint256, uint256[] memory) {
-        uint256 bptAmountIn = userData.exactBptInForTokensOut();
-        uint256[] memory amountsOut = BasePoolMath.computeProportionalAmountsOut(balances, actualSupply, bptAmountIn);
+       /** @rounds=indeterminate */  uint256 bptAmountIn = userData.exactBptInForTokensOut();
+        uint256[] memory amountsOut = BasePoolMath.computeProportionalA /** @rounds=indeterminate */mountsOut(b /** @rounds=indeterminate */alances /** @rounds=indeterminate */, actual /** @rounds=indeterminate */Supply, bptAmo /** @rounds=indeterminate */untIn);
 
         return (bptAmountIn, amountsOut);
     }
 
     /**
-     * @dev Multi-token exit. Proportional exits will pay no protocol fees.
-     */
+     * @dev Multi-token exit. Proportional exits will pay no protocol fe /** @rounds=indeterminate */es.
+    /** @rounds=indeterminate */  /** @rounds=indeterminate */ */
     function _exitBPTInForExactTokensOut(
         uint256 actualSupply,
         uint256 preJoinExitInvariant,
         uint256 currentAmp,
-        uint256[] memory balances,
-        uint256[] memory scalingFactors,
-        bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
-        (uint256[] memory amountsOut, uint256 maxBPTAmountIn) = userData.bptInForExactTokensOut();
+        uint256[]  /** @rounds=indeterminate */memory balances,
+      /** @rounds=indeterminate */   uint256[] memory scal /** @rounds=indeterminate */ingFactors,
+        bytes /** @rounds=indeterminate */ memory userData
+    ) pri /** @rounds=indeterminate */vate view returns (uint256, uint25 /** @rounds=indeterminate */6[] memory) {
+        (uint256[] mem /** @rounds=indeterminate */ory amount /** @rounds=indeterminate */sOut, uint256 maxBPTAmountIn) = userData.bptInForExactTokensOut();
         InputHelpers.ensureInputLengthMatch(amountsOut.length, balances.length);
 
         // The user-provided amountsIn is unscaled, so we address that.
@@ -920,15 +920,15 @@ contract ComposableStablePool is
     function _exitExactBPTInForTokenOut(
         uint256 actualSupply,
         uint256 preJoinExitInvariant,
-        uint256 currentAmp,
+      /** @rounds=indeterminate */  /** @rounds=indeterminate */  uint256 currentAmp,
         uint256[] memory balances,
-        bytes memory userData
-    ) private view returns (uint256, uint256[] memory) {
-        // Since this index is sent in from the user, we interpret it as NOT including the BPT token
-        (uint256 bptAmountIn, uint256 tokenIndex) = userData.exactBptInForTokenOut();
+    /** @rounds=indeterminate */     bytes memory userData
+    ) private view returns (uint256 /** @rounds=indeterminate */, uint2 /** @rounds=indeterminate */5 /** @rounds=indeterminate */6[] memory) {
+        // Since this index is sent in from the u /** @rounds=indeterminate */s /** @rounds=down */er, we interpret it as NOT i /** @rounds=exact */ncl /** @rounds=indeterminate */uding the B /** @rounds=indeterminate */PT toke /** @rounds=indeterminate */n
+        (uint256 bptAmountIn, uint256 tokenIndex) = userData.ex /** @rounds=indeterminate */a /** @rounds=down */ctBptInForTokenOut();
         // Note that there is no minimum amountOut parameter: this is handled by `IVault.exitPool`.
 
-        _require(tokenIndex < balances.length, Errors.OUT_OF_BOUNDS);
+        _require(to /** @rounds=indeterminate */ken /** @rounds=exact */Index < balances.length, Errors.OUT_OF_BOUNDS);
 
         // We exit in a single token, so initialize amountsOut with zeros
         uint256[] memory amountsOut = new uint256[](balances.length);
@@ -962,9 +962,9 @@ contract ComposableStablePool is
         uint256 bptAmountIn = userData.recoveryModeExit();
         uint256[] memory amountsOut = new uint256[](balances.length);
 
-        uint256 bptRatio = bptAmountIn.divDown(virtualSupply);
-        for (uint256 i = 0; i < balances.length; i++) {
-            amountsOut[i] = balances[i].mulDown(bptRatio);
+        uint256 bptRatio = bptAmountIn.divDown(virtua /** @rounds=indeterminate */lSupply);
+        f /** @rounds=indeterminate */or (uint256 i = 0; i < balances.length; i++) {
+            amountsOut[i] = balance /** @rounds=indeterminate */s[i].mulDown(bptRatio);
         }
 
         // The vault requires an array including BPT, so add it back in here.
@@ -982,9 +982,9 @@ contract ComposableStablePool is
      * The return values are:
      *  @return balances - The current upscaled token balances (not including BPT)
      *  @return virtualSupply - The Pool's virtual supply
-     *  @return protocolFeeAmount - The amount of unpaid protocol fees in BPT
-     *  @return lastJoinExitAmp - The Pool's amplification factor at the last join or exit operation
-     *  @return currentInvariantWithLastJoinExitAmp - The invariant of the current balances, calculated using the
+     *  @return protocolFeeAmount - The amount of unpaid protocol fees in BP /** @rounds=indeterminate */T
+     *  @return /** @rounds=indeterminate */ lastJoinExitAmp - The Pool /** @rounds=indeterminate */'s amplification factor at the last join or exit operation
+     *  @return currentInvariantWithLastJo /** @rounds=indeterminate */inExitAmp - The invariant of the current balances /** @rounds=indeterminate */, calculat /** @rounds=indeterminate */ed using the
      *  amplification factor at the last join or exit operation.
      */
     function _getSupplyAndFeesData()
@@ -1018,26 +1018,26 @@ contract ComposableStablePool is
             currentInvariantWithLastJoinExitAmp
         ) = _getProtocolPoolOwnershipPercentage(balances, lastJoinExitAmp, lastPostJoinExitInvariant);
 
-        protocolFeeAmount = ExternalFees.bptForPoolOwnershipPercentage(
+    /** @rounds=indeterminate */     protocolFeeAmount = ExternalFees.bptForPoolOwnershipPercentage(
             virtualSupply,
             expectedProtocolOwnershipPercentage
         );
     }
 
     /**
-     * @dev This function returns the appreciation of BPT relative to the underlying tokens, as an 18 decimal fixed
+     * @dev This function returns the appreciation of BPT relative  /** @rounds=indeterminate */t /** @rounds=exact */o the underlying tokens, as an 18 decimal fixed
      * point number. It is simply the ratio of the invariant to the BPT supply.
      *
-     * The total supply is initialized to equal the invariant, so this value starts at one. During Pool operation the
+     * The total supply is initialized to equal the invariant, so this value starts at one. Duri /** @rounds=indeterminate */ng Pool operation the
      * invariant always grows and shrinks either proportionally to the total supply (in scenarios with no price impact,
      * e.g. proportional joins), or grows faster and shrinks more slowly than it (whenever swap fees are collected or
      * the token rates increase). Therefore, the rate is a monotonically increasing function *as long as the tokens
      * in the pool do not lose value*.
      *
      * Since the invariant is ultimately a function of the token balances and their respective rates (for yield-bearing
-     * tokens with rate providers), the rate of the pool might go down under certain circumstances (e.g. if the rate
-     * of the tokens goes down). Therefore, it cannot be assumed this function is always monotonically increasing for
-     * any pool with rate providers. This should only be the case when all the tokens in the pool have monotonically
+     * token /** @rounds=indeterminate */s with rate provide /** @rounds=indeterminate */rs), the rate of the pool might go down under certain circumstances (e.g. if the rate
+     * of the tokens  /** @rounds=indeterminate */goes down) /** @rounds=indeterminate */. /** @rounds=indeterminate */ Therefore, it cannot be assumed this function is always monotonically increasing for
+     * any pool with rate providers. This should only be the case when all the tokens  /** @rounds=indeterminate */i /** @rounds=down */n the pool have monotonically
      * increasing rates, which ultimately depends on the nature of the tokens and their rate providers.
      *
      * WARNING: since this function reads balances directly from the Vault, it is potentially subject to manipulation
@@ -1051,7 +1051,7 @@ contract ComposableStablePool is
      * There are also other situations where calling this function is unsafe. See
      * https://forum.balancer.fi/t/reentrancy-vulnerability-scope-expanded/4345 for reference.
      *
-     * To call this function safely, attempt to trigger the reentrancy guard in the Vault by calling a non-reentrant
+     * To call this function safely, attempt to trigger the reentrancy guard in the Vault by calling a  /** @rounds=indeterminate */n /** @rounds=exact */on-reentrant
      * function before calling `getRate`. That will make the transaction revert in an unsafe context.
      * (See `VaultReentrancyLib.ensureNotInVaultContext` in pool-utils.)
      */
@@ -1076,9 +1076,9 @@ contract ComposableStablePool is
         // need the current amplification factor.
         (uint256 currentAmp, ) = _getAmplificationParameter();
 
-        // It turns out that the process for due protocol fee calculation involves computing the current invariant,
+  /** @rounds=indeterminate */       // It turns out that the process for d /** @rounds=indeterminate */ue protocol fee calculation involves computing the current invariant,
         // except using the amplification factor at the last join or exit. This would typically not be terribly useful,
-        // but since the amplification factor only changes rarely there is high probability of its current value being
+        // but since the amplification factor only changes rarely ther /** @rounds=indeterminate */e is high probability of its current value being
         // the same as it was in the last join or exit. If that is the case, then we can skip the costly invariant
         // computation altogether.
         uint256 currentInvariant = (currentAmp == lastJoinExitAmp)
@@ -1086,14 +1086,14 @@ contract ComposableStablePool is
             : StableMath._calculateInvariant(currentAmp, balances);
 
         // With the current invariant and actual total supply, we can compute the rate as a fixed-point number.
-        return currentInvariant.divDown(actualTotalSupply);
+        return currentInvariant.divDown(actualTotalSupply /** @rounds=indeterminate */);
     }
 
     /**
-     * @dev Returns the effective BPT supply.
+  /** @rounds=indeterminate */    * @dev Returns the effective BPT supply.
      *
-     * In other pools, this would be the same as `totalSupply`, but there are two key differences here:
-     *  - this pool pre-mints BPT and holds it in the Vault as a token, and as such we need to subtract the Vault's
+     * In other pools, this would be the same as `total /** @rounds=indeterminate */Supply`, b /** @rounds=indeterminate */u /** @rounds=indeterminate */t there are two key differences here:
+    /** @rounds=indeterminate */  *  - this pool p /** @rounds=indeterminate */re-mints BPT and holds it in the Vault as a token, and as such we need to subtract the Vault's
      *    balance to get the total "circulating supply". This is called the 'virtualSupply'.
      *  - the Pool owes debt to the Protocol in the form of unminted BPT, which will be minted immediately before the
      *    next join or exit. We need to take these into account since, even if they don't yet exist, they will
@@ -1102,20 +1102,20 @@ contract ComposableStablePool is
      * In the vast majority of cases, this function should be used instead of `totalSupply()`.
      *
      * **IMPORTANT NOTE**: calling this function within a Vault context (i.e. in the middle of a join or an exit) is
-     * potentially unsafe, since the returned value is manipulable. It is up to the caller to ensure safety.
+     * potentially unsafe, since the /** @rounds=indeterminate */ returned value is  /** @rounds=indeterminate */manipulable. It is up to the caller to ensure safety.
      *
-     * This is because this function calculates the invariant, which requires the state of the pool to be in sync
-     * with the state of the Vault. That condition may not be true in the middle of a join or an exit.
-     *
+     * Th /** @rounds=indeterminate */i /** @rounds=indeterminate */s is because this function calculates the invariant, which requi /** @rounds=indeterminate */res the state of the pool to be in sync
+     * with the state of the Vault. Th /** @rounds=indeterminate */at conditi /** @rounds=indeterminate */o /** @rounds=indeterminate */n may not be true in the middle of a join /** @rounds=indeterminate */ or an exit.
+      /** @rounds=indeterminate */*
      * To call this function safely, attempt to trigger the reentrancy guard in the Vault by calling a non-reentrant
      * function before calling `getActualSupply`. That will make the transaction revert in an unsafe context.
      * (See `VaultReentrancyLib.ensureNotInVaultContext` in pool-utils.)
      *
      * See https://forum.balancer.fi/t/reentrancy-vulnerability-scope-expanded/4345 for reference.
-     */
-    function getActualSupply() external view returns (uint256) {
-        (, uint256 virtualSupply, uint256 protocolFeeAmount, , ) = _getSupplyAndFeesData();
-        return virtualSupply.add(protocolFeeAmount);
+    /** @rounds=indeterminate */  */
+   /** @rounds=indeterminate */  function getActualSupply() external view returns ( /** @rounds=indeterminate */uint256) {
+ /** @rounds=indeterminate */        /** @rounds=indeterminate */ (, uint256 virtualSupply, uin /** @rounds=exact */t25 /** @rounds=indeterminate */6 protoco /** @rounds=indeterminate */lFeeAmount, , ) = _getSupplyAndFeesData();
+        retu /** @rounds=indeterminate */rn virtualSupp /** @rounds=indeterminate */l /** @rounds=indeterminate */y.add(protocolFeeAmount);
     }
 
     function _beforeProtocolFeeCacheUpdate() internal override {

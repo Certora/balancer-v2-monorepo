@@ -70,53 +70,53 @@ library StableMath {
 
         // Always round down, to match Vyper's arithmetic (which always truncates).
 
-        uint256 sum = 0; // S in the Curve version
-        uint256 numTokens = balances.length;
-        for (uint256 i = 0; i < numTokens; i++) {
-            sum = sum.add(balances[i]);
+        uint256 sum = 0 /** @rounds=exact */; // S in the Curve version
+        uint256 numTokens = balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < numTokens /** @rounds=indeterminate */; i++) {
+            sum = sum.add(balances[i] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
-        if (sum == 0) {
-            return 0;
+        if (sum /** @rounds=indeterminate */ == 0 /** @rounds=exact */) {
+            return 0 /** @rounds=exact */;
         }
 
         uint256 prevInvariant; // Dprev in the Curve version
-        uint256 invariant = sum; // D in the Curve version
-        uint256 ampTimesTotal = amplificationParameter * numTokens; // Ann in the Curve version
+        uint256 invariant = sum /** @rounds=indeterminate */; // D in the Curve version
+        uint256 ampTimesTotal = amplificationParameter /** @rounds=indeterminate */ * numTokens /** @rounds=indeterminate */ /** @rounds=indeterminate */; // Ann in the Curve version
 
-        for (uint256 i = 0; i < 255; i++) {
-            uint256 D_P = invariant;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < 255 /** @rounds=exact */; i++) {
+            uint256 D_P = invariant /** @rounds=indeterminate */;
 
-            for (uint256 j = 0; j < numTokens; j++) {
+            for (uint256 j = 0 /** @rounds=exact */; j /** @rounds=indeterminate */ < numTokens /** @rounds=indeterminate */; j++) {
                 // (D_P * invariant) / (balances[j] * numTokens)
-                D_P = Math.divDown(Math.mul(D_P, invariant), Math.mul(balances[j], numTokens));
+                D_P = Math.divDown(Math.mul(D_P /** @rounds=indeterminate */, invariant /** @rounds=indeterminate */) /** @rounds=indeterminate */, Math.mul(balances[j] /** @rounds=indeterminate */, numTokens /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=down */;
             }
 
-            prevInvariant = invariant;
+            prevInvariant = invariant /** @rounds=indeterminate */;
 
             invariant = Math.divDown(
                 Math.mul(
                     // (ampTimesTotal * sum) / AMP_PRECISION + D_P * numTokens
-                    (Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P, numTokens))),
-                    invariant
-                ),
+                    (Math.divDown(Math.mul(ampTimesTotal, sum), _AMP_PRECISION).add(Math.mul(D_P /** @rounds=indeterminate */, numTokens /** @rounds=indeterminate */) /** @rounds=indeterminate */)) /** @rounds=indeterminate */,
+                    invariant /** @rounds=indeterminate */
+                ) /** @rounds=indeterminate */,
                 // ((ampTimesTotal - _AMP_PRECISION) * invariant) / _AMP_PRECISION + (numTokens + 1) * D_P
                 (
                     Math.divDown(Math.mul((ampTimesTotal - _AMP_PRECISION), invariant), _AMP_PRECISION).add(
-                        Math.mul((numTokens + 1), D_P)
+                        Math.mul((numTokens /** @rounds=indeterminate */ + 1 /** @rounds=exact */) /** @rounds=indeterminate */, D_P /** @rounds=indeterminate */) /** @rounds=indeterminate */
                     )
-                )
-            );
+                ) /** @rounds=indeterminate */
+            ) /** @rounds=down */;
 
-            if (invariant > prevInvariant) {
-                if (invariant - prevInvariant <= 1) {
-                    return invariant;
+            if (invariant /** @rounds=indeterminate */ > prevInvariant /** @rounds=indeterminate */) {
+                if (invariant /** @rounds=indeterminate */ - prevInvariant /** @rounds=indeterminate */ /** @rounds=indeterminate */ <= 1 /** @rounds=exact */) {
+                    return invariant /** @rounds=indeterminate */;
                 }
-            } else if (prevInvariant - invariant <= 1) {
-                return invariant;
+            } else if (prevInvariant /** @rounds=indeterminate */ - invariant /** @rounds=indeterminate */ /** @rounds=indeterminate */ <= 1 /** @rounds=exact */) {
+                return invariant /** @rounds=indeterminate */;
             }
         }
 
-        _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
+        _revert(Errors /** @rounds=indeterminate */.STABLE_INVARIANT_DIDNT_CONVERGE /** @rounds=indeterminate */);
     }
 
     // Computes how many tokens can be taken out of a pool if `tokenAmountIn` are sent, given the current balances.
@@ -142,20 +142,20 @@ library StableMath {
         **************************************************************************************************************/
 
         // Amount out, so we round down overall.
-        balances[tokenIndexIn] = balances[tokenIndexIn].add(tokenAmountIn);
+        balances[tokenIndexIn] = balances[tokenIndexIn].add(tokenAmountIn /** @rounds=indeterminate */) /** @rounds=exact */;
 
         uint256 finalBalanceOut = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-            amplificationParameter,
-            balances,
-            invariant,
-            tokenIndexOut
-        );
+            amplificationParameter /** @rounds=indeterminate */,
+            balances /** @rounds=indeterminate */,
+            invariant /** @rounds=indeterminate */,
+            tokenIndexOut /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
 
         // No need to use checked arithmetic since `tokenAmountIn` was actually added to the same balance right before
         // calling `_getTokenBalanceGivenInvariantAndAllOtherBalances` which doesn't alter the balances array.
-        balances[tokenIndexIn] = balances[tokenIndexIn] - tokenAmountIn;
+        balances[tokenIndexIn] = balances[tokenIndexIn] /** @rounds=indeterminate */ - tokenAmountIn /** @rounds=indeterminate */ /** @rounds=indeterminate */;
 
-        return balances[tokenIndexOut].sub(finalBalanceOut).sub(1);
+        return balances[tokenIndexOut].sub(finalBalanceOut).sub(1 /** @rounds=exact */) /** @rounds=down */;
     }
 
     // Computes how many tokens must be sent to a pool if `tokenAmountOut` are sent given the
@@ -182,20 +182,20 @@ library StableMath {
         **************************************************************************************************************/
 
         // Amount in, so we round up overall.
-        balances[tokenIndexOut] = balances[tokenIndexOut].sub(tokenAmountOut);
+        balances[tokenIndexOut] = balances[tokenIndexOut].sub(tokenAmountOut /** @rounds=indeterminate */) /** @rounds=down */;
 
         uint256 finalBalanceIn = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-            amplificationParameter,
-            balances,
-            invariant,
-            tokenIndexIn
-        );
+            amplificationParameter /** @rounds=indeterminate */,
+            balances /** @rounds=indeterminate */,
+            invariant /** @rounds=indeterminate */,
+            tokenIndexIn /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;  /// GOAL: MAKE THIS @rounds=up
 
         // No need to use checked arithmetic since `tokenAmountOut` was actually subtracted from the same balance right
         // before calling `_getTokenBalanceGivenInvariantAndAllOtherBalances` which doesn't alter the balances array.
-        balances[tokenIndexOut] = balances[tokenIndexOut] + tokenAmountOut;
+        balances[tokenIndexOut] = balances[tokenIndexOut] /** @rounds=indeterminate */ + tokenAmountOut /** @rounds=indeterminate */ /** @rounds=indeterminate */;
 
-        return finalBalanceIn.sub(balances[tokenIndexIn]).add(1);
+        return finalBalanceIn.sub(balances[tokenIndexIn]).add(1 /** @rounds=exact */) /** @rounds=exact */;
     }
 
     function _calcBptOutGivenExactTokensIn(
@@ -210,47 +210,47 @@ library StableMath {
 
         // First loop calculates the sum of all token balances, which will be used to calculate
         // the current weights of each token, relative to this sum
-        uint256 sumBalances = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            sumBalances = sumBalances.add(balances[i]);
+        uint256 sumBalances = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            sumBalances = sumBalances.add(balances[i] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
 
         // Calculate the weighted balance ratio without considering fees
-        uint256[] memory balanceRatiosWithFee = new uint256[](amountsIn.length);
+        uint256[] memory balanceRatiosWithFee = new uint256[](amountsIn /** @rounds=indeterminate */.length /** @rounds=indeterminate */) /** @rounds=indeterminate */;
         // The weighted sum of token balance ratios with fee
-        uint256 invariantRatioWithFees = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            uint256 currentWeight = balances[i].divDown(sumBalances);
-            balanceRatiosWithFee[i] = balances[i].add(amountsIn[i]).divDown(balances[i]);
-            invariantRatioWithFees = invariantRatioWithFees.add(balanceRatiosWithFee[i].mulDown(currentWeight));
+        uint256 invariantRatioWithFees = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            uint256 currentWeight = balances[i].divDown(sumBalances /** @rounds=indeterminate */) /** @rounds=down */;
+            balanceRatiosWithFee[i] = balances[i].add(amountsIn[i]).divDown(balances[i] /** @rounds=indeterminate */) /** @rounds=down */;
+            invariantRatioWithFees = invariantRatioWithFees.add(balanceRatiosWithFee[i].mulDown(currentWeight /** @rounds=indeterminate */) /** @rounds=down */) /** @rounds=exact */;
         }
 
         // Second loop calculates new amounts in, taking into account the fee on the percentage excess
-        uint256[] memory newBalances = new uint256[](balances.length);
-        for (uint256 i = 0; i < balances.length; i++) {
+        uint256[] memory newBalances = new uint256[](balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
             uint256 amountInWithoutFee;
 
             // Check if the balance ratio is greater than the ideal ratio to charge fees or not
-            if (balanceRatiosWithFee[i] > invariantRatioWithFees) {
-                uint256 nonTaxableAmount = balances[i].mulDown(invariantRatioWithFees.sub(FixedPoint.ONE));
-                uint256 taxableAmount = amountsIn[i].sub(nonTaxableAmount);
+            if (balanceRatiosWithFee[i] /** @rounds=indeterminate */ > invariantRatioWithFees /** @rounds=indeterminate */) {
+                uint256 nonTaxableAmount = balances[i].mulDown(invariantRatioWithFees.sub(FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */) /** @rounds=down */) /** @rounds=down */;
+                uint256 taxableAmount = amountsIn[i].sub(nonTaxableAmount /** @rounds=indeterminate */) /** @rounds=down */;
                 // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
-                amountInWithoutFee = nonTaxableAmount.add(taxableAmount.mulDown(FixedPoint.ONE - swapFeePercentage));
+                amountInWithoutFee = nonTaxableAmount.add(taxableAmount.mulDown(FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ - swapFeePercentage /** @rounds=indeterminate */ /** @rounds=indeterminate */) /** @rounds=down */) /** @rounds=exact */;
             } else {
-                amountInWithoutFee = amountsIn[i];
+                amountInWithoutFee = amountsIn[i] /** @rounds=indeterminate */;
             }
 
-            newBalances[i] = balances[i].add(amountInWithoutFee);
+            newBalances[i] = balances[i].add(amountInWithoutFee /** @rounds=indeterminate */) /** @rounds=exact */;
         }
 
-        uint256 newInvariant = _calculateInvariant(amp, newBalances);
-        uint256 invariantRatio = newInvariant.divDown(currentInvariant);
+        uint256 newInvariant = _calculateInvariant(amp /** @rounds=indeterminate */, newBalances /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        uint256 invariantRatio = newInvariant.divDown(currentInvariant /** @rounds=indeterminate */) /** @rounds=down */;
 
         // If the invariant didn't increase for any reason, we simply don't mint BPT
-        if (invariantRatio > FixedPoint.ONE) {
-            return bptTotalSupply.mulDown(invariantRatio - FixedPoint.ONE);
+        if (invariantRatio /** @rounds=indeterminate */ > FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */) {
+            return bptTotalSupply.mulDown(invariantRatio /** @rounds=indeterminate */ - FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ /** @rounds=indeterminate */) /** @rounds=down */;
         } else {
-            return 0;
+            return 0 /** @rounds=exact */;
         }
     }
 
@@ -265,33 +265,33 @@ library StableMath {
     ) internal pure returns (uint256) {
         // Token in, so we round up overall.
 
-        uint256 newInvariant = bptTotalSupply.add(bptAmountOut).divUp(bptTotalSupply).mulUp(currentInvariant);
+        uint256 newInvariant = bptTotalSupply.add(bptAmountOut).divUp(bptTotalSupply).mulUp(currentInvariant /** @rounds=indeterminate */) /** @rounds=up */;
 
         // Calculate amount in without fee.
         uint256 newBalanceTokenIndex = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-            amp,
-            balances,
-            newInvariant,
-            tokenIndex
-        );
-        uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex]);
+            amp /** @rounds=indeterminate */,
+            balances /** @rounds=indeterminate */,
+            newInvariant /** @rounds=indeterminate */,
+            tokenIndex /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
+        uint256 amountInWithoutFee = newBalanceTokenIndex.sub(balances[tokenIndex] /** @rounds=indeterminate */) /** @rounds=down */;
 
         // First calculate the sum of all token balances, which will be used to calculate
         // the current weight of each token
-        uint256 sumBalances = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            sumBalances = sumBalances.add(balances[i]);
+        uint256 sumBalances = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            sumBalances = sumBalances.add(balances[i] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
 
         // We can now compute how much extra balance is being deposited and used in virtual swaps, and charge swap fees
         // accordingly.
-        uint256 currentWeight = balances[tokenIndex].divDown(sumBalances);
-        uint256 taxablePercentage = currentWeight.complement();
-        uint256 taxableAmount = amountInWithoutFee.mulUp(taxablePercentage);
-        uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount);
+        uint256 currentWeight = balances[tokenIndex].divDown(sumBalances /** @rounds=indeterminate */) /** @rounds=down */;
+        uint256 taxablePercentage = currentWeight.complement() /** @rounds=up */;
+        uint256 taxableAmount = amountInWithoutFee.mulUp(taxablePercentage /** @rounds=indeterminate */) /** @rounds=up */;
+        uint256 nonTaxableAmount = amountInWithoutFee.sub(taxableAmount /** @rounds=indeterminate */) /** @rounds=down */;
 
         // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
-        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
+        return nonTaxableAmount.add(taxableAmount.divUp(FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ - swapFeePercentage /** @rounds=indeterminate */ /** @rounds=indeterminate */) /** @rounds=up */) /** @rounds=exact */;
     }
 
     /*
@@ -311,44 +311,44 @@ library StableMath {
 
         // First loop calculates the sum of all token balances, which will be used to calculate
         // the current weights of each token relative to this sum
-        uint256 sumBalances = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            sumBalances = sumBalances.add(balances[i]);
+        uint256 sumBalances = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            sumBalances = sumBalances.add(balances[i] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
 
         // Calculate the weighted balance ratio without considering fees
-        uint256[] memory balanceRatiosWithoutFee = new uint256[](amountsOut.length);
-        uint256 invariantRatioWithoutFees = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            uint256 currentWeight = balances[i].divUp(sumBalances);
-            balanceRatiosWithoutFee[i] = balances[i].sub(amountsOut[i]).divUp(balances[i]);
-            invariantRatioWithoutFees = invariantRatioWithoutFees.add(balanceRatiosWithoutFee[i].mulUp(currentWeight));
+        uint256[] memory balanceRatiosWithoutFee = new uint256[](amountsOut /** @rounds=indeterminate */.length /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        uint256 invariantRatioWithoutFees = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            uint256 currentWeight = balances[i].divUp(sumBalances /** @rounds=indeterminate */) /** @rounds=up */;
+            balanceRatiosWithoutFee[i] = balances[i].sub(amountsOut[i]).divUp(balances[i] /** @rounds=indeterminate */) /** @rounds=up */;
+            invariantRatioWithoutFees = invariantRatioWithoutFees.add(balanceRatiosWithoutFee[i].mulUp(currentWeight /** @rounds=indeterminate */) /** @rounds=up */) /** @rounds=exact */;
         }
 
         // Second loop calculates new amounts in, taking into account the fee on the percentage excess
-        uint256[] memory newBalances = new uint256[](balances.length);
-        for (uint256 i = 0; i < balances.length; i++) {
+        uint256[] memory newBalances = new uint256[](balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
             // Swap fees are typically charged on 'token in', but there is no 'token in' here, so we apply it to
             // 'token out'. This results in slightly larger price impact.
 
             uint256 amountOutWithFee;
-            if (invariantRatioWithoutFees > balanceRatiosWithoutFee[i]) {
-                uint256 nonTaxableAmount = balances[i].mulDown(invariantRatioWithoutFees.complement());
-                uint256 taxableAmount = amountsOut[i].sub(nonTaxableAmount);
+            if (invariantRatioWithoutFees /** @rounds=indeterminate */ > balanceRatiosWithoutFee[i] /** @rounds=indeterminate */) {
+                uint256 nonTaxableAmount = balances[i].mulDown(invariantRatioWithoutFees.complement() /** @rounds=up */) /** @rounds=down */;
+                uint256 taxableAmount = amountsOut[i].sub(nonTaxableAmount /** @rounds=indeterminate */) /** @rounds=down */;
                 // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
-                amountOutWithFee = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint.ONE - swapFeePercentage));
+                amountOutWithFee = nonTaxableAmount.add(taxableAmount.divUp(FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ - swapFeePercentage /** @rounds=indeterminate */ /** @rounds=indeterminate */) /** @rounds=up */) /** @rounds=exact */;
             } else {
-                amountOutWithFee = amountsOut[i];
+                amountOutWithFee = amountsOut[i] /** @rounds=indeterminate */;
             }
 
-            newBalances[i] = balances[i].sub(amountOutWithFee);
+            newBalances[i] = balances[i].sub(amountOutWithFee /** @rounds=indeterminate */) /** @rounds=down */;
         }
 
-        uint256 newInvariant = _calculateInvariant(amp, newBalances);
-        uint256 invariantRatio = newInvariant.divDown(currentInvariant);
+        uint256 newInvariant = _calculateInvariant(amp /** @rounds=indeterminate */, newBalances /** @rounds=indeterminate */) /** @rounds=indeterminate */;
+        uint256 invariantRatio = newInvariant.divDown(currentInvariant /** @rounds=indeterminate */) /** @rounds=down */;
 
         // return amountBPTIn
-        return bptTotalSupply.mulUp(invariantRatio.complement());
+        return bptTotalSupply.mulUp(invariantRatio.complement() /** @rounds=up */) /** @rounds=up */;
     }
 
     function _calcTokenOutGivenExactBptIn(
@@ -362,36 +362,36 @@ library StableMath {
     ) internal pure returns (uint256) {
         // Token out, so we round down overall.
 
-        uint256 newInvariant = bptTotalSupply.sub(bptAmountIn).divUp(bptTotalSupply).mulUp(currentInvariant);
+        uint256 newInvariant = bptTotalSupply.sub(bptAmountIn).divUp(bptTotalSupply).mulUp(currentInvariant /** @rounds=indeterminate */) /** @rounds=up */;
 
         // Calculate amount out without fee
         uint256 newBalanceTokenIndex = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-            amp,
-            balances,
-            newInvariant,
-            tokenIndex
-        );
-        uint256 amountOutWithoutFee = balances[tokenIndex].sub(newBalanceTokenIndex);
+            amp /** @rounds=indeterminate */,
+            balances /** @rounds=indeterminate */,
+            newInvariant /** @rounds=indeterminate */,
+            tokenIndex /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
+        uint256 amountOutWithoutFee = balances[tokenIndex].sub(newBalanceTokenIndex /** @rounds=indeterminate */) /** @rounds=down */;
 
         // First calculate the sum of all token balances, which will be used to calculate
         // the current weight of each token
-        uint256 sumBalances = 0;
-        for (uint256 i = 0; i < balances.length; i++) {
-            sumBalances = sumBalances.add(balances[i]);
+        uint256 sumBalances = 0 /** @rounds=exact */;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i++) {
+            sumBalances = sumBalances.add(balances[i] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
 
         // We can now compute how much excess balance is being withdrawn as a result of the virtual swaps, which result
         // in swap fees.
-        uint256 currentWeight = balances[tokenIndex].divDown(sumBalances);
-        uint256 taxablePercentage = currentWeight.complement();
+        uint256 currentWeight = balances[tokenIndex].divDown(sumBalances /** @rounds=indeterminate */) /** @rounds=down */;
+        uint256 taxablePercentage = currentWeight.complement() /** @rounds=up */;
 
         // Swap fees are typically charged on 'token in', but there is no 'token in' here, so we apply it
         // to 'token out'. This results in slightly larger price impact. Fees are rounded up.
-        uint256 taxableAmount = amountOutWithoutFee.mulUp(taxablePercentage);
-        uint256 nonTaxableAmount = amountOutWithoutFee.sub(taxableAmount);
+        uint256 taxableAmount = amountOutWithoutFee.mulUp(taxablePercentage /** @rounds=indeterminate */) /** @rounds=up */;
+        uint256 nonTaxableAmount = amountOutWithoutFee.sub(taxableAmount /** @rounds=indeterminate */) /** @rounds=down */;
 
         // No need to use checked arithmetic for the swap fee, it is guaranteed to be lower than 50%
-        return nonTaxableAmount.add(taxableAmount.mulDown(FixedPoint.ONE - swapFeePercentage));
+        return nonTaxableAmount.add(taxableAmount.mulDown(FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ - swapFeePercentage /** @rounds=indeterminate */ /** @rounds=indeterminate */) /** @rounds=down */) /** @rounds=exact */;
     }
 
     // This function calculates the balance of a given token (tokenIndex)
@@ -404,47 +404,47 @@ library StableMath {
     ) internal pure returns (uint256) {
         // Rounds result up overall
 
-        uint256 ampTimesTotal = amplificationParameter * balances.length;
-        uint256 sum = balances[0];
-        uint256 P_D = balances[0] * balances.length;
-        for (uint256 j = 1; j < balances.length; j++) {
-            P_D = Math.divDown(Math.mul(Math.mul(P_D, balances[j]), balances.length), invariant);
-            sum = sum.add(balances[j]);
+        uint256 ampTimesTotal = amplificationParameter /** @rounds=indeterminate */ * balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        uint256 sum = balances[0] /** @rounds=indeterminate */;
+        uint256 P_D = balances[0] /** @rounds=indeterminate */ * balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        for (uint256 j = 1 /** @rounds=exact */; j /** @rounds=indeterminate */ < balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */; j++) {
+            P_D = Math.divDown(Math.mul(Math.mul(P_D /** @rounds=indeterminate */, balances[j] /** @rounds=indeterminate */) /** @rounds=indeterminate */, balances /** @rounds=indeterminate */.length /** @rounds=indeterminate */) /** @rounds=indeterminate */, invariant /** @rounds=indeterminate */) /** @rounds=down */;
+            sum = sum.add(balances[j] /** @rounds=indeterminate */) /** @rounds=exact */;
         }
         // No need to use safe math, based on the loop above `sum` is greater than or equal to `balances[tokenIndex]`
-        sum = sum - balances[tokenIndex];
+        sum = sum /** @rounds=indeterminate */ - balances[tokenIndex] /** @rounds=indeterminate */ /** @rounds=indeterminate */;
 
-        uint256 inv2 = Math.mul(invariant, invariant);
+        uint256 inv2 = Math.mul(invariant /** @rounds=indeterminate */, invariant /** @rounds=indeterminate */) /** @rounds=indeterminate */;
         // We remove the balance from c by multiplying it
         uint256 c = Math.mul(
-            Math.mul(Math.divUp(inv2, Math.mul(ampTimesTotal, P_D)), _AMP_PRECISION),
-            balances[tokenIndex]
-        );
-        uint256 b = sum.add(Math.mul(Math.divDown(invariant, ampTimesTotal), _AMP_PRECISION));
+            Math.mul(Math.divUp(inv2 /** @rounds=indeterminate */, Math.mul(ampTimesTotal /** @rounds=indeterminate */, P_D /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=up */, _AMP_PRECISION /** @rounds=indeterminate */) /** @rounds=indeterminate */,
+            balances[tokenIndex] /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
+        uint256 b = sum.add(Math.mul(Math.divDown(invariant /** @rounds=indeterminate */, ampTimesTotal /** @rounds=indeterminate */) /** @rounds=down */, _AMP_PRECISION /** @rounds=indeterminate */) /** @rounds=indeterminate */) /** @rounds=exact */;
 
         // We iterate to find the balance
-        uint256 prevTokenBalance = 0;
+        uint256 prevTokenBalance = 0 /** @rounds=exact */;
         // We multiply the first iteration outside the loop with the invariant to set the value of the
         // initial approximation.
-        uint256 tokenBalance = Math.divUp(inv2.add(c), invariant.add(b));
+        uint256 tokenBalance = Math.divUp(inv2.add(c /** @rounds=indeterminate */) /** @rounds=exact */, invariant.add(b /** @rounds=indeterminate */) /** @rounds=exact */) /** @rounds=up */;
 
-        for (uint256 i = 0; i < 255; i++) {
-            prevTokenBalance = tokenBalance;
+        for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < 255 /** @rounds=exact */; i++) {
+            prevTokenBalance = tokenBalance /** @rounds=indeterminate */;
 
             tokenBalance = Math.divUp(
-                Math.mul(tokenBalance, tokenBalance).add(c),
-                Math.mul(tokenBalance, 2).add(b).sub(invariant)
-            );
+                Math.mul(tokenBalance, tokenBalance).add(c /** @rounds=indeterminate */) /** @rounds=exact */,
+                Math.mul(tokenBalance, 2).add(b).sub(invariant /** @rounds=indeterminate */) /** @rounds=down */
+            ) /** @rounds=up */;
 
-            if (tokenBalance > prevTokenBalance) {
-                if (tokenBalance - prevTokenBalance <= 1) {
-                    return tokenBalance;
+            if (tokenBalance /** @rounds=indeterminate */ > prevTokenBalance /** @rounds=indeterminate */) {
+                if (tokenBalance /** @rounds=indeterminate */ - prevTokenBalance /** @rounds=indeterminate */ /** @rounds=indeterminate */ <= 1 /** @rounds=exact */) {
+                    return tokenBalance /** @rounds=indeterminate */;
                 }
-            } else if (prevTokenBalance - tokenBalance <= 1) {
-                return tokenBalance;
+            } else if (prevTokenBalance /** @rounds=indeterminate */ - tokenBalance /** @rounds=indeterminate */ /** @rounds=indeterminate */ <= 1 /** @rounds=exact */) {
+                return tokenBalance /** @rounds=indeterminate */;
             }
         }
 
-        _revert(Errors.STABLE_GET_BALANCE_DIDNT_CONVERGE);
+        _revert(Errors /** @rounds=indeterminate */.STABLE_GET_BALANCE_DIDNT_CONVERGE /** @rounds=indeterminate */);
     }
 }

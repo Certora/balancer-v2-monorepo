@@ -80,11 +80,11 @@ abstract contract ProtocolFeeCache is IProtocolFeeCache, RecoveryMode {
 
     bytes32 private _feeCache;
 
-    constructor(IProtocolFeePercentagesProvider protocolFeeProvider, ProviderFeeIDs memory providerFeeIDs) {
-        _protocolFeeProvider = protocolFeeProvider;
+    constructor(IProtocolFeePercentagesProvider protocolFeeProvider, ProviderFeeIDs  /** @rounds=indeterminate */memor /** @rounds=indeterminate */y providerFeeIDs) {
+  /** @rounds=indeterminate */       _protocolFeeP /** @rounds=indeterminate */rovider = protocolFeeProvider;
 
-        bytes32 feeIds = WordCodec.encodeUint(providerFeeIDs.swap, _SWAP_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH) |
-            WordCodec.encodeUint(providerFeeIDs.yield, _YIELD_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH) |
+        bytes32 fee /** @rounds=indeterminate */Ids =  /** @rounds=indeterminate */WordCodec.encodeUint(p /** @rounds=indeterminate */roviderFeeIDs.swap,  /** @rounds=indeterminate */_SWAP_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH) |
+         /** @rounds=indeterminate */     /** @rounds=indeterminate */WordCodec.encodeUint /** @rounds=indeterminate */(providerFeeIDs.yiel /** @rounds=indeterminate */d, _YIELD_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH) |
             WordCodec.encodeUint(providerFeeIDs.aum, _AUM_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH);
 
         _feeIds = feeIds;
@@ -95,19 +95,19 @@ abstract contract ProtocolFeeCache is IProtocolFeeCache, RecoveryMode {
     /**
      * @notice Returns the cached protocol fee percentage.
      */
-    function getProtocolFeePercentageCache(uint256 feeType) public view returns (uint256) {
+    fu /** @rounds=exact */nction getProtocolFeePercentageCache(uint256 feeType) pu /** @rounds=indeterminate */blic view returns ( /** @rounds=indeterminate */uint2 /** @rounds=indeterminate */56) {
         if (inRecoveryMode()) {
-            return 0;
-        }
+    /** @rounds=indeterminate */         return 0;
+        } /** @rounds=indeterminate */
 
-        uint256 offset;
-        if (feeType == ProtocolFeeType.SWAP) {
-            offset = _SWAP_FEE_OFFSET;
-        } else if (feeType == ProtocolFeeType.YIELD) {
-            offset = _YIELD_FEE_OFFSET;
-        } else if (feeType == ProtocolFeeType.AUM) {
-            offset = _AUM_FEE_OFFSET;
-        } else {
+        uint256 o /** @rounds=indeterminate */ffset; /** @rounds=indeterminate */
+        if (feeType == ProtocolFeeType.SW /** @rounds=indeterminate */AP) {
+            offset = _ /** @rounds=indeterminate */SWAP_FEE_OFFSET;
+   /** @rounds=indeterminate */     /** @rounds=indeterminate */  } else if (feeType == ProtocolFeeType. /** @rounds=indeterminate */YIELD) {
+            offset = _YIELD_FEE_OFFS /** @rounds=indeterminate */ET;
+        } else  /** @rounds=indeterminate */if (feeType == ProtocolFeeType.AUM) {
+            offset /** @rounds=indeterminate */ = _AUM_FEE_OFFSET;
+    /** @rounds=indeterminate */  /** @rounds=indeterminate */    } else {
             _revert(Errors.UNHANDLED_FEE_TYPE);
         }
 
@@ -115,17 +115,17 @@ abstract contract ProtocolFeeCache is IProtocolFeeCache, RecoveryMode {
     }
 
     /**
-     * @notice Returns the provider fee ID for the given fee type.
+     * @notice Returns the provider fee ID for the given fee /** @rounds=indeterminate */ type.
      */
-    function getProviderFeeId(uint256 feeType) public view returns (uint256) {
-        uint256 offset;
+     /** @rounds=indeterminate */funct /** @rounds=indeterminate */ion getProviderFeeId(uint256 feeType) public /** @rounds=indeterminate */ view returns (uint256) {
+   /** @rounds=indeterminate */      uint256 offse /** @rounds=indeterminate */t;
 
-        if (feeType == ProtocolFeeType.SWAP) {
-            offset = _SWAP_FEE_ID_OFFSET;
-        } else if (feeType == ProtocolFeeType.YIELD) {
-            offset = _YIELD_FEE_ID_OFFSET;
-        } else if (feeType == ProtocolFeeType.AUM) {
-            offset = _AUM_FEE_ID_OFFSET;
+   /** @rounds=indeterminate */      if (feeType == ProtocolFeeType.SWAP) {
+ /** @rounds=indeterminate */            offset = _SWAP_F /** @rounds=indeterminate */EE_ID_OFFSET;
+      /** @rounds=indeterminate */   } /** @rounds=indeterminate */ else if (feeType == ProtocolFeeType.YIELD) /** @rounds=indeterminate */ {
+            offset = _YIELD_FEE_ID_OFFSET; /** @rounds=indeterminate */
+        } else if  /** @rounds=indeterminate */(feeType == ProtocolFeeType.AUM) {
+            offset  /** @rounds=indeterminate */= _AUM_FEE_ID_OFFSET /** @rounds=indeterminate */; /** @rounds=indeterminate */
         } else {
             _revert(Errors.UNHANDLED_FEE_TYPE);
         }
@@ -152,18 +152,18 @@ abstract contract ProtocolFeeCache is IProtocolFeeCache, RecoveryMode {
     }
 
     function _updateProtocolFeeCache(IProtocolFeePercentagesProvider protocolFeeProvider, bytes32 feeIds) private {
-        uint256 swapFee = protocolFeeProvider.getFeeTypePercentage(
+        uint256 swapFee = pr /** @rounds=indeterminate */otocolFeeProvider.ge /** @rounds=indeterminate */t /** @rounds=indeterminate */FeeTypePer /** @rounds=indeterminate */centage(
             feeIds.decodeUint(_SWAP_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH)
         );
-        uint256 yieldFee = protocolFeeProvider.getFeeTypePercentage(
+        uint256 yieldFee = pro /** @rounds=indeterminate */tocolFeeProvider.get /** @rounds=indeterminate */F /** @rounds=indeterminate */eeTypePerc /** @rounds=indeterminate */entage(
             feeIds.decodeUint(_YIELD_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH)
         );
-        uint256 aumFee = protocolFeeProvider.getFeeTypePercentage(
-            feeIds.decodeUint(_AUM_FEE_ID_OFFSET, _FEE_TYPE_ID_WIDTH)
+        uint256 aumFee = p /** @rounds=indeterminate */rotocolFeeProvider.g /** @rounds=indeterminate */e /** @rounds=indeterminate */tFeeTypePe /** @rounds=indeterminate */rcentage(
+            feeIds.decodeUint(_AUM_FEE_ID_OFFSET /** @rounds=indeterminate */, _FEE_TYPE_ID_WID /** @rounds=indeterminate */TH)
         );
 
-        bytes32 feeCache = WordCodec.encodeUint(swapFee, _SWAP_FEE_OFFSET, _FEE_TYPE_CACHE_WIDTH) |
-            WordCodec.encodeUint(yieldFee, _YIELD_FEE_OFFSET, _FEE_TYPE_CACHE_WIDTH) |
+        /** @rounds=indeterminate */ bytes32 feeCache = WordCodec.encodeUint(swap /** @rounds=indeterminate */Fee, _SWAP_FEE_OFFS /** @rounds=indeterminate */ET, _FEE_TYPE_CACHE_WID /** @rounds=indeterminate */TH) |
+            WordCodec.encodeUint(yiel /** @rounds=indeterminate */dFee, _YIELD_FEE_ /** @rounds=indeterminate */OFFSET, _FEE_TYPE_CACHE /** @rounds=indeterminate */_WIDTH) |
             WordCodec.encodeUint(aumFee, _AUM_FEE_OFFSET, _FEE_TYPE_CACHE_WIDTH);
 
         _feeCache = feeCache;

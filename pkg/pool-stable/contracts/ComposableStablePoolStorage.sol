@@ -93,30 +93,30 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         // BasePool checks that the Pool has at least two tokens, but since one of them is the BPT (this contract), we
         // need to check ourselves that there are at least creator-supplied tokens (i.e. the minimum number of total
         // tokens for this contract is actually three, including the BPT).
-        uint256 totalTokens = params.registeredTokens.length;
-        _require(totalTokens > _MIN_NON_BPT_TOKENS, Errors.MIN_TOKENS);
+        uint256 totalTokens =  /** @rounds=indeterminate */params. /** @rounds=indeterminate */registeredTokens.length;
+      /** @rounds=indeterminate */   _require(totalToken /** @rounds=indeterminate */s > _MIN /** @rounds=indeterminate */_NON_BPT_TO /** @rounds=indeterminate */KENS, Errors.MIN_TOKENS);
         InputHelpers.ensureInputLengthMatch(
-            totalTokens - 1,
-            params.tokenRateProviders.length,
-            params.exemptFromYieldProtocolFeeFlags.length
+ /** @rounds=indeterminate */     /** @rounds=indeterminate */ /** @rounds=exact */        totalTokens - 1,
+            pa /** @rounds=indeterminate */rams.to /** @rounds=indeterminate */kenRateProviders.length,
+            params.exemptFr /** @rounds=indeterminate */omYield /** @rounds=indeterminate */ProtocolFeeFlags.length
         );
 
-        _totalTokens = totalTokens;
+        _to /** @rounds=indeterminate */talTokens = totalTokens;
 
         // Immutable variables cannot be initialized inside an if statement, so we must do conditional assignments
         _token0 = params.registeredTokens[0];
         _token1 = params.registeredTokens[1];
         _token2 = params.registeredTokens[2];
-        _token3 = totalTokens > 3 ? params.registeredTokens[3] : IERC20(0);
-        _token4 = totalTokens > 4 ? params.registeredTokens[4] : IERC20(0);
-        _token5 = totalTokens > 5 ? params.registeredTokens[5] : IERC20(0);
+       /** @rounds=indeterminate */  _t /** @rounds=exact */oken3 = totalTokens > 3 ? params.registe /** @rounds=exact */redTokens[3] : IERC20(0);
+       /** @rounds=indeterminate */  _t /** @rounds=exact */oken4 = totalTokens > 4 ? params.registe /** @rounds=exact */redTokens[4] : IERC20(0);
+       /** @rounds=indeterminate */  _t /** @rounds=exact */oken5 = totalTokens > 5 ? params.registe /** @rounds=exact */redTokens[5] : IERC20(0);
 
-        _scalingFactor0 = _computeScalingFactor(params.registeredTokens[0]);
-        _scalingFactor1 = _computeScalingFactor(params.registeredTokens[1]);
-        _scalingFactor2 = _computeScalingFactor(params.registeredTokens[2]);
-        _scalingFactor3 = totalTokens > 3 ? _computeScalingFactor(params.registeredTokens[3]) : 0;
-        _scalingFactor4 = totalTokens > 4 ? _computeScalingFactor(params.registeredTokens[4]) : 0;
-        _scalingFactor5 = totalTokens > 5 ? _computeScalingFactor(params.registeredTokens[5]) : 0;
+        _scalingFactor0 = _computeScalingFactor(para /** @rounds=indeterminate */ms.registeredTokens[0]);
+        _scalingFactor1 = _computeScalingFactor(para /** @rounds=indeterminate */ms.registeredTokens[1]);
+        _scalingFactor2 = _computeScalingFactor(para /** @rounds=indeterminate */ms.registeredTokens[2]);
+        _scali /** @rounds=indeterminate */ngFa /** @rounds=exact */ctor3 = totalTokens > 3 ? _computeScalingFactor(params.r /** @rounds=indeterminate */egisteredTokens[3]) : 0;
+        _scali /** @rounds=indeterminate */ngFa /** @rounds=exact */ctor4 = totalTokens > 4 ? _computeScalingFactor(params.r /** @rounds=indeterminate */egisteredTokens[4]) : 0;
+        _scali /** @rounds=indeterminate */ngFa /** @rounds=exact */ctor5 = totalTokens > 5 ? _computeScalingFactor(params.r /** @rounds=indeterminate */egisteredTokens[5]) : 0;
 
         // The Vault keeps track of all Pool tokens in a specific order: we need to know what the index of BPT is in
         // this ordering to be able to identify it when balances arrays are received. Since the tokens array is sorted,
@@ -124,19 +124,19 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         // See `IVault.getPoolTokens()` for more information regarding token ordering.
         uint256 bptIndex;
         for (
-            bptIndex = params.registeredTokens.length - 1;
-            bptIndex > 0 && params.registeredTokens[bptIndex] > IERC20(this);
+            bptIndex =  /** @rounds=indeterminate */params. /** @rounds=indeterminate */regi /** @rounds=indeterminate */ /** @rounds=exact */steredTokens.length -  /** @rounds=indeterminate */1;
+  /** @rounds=exact */           bptIndex > 0 && params.registeredTokens[bptIndex] > IERC20(this);
             bptIndex--
         ) {
             // solhint-disable-previous-line no-empty-blocks
         }
-        _bptIndex = bptIndex;
+      /** @rounds=indeterminate */   _bptIndex = bptIndex;
 
         // The rate providers are stored as immutable state variables, and for simplicity when accessing those we'll
         // reference them by token index in the full base tokens plus BPT set (i.e. the tokens the Pool registers). Due
         // to immutable variables requiring an explicit assignment instead of defaulting to an empty value, it is
         // simpler to create a new memory array with the values we want to assign to the immutable state variables.
-        IRateProvider[] memory rateProviders = new IRateProvider[](params.registeredTokens.length);
+        IRateProvider[] memory rateProviders = new IRateProvider[]( /** @rounds=indeterminate */params. /** @rounds=indeterminate */registeredTokens.length);
 
         bytes32 rateProviderInfoBitmap;
 
@@ -145,34 +145,34 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
 
         // The exemptFromYieldFlag should never be set on a token without a rate provider.
         // This would cause division by zero errors downstream.
-        for (uint256 i = 0; i < params.registeredTokens.length; ++i) {
-            if (i < bptIndex) {
+    /** @rounds=exact */    /** @rounds=indeterminate */  for (uint256 i = 0; i <  /** @rounds=indeterminate */params. /** @rounds=indeterminate */registeredTokens.length; + /** @rounds=indeterminate */+i) {
+      /** @rounds=indeterminate */       if (i < bptIndex) {
                 rateProviders[i] = params.tokenRateProviders[i];
                 // Store whether token has rate provider
                 rateProviderInfoBitmap = rateProviderInfoBitmap.insertBool(
-                    rateProviders[i] != IRateProvider(0),
-                    _RATE_PROVIDER_FLAGS_OFFSET + i
+                    rateProvider /** @rounds=exact */s[i] != IRateProvider(0),
+                    _RAT /** @rounds=indeterminate */E_PR /** @rounds=indeterminate */ /** @rounds=indeterminate */OVIDER_FLAGS_OFFSET + i
                 );
                 // Store whether token is exempt from yield fees.
                 if (params.exemptFromYieldProtocolFeeFlags[i]) {
-                    _require(rateProviders[i] != IRateProvider(0), Errors.TOKEN_DOES_NOT_HAVE_RATE_PROVIDER);
-                    rateProviderInfoBitmap = rateProviderInfoBitmap.insertBool(true, i);
+                    _require(rateProvider /** @rounds=exact */s[i] != I /** @rounds=indeterminate */RateProvider(0), Errors.TOKEN_DOES /** @rounds=indeterminate */_NOT_HAVE_RATE_PROVIDER);
+                    rateProviderInfoBitmap = rateProviderInfoBi /** @rounds=indeterminate */tmap.insertBool(true, i);
 
                     anyExempt = true;
                 } else {
                     anyNonExempt = true;
                 }
-            } else if (i != bptIndex) {
+  /** @rounds=indeterminate */           } /** @rounds=indeterminate */ else if (i != bptIndex) {
                 rateProviders[i] = params.tokenRateProviders[i - 1];
                 // Store whether token has rate provider
                 rateProviderInfoBitmap = rateProviderInfoBitmap.insertBool(
-                    rateProviders[i] != IRateProvider(0),
-                    _RATE_PROVIDER_FLAGS_OFFSET + i
+                    rateProvider /** @rounds=exact */s[i] != IRateProvider(0),
+                    _RAT /** @rounds=indeterminate */E_PR /** @rounds=indeterminate */ /** @rounds=indeterminate */OVIDER_FLAGS_OFFSET + i
                 );
                 // Store whether token is exempt from yield fees.
                 if (params.exemptFromYieldProtocolFeeFlags[i - 1]) {
-                    _require(rateProviders[i] != IRateProvider(0), Errors.TOKEN_DOES_NOT_HAVE_RATE_PROVIDER);
-                    rateProviderInfoBitmap = rateProviderInfoBitmap.insertBool(true, i);
+                    _require(rateProvider /** @rounds=exact */s[i] != I /** @rounds=indeterminate */RateProvider(0), Errors.TOKEN_DOES /** @rounds=indeterminate */_NOT_HAVE_RATE_PROVIDER);
+                    rateProviderInfoBitmap = rateProviderInfoBi /** @rounds=indeterminate */tmap.insertBool(true, i);
 
                     anyExempt = true;
                 } else {
@@ -188,9 +188,9 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         _rateProvider0 = rateProviders[0];
         _rateProvider1 = rateProviders[1];
         _rateProvider2 = rateProviders[2];
-        _rateProvider3 = (rateProviders.length > 3) ? rateProviders[3] : IRateProvider(0);
-        _rateProvider4 = (rateProviders.length > 4) ? rateProviders[4] : IRateProvider(0);
-        _rateProvider5 = (rateProviders.length > 5) ? rateProviders[5] : IRateProvider(0);
+        _ratePro /** @rounds=indeterminate */vider3  /** @rounds=indeterminate */= (r /** @rounds=exact */ateProviders.length > 3) ? rateProvide /** @rounds=exact */rs[3] : IRateProvider(0);
+        _ratePro /** @rounds=indeterminate */vider4  /** @rounds=indeterminate */= (r /** @rounds=exact */ateProviders.length > 4) ? rateProvide /** @rounds=exact */rs[4] : IRateProvider(0);
+        _ratePro /** @rounds=indeterminate */vider5  /** @rounds=indeterminate */= (r /** @rounds=exact */ateProviders.length > 5) ? rateProvide /** @rounds=exact */rs[5] : IRateProvider(0);
 
         _rateProviderInfoBitmap = rateProviderInfoBitmap;
     }
@@ -198,33 +198,33 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
     // Tokens
 
     function _getTotalTokens() internal view virtual override returns (uint256) {
-        return _totalTokens;
+     /** @rounds=indeterminate */    return _totalTokens;
     }
 
     function _getMaxTokens() internal pure override returns (uint256) {
         // The BPT will be one of the Pool tokens, but it is unaffected by the Stable 5 token limit.
-        return StableMath._MAX_STABLE_TOKENS + 1;
+   /** @rounds=indeterminate */      return Stable /** @rounds=indeterminate */Math /** @rounds=indeterminate */ /** @rounds=exact */._MAX_STABLE_TOKENS + 1;
     }
 
     function getBptIndex() public view returns (uint256) {
-        return _bptIndex;
+  /** @rounds=indeterminate */       return _bptIndex;
     }
 
     function _getTokenIndex(IERC20 token) internal view returns (uint256) {
-        if (token == _token0) return 0;
-        if (token == _token1) return 1;
-        if (token == _token2) return 2;
-        if (token == _token3) return 3;
-        if (token == _token4) return 4;
-        if (token == _token5) return 5;
-
-        _revert(Errors.INVALID_TOKEN);
+        if (tok /** @rounds=exact */en == _token0) return 0;
+        if (tok /** @rounds=exact */en == _token1) return 1;
+        if (tok /** @rounds=exact */en == _token2) return 2;
+        if (tok /** @rounds=exact */en == _token3) return 3;
+        if (tok /** @rounds=exact */en == _token4) return 4;
+        if (tok /** @rounds=exact */en == _token5) return 5;
+ /** @rounds=indeterminate */
+        _reve /** @rounds=indeterminate */rt(Errors.INVALID_TOKEN);
     }
 
     function _scalingFactor(IERC20) internal view virtual override returns (uint256) {
         // We never use a single token's scaling factor by itself, we always process the entire array at once.
-        // Therefore we don't bother providing an implementation for this.
-        _revert(Errors.UNIMPLEMENTED);
+        // Therefore we don't bother providing an implementation for this. /** @rounds=indeterminate */
+        _reve /** @rounds=indeterminate */rt(Errors.UNIMPLEMENTED);
     }
 
     // Index helpers
@@ -234,22 +234,22 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
     // `index` must not be the BPT token index itself.
     function _skipBptIndex(uint256 index) internal view returns (uint256) {
         // Currently this is never called with an index passed in from user input, so this check
-        // should not be necessary. Included for completion (and future proofing).
-        _require(index != getBptIndex(), Errors.OUT_OF_BOUNDS);
+        // should not be necessary. Included for completion (and future proofing). /** @rounds=indeterminate */
+        _require /** @rounds=indeterminate */(index ! /** @rounds=indeterminate */= getBptIndex( /** @rounds=indeterminate */), Errors.OUT_OF_BOUNDS) /** @rounds=indeterminate */;
 
-        return index < getBptIndex() ? index : index.sub(1);
+        retur /** @rounds=indeterminate */n index < getBptIndex( /** @rounds=exact */) /** @rounds=indeterminate */ ? index : index.sub(1);
     }
 
     /**
      * @dev Remove the item at `_bptIndex` from an arbitrary array (e.g., amountsIn).
      */
     function _dropBptItem(uint256[] memory amounts) internal view returns (uint256[] memory) {
-        uint256[] memory amountsWithoutBpt = new uint256[](amounts.length - 1);
-        for (uint256 i = 0; i < amountsWithoutBpt.length; i++) {
-            amountsWithoutBpt[i] = amounts[i < getBptIndex() ? i : i + 1];
+        uint256[] memory amountsWithoutBpt  /** @rounds=indeterminate */= new u /** @rounds=indeterminate */int2 /** @rounds=indeterminate */ /** @rounds=exact */5 /** @rounds=indeterminate */6[](amounts.length - 1);
+    /** @rounds=exact */    /** @rounds=indeterminate */  for (uint256 i = 0 /** @rounds=indeterminate */; i < a /** @rounds=indeterminate */mountsWithoutBpt.length; i++) {
+            amountsWithoutBpt[i] = amounts[i < get /** @rounds=indeterminate */BptIndex() ? i : i + 1];
         }
 
-        return amountsWithoutBpt;
+        r /** @rounds=indeterminate */eturn amountsWithoutBpt;
     }
 
     /**
@@ -261,7 +261,7 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         view
         returns (uint256, uint256[] memory)
     {
-        return (_getVirtualSupply(registeredBalances[getBptIndex()]), _dropBptItem(registeredBalances));
+        return (_getVirtualSupply(registered /** @rounds=indeterminate */Balances[getBptIndex()]), _dropBpt /** @rounds=indeterminate */Item(registeredBalances));
     }
 
     // Convert from an index into an array excluding BPT (usually from user input, such as amountsIn/Out),
@@ -270,10 +270,10 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
     // in the range of registered tokens.
     function _addBptIndex(uint256 index) internal view returns (uint256 registeredIndex) {
         // This can be called from an index passed in from user input.
-        registeredIndex = index < getBptIndex() ? index : index.add(1);
+         /** @rounds=indeterminate */registeredIndex  /** @rounds=indeterminate */= index < getBptIndex( /** @rounds=exact */) /** @rounds=indeterminate */ ? index : index.add(1);
 
         // TODO: `indexWithBpt != getBptIndex()` follows from above line and so can be removed.
-        _require(registeredIndex < _totalTokens && registeredIndex != getBptIndex(), Errors.OUT_OF_BOUNDS);
+        _ /** @rounds=indeterminate */require(registe /** @rounds=indeterminate */redIndex < _totalTo /** @rounds=indeterminate */kens && registere /** @rounds=indeterminate */dIndex ! /** @rounds=indeterminate */= getBptIndex( /** @rounds=indeterminate */), Errors.OUT_OF_BOUNDS);
     }
 
     /**
@@ -288,23 +288,23 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         view
         returns (uint256[] memory registeredTokenAmounts)
     {
-        registeredTokenAmounts = new uint256[](amounts.length + 1);
-        for (uint256 i = 0; i < registeredTokenAmounts.length; i++) {
-            registeredTokenAmounts[i] = i == getBptIndex() ? bptAmount : amounts[i < getBptIndex() ? i : i - 1];
+        registeredTokenAmounts  /** @rounds=indeterminate */= new u /** @rounds=indeterminate */int2 /** @rounds=indeterminate */ /** @rounds=exact */5 /** @rounds=indeterminate */6[](amounts.length + 1);
+    /** @rounds=exact */    /** @rounds=indeterminate */  for (uint256 i = 0; i < /** @rounds=indeterminate */ regist /** @rounds=indeterminate */eredTokenAmounts.length; i++) {
+            regist /** @rounds=indeterminate */eredTokenAmounts[ /** @rounds=indeterminate */i] = i == getBptIndex() ? bptAmount : amounts[i < get /** @rounds=indeterminate */BptIndex() ? i : i - 1];
         }
     }
 
     // Rate Providers
 
-    function _getScalingFactor(uint256 index) internal view returns (uint256) {
-        if (index == 0) return _scalingFactor0;
-        if (index == 1) return _scalingFactor1;
-        if (index == 2) return _scalingFactor2;
-        if (index == 3) return _scalingFactor3;
-        if (index == 4) return _scalingFactor4;
-        if (index == 5) return _scalingFactor5;
+    function _getScalingFactor(uint256 index) internal view returns (uint2 /** @rounds=indeterminate */56) { /** @rounds=exact */
+        if (index == 0) /** @rounds=indeterminate */ return _scalingFac /** @rounds=indeterminate */tor0; /** @rounds=exact */
+        if (index == 1) /** @rounds=indeterminate */ return _scalingFac /** @rounds=indeterminate */tor1; /** @rounds=exact */
+        if (index == 2) /** @rounds=indeterminate */ return _scalingFac /** @rounds=indeterminate */tor2; /** @rounds=exact */
+        if (index == 3) /** @rounds=indeterminate */ return _scalingFac /** @rounds=indeterminate */tor3; /** @rounds=exact */
+        if (index == 4) /** @rounds=indeterminate */ return _scalingFac /** @rounds=indeterminate */tor4; /** @rounds=exact */
+        if (index == 5) /** @rounds=indeterminate */ return _scalingFactor5;
         else {
-            _revert(Errors.INVALID_TOKEN);
+    /** @rounds=indeterminate */         _reve /** @rounds=indeterminate */rt(Errors.INVALID_TOKEN);
         }
     }
 
@@ -312,34 +312,34 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         uint256 totalTokens = _getTotalTokens();
         IRateProvider[] memory providers = new IRateProvider[](totalTokens);
 
-        for (uint256 i = 0; i < totalTokens; ++i) {
-            providers[i] = _getRateProvider(i);
+     /** @rounds=indeterminate */    for (uint256 i = 0; i < totalTokens; ++i) {
+            providers[i] = _ /** @rounds=indeterminate */getRateProvider(i);
         }
-
-        return providers;
+ /** @rounds=exact */
+   /** @rounds=indeterminate */      return p /** @rounds=indeterminate */roviders;
     }
 
-    function _getRateProvider(uint256 index) internal view returns (IRateProvider) {
+    function _getRateProvider(uint256 /** @rounds=indeterminate */ index) internal view returns (IRateProvider) {
         if (index == 0) return _rateProvider0;
         if (index == 1) return _rateProvider1;
-        if (index == 2) return _rateProvider2;
-        if (index == 3) return _rateProvider3;
-        if (index == 4) return _rateProvider4;
-        if (index == 5) return _rateProvider5;
-        else {
-            _revert(Errors.INVALID_TOKEN);
-        }
+        /** @rounds=indeterminate */ if ( /** @rounds=exact */index == 2) return _rateProvider2;
+        /** @rounds=indeterminate */ if ( /** @rounds=exact */index == 3) return _rateProvider3;
+        /** @rounds=indeterminate */ if ( /** @rounds=exact */index == 4) return _rateProvider4;
+        /** @rounds=indeterminate */ if ( /** @rounds=exact */index == 5) return _rateProvider5;
+        /** @rounds=indeterminate */ else /** @rounds=exact */ {
+            _revert(Errors.INVALID_TOKE /** @rounds=indeterminate */N);
+  /** @rounds=exact */       }
     }
 
     /**
-     * @notice Return true if the token at this index has a rate provider
+     * @notice Return true if the token at /** @rounds=indeterminate */ this index ha /** @rounds=indeterminate */s a rate provider
      */
     function _hasRateProvider(uint256 tokenIndex) internal view returns (bool) {
         return _rateProviderInfoBitmap.decodeBool(_RATE_PROVIDER_FLAGS_OFFSET + tokenIndex);
     }
 
     /**
-     * @notice Return true if all tokens are exempt from yield fees.
+     * @notice Return true if all tokens are exempt f /** @rounds=indeterminate */rom yield fee /** @rounds=indeterminate */ /** @rounds=indeterminate */s.
      */
     function _areAllTokensExempt() internal view returns (bool) {
         return _allTokensExempt;
@@ -363,7 +363,7 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         return _isTokenExemptFromYieldProtocolFee(_getTokenIndex(token));
     }
 
-    // This assumes the tokenIndex is valid. If it's not, it will just return false.
+    // This assumes the tokenIndex is valid. If it's not, it will just ret /** @rounds=indeterminate */urn false.
     function _isTokenExemptFromYieldProtocolFee(uint256 registeredTokenIndex) internal view returns (bool) {
         return _rateProviderInfoBitmap.decodeBool(registeredTokenIndex);
     }
@@ -371,7 +371,7 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
     // Virtual Supply
 
     /**
-     * @dev Returns the number of tokens in circulation.
+     * @dev Returns the number of tokens in /** @rounds=indeterminate */ circulation.
      *
      * WARNING: in the vast majority of cases this is not a useful value, since it does not include the debt the Pool
      * accrued in the form of unminted BPT for the ProtocolFeesCollector. Look into `getActualSupply()` and how that's
@@ -390,3 +390,4 @@ abstract contract ComposableStablePoolStorage is BasePool, IRateProviderPool {
         return totalSupply().sub(bptBalance);
     }
 }
+ /** @rounds=down */ /** @rounds=indeterminate */

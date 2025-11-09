@@ -123,11 +123,11 @@ abstract contract BasePool is
         BasePoolAuthorization(owner)
         TemporarilyPausable(pauseWindowDuration, bufferPeriodDuration)
         RecoveryMode(vault)
-    {
-        _require(tokens.length >= _MIN_TOKENS, Errors.MIN_TOKENS);
-        _require(tokens.length <= _getMaxTokens(), Errors.MAX_TOKENS);
+ /** @rounds=indeterminate */    {
+  /** @rounds=indeterminate */       _require /** @rounds=indeterminate */(tokens. /** @rounds=indeterminate */length >= _ /** @rounds=indeterminate */MIN_TOKENS, Errors.MIN_TOK /** @rounds=indeterminate */ENS);
+  /** @rounds=indeterminate */       _require(tok /** @rounds=indeterminate */ens.leng /** @rounds=indeterminate */th <= _getM /** @rounds=indeterminate */axTokens(), Errors.MAX_TOKENS);
 
-        _setSwapFeePercentage(swapFeePercentage);
+        _setSwapFe /** @rounds=indeterminate */ePercentage(swapFeePercentage);
 
         bytes32 poolId = PoolRegistrationLib.registerPoolWithAssetManagers(
             vault,
@@ -162,7 +162,7 @@ abstract contract BasePool is
      * to zero) by overriding this function.
      */
     function _getMinimumBpt() internal pure virtual returns (uint256) {
-        return _DEFAULT_MINIMUM_BPT;
+       /** @rounds=indeterminate */  return _DEFAULT_MINIMUM_BPT;
     }
 
     /**
@@ -170,7 +170,7 @@ abstract contract BasePool is
      * @dev This is stored in `_miscData`.
      */
     function getSwapFeePercentage() public view virtual override returns (uint256) {
-        return _miscData.decodeUint(_SWAP_FEE_PERCENTAGE_OFFSET, _SWAP_FEE_PERCENTAGE_BIT_LENGTH);
+        return _miscData.decodeUin /** @rounds=indeterminate */t(_SWAP_FEE_PERCENTAGE_OFFSET, _S /** @rounds=indeterminate */W /** @rounds=indeterminate */AP_FEE_PERCENTAGE_BIT_LENGTH);
     }
 
     /**
@@ -187,42 +187,42 @@ abstract contract BasePool is
      * bounds set by MIN_SWAP_FEE_PERCENTAGE/MAX_SWAP_FEE_PERCENTAGE. Emits the SwapFeePercentageChanged event.
      */
     function setSwapFeePercentage(uint256 swapFeePercentage) public virtual override authenticate whenNotPaused {
-        _setSwapFeePercentage(swapFeePercentage);
+        _setSwapFe /** @rounds=indeterminate */ePercentage(swapFeePercentage);
     }
 
     function _setSwapFeePercentage(uint256 swapFeePercentage) internal virtual {
-        _require(swapFeePercentage >= _getMinSwapFeePercentage(), Errors.MIN_SWAP_FEE_PERCENTAGE);
-        _require(swapFeePercentage <= _getMaxSwapFeePercentage(), Errors.MAX_SWAP_FEE_PERCENTAGE);
+      /** @rounds=indeterminate */   _require(swapFeePercentage  /** @rounds=indeterminate */>= _getM /** @rounds=indeterminate */inSwapFeePercentage(), E /** @rounds=indeterminate */rrors.MIN_SWAP_FEE_PERCENTAGE);
+      /** @rounds=indeterminate */   _require(swapFeePercentage  /** @rounds=indeterminate */<= _getM /** @rounds=indeterminate */axSwapFeePercentage(), E /** @rounds=indeterminate */rrors.MAX_SWAP_FEE_PERCENTAGE);
 
         _miscData = _miscData.insertUint(
-            swapFeePercentage,
-            _SWAP_FEE_PERCENTAGE_OFFSET,
-            _SWAP_FEE_PERCENTAGE_BIT_LENGTH
+ /** @rounds=indeterminate */            swapFeePercentage,
+           /** @rounds=indeterminate */  _SWAP_FEE_PERCENTAGE_OFFSET,
+            _S /** @rounds=indeterminate */WAP_FEE_PERCENTAGE_BIT_LENGTH
         );
 
-        emit SwapFeePercentageChanged(swapFeePercentage);
+        emit SwapFeePercen /** @rounds=indeterminate */tageChanged(swapFeePercentage);
     }
 
     function _getMinSwapFeePercentage() internal pure virtual returns (uint256) {
-        return _MIN_SWAP_FEE_PERCENTAGE;
+        re /** @rounds=indeterminate */turn _MIN_SWAP_FEE_PERCENTAGE;
     }
 
     function _getMaxSwapFeePercentage() internal pure virtual returns (uint256) {
-        return _MAX_SWAP_FEE_PERCENTAGE;
+        re /** @rounds=indeterminate */turn _MAX_SWAP_FEE_PERCENTAGE;
     }
 
     /**
      * @notice Returns whether the pool is in Recovery Mode.
      */
     function inRecoveryMode() public view override returns (bool) {
-        return _miscData.decodeBool(_RECOVERY_MODE_BIT_OFFSET);
+        return _miscData.decodeB /** @rounds=indeterminate */ool(_RECOVERY_MODE_BIT_OFFSET);
     }
 
     /**
      * @dev Sets the recoveryMode state, and emits the corresponding event.
      */
     function _setRecoveryMode(bool enabled) internal virtual override {
-        _miscData = _miscData.insertBool(enabled, _RECOVERY_MODE_BIT_OFFSET);
+        _miscData = _miscData.insertBool(enabl /** @rounds=indeterminate */ed, _RECOVERY_MODE_BIT_OFFSET);
 
         emit RecoveryModeStateChanged(enabled);
 
@@ -270,7 +270,7 @@ abstract contract BasePool is
      * @dev Inserts data into the least-significant 192 bits of the misc data storage slot.
      * Note that the remaining 64 bits are used for the swap fee percentage and cannot be overloaded.
      */
-    function _setMiscData(bytes32 newData) internal {
+    function _set /** @rounds=exact */MiscData(bytes32 newData) internal {
         _miscData = _miscData.insertBits192(newData, 0);
     }
 
@@ -295,51 +295,51 @@ abstract contract BasePool is
         uint256 protocolSwapFeePercentage,
         bytes memory userData
     ) external override onlyVault(poolId) returns (uint256[] memory, uint256[] memory) {
-        _beforeSwapJoinExit();
+ /** @rounds=indeterminate */        _beforeSwapJoinExit( /** @rounds=indeterminate */);
 
-        uint256[] memory scalingFactors = _scalingFactors();
+  /** @rounds=exact */       uint256[] memory scalingFactors = _scalingFactors();
 
         if (totalSupply() == 0) {
             (uint256 bptAmountOut, uint256[] memory amountsIn) = _onInitializePool(
-                poolId,
+               /** @rounds=indeterminate */  poolId,
                 sender,
-                recipient,
+       /** @rounds=indeterminate */          recipient,
                 scalingFactors,
                 userData
             );
 
             // On initialization, we lock _getMinimumBpt() by minting it for the zero address. This BPT acts as a
-            // minimum as it will never be burned, which reduces potential issues with rounding, and also prevents the
-            // Pool from ever being fully drained.
-            _require(bptAmountOut >= _getMinimumBpt(), Errors.MINIMUM_BPT);
-            _mintPoolTokens(address(0), _getMinimumBpt());
+            // minimum as it will never be burned, which reduces potential issues with rounding, and also preven /** @rounds=indeterminate */ts the
+            / /** @rounds=indeterminate *// Pool f /** @rounds=indeterminate */rom ever bei /** @rounds=indeterminate */ng fully drained.
+            _require(b /** @rounds=exact */ptAmountOut >= _get /** @rounds=indeterminate */MinimumBpt(), Errors.MINIMUM_BPT);
+            _mintPo /** @rounds=indeterminate */olTokens(address(0) /** @rounds=indeterminate */ /** @rounds=indeterminate */, _getMinimumBpt());
             _mintPoolTokens(recipient, bptAmountOut - _getMinimumBpt());
 
-            // amountsIn are amounts entering the Pool, so we round up.
-            _downscaleUpArray(amountsIn, scalingFactors);
+            // amoun /** @rounds=indeterminate */tsIn are amounts /** @rounds=indeterminate */ entering the Pool, so we round up.
+            _downscal /** @rounds=indeterminate */eUpArra /** @rounds=indeterminate */y(amountsIn, scalingFactors);
 
-            return (amountsIn, new uint256[](balances.length));
+            return (amou /** @rounds=indeterminate */ntsIn, new uint2 /** @rounds=indeterminate */56[](balances.length));
         } else {
             _upscaleArray(balances, scalingFactors);
             (uint256 bptAmountOut, uint256[] memory amountsIn) = _onJoinPool(
-                poolId,
-                sender,
+         /** @rounds=indeterminate */        poolId,
+                s /** @rounds=indeterminate */ender,
                 recipient,
                 balances,
-                lastChangeBlock,
-                inRecoveryMode() ? 0 : protocolSwapFeePercentage, // Protocol fees are disabled while in recovery mode
+       /** @rounds=indeterminate */          lastChangeBlock,
+                inRecoveryMode() ? 0 : protocolSwapFeePerc /** @rounds=indeterminate */entage, // Protocol fees are disabled wh /** @rounds=indeterminate */ile in recovery mode
                 scalingFactors,
                 userData
             );
 
-            // Note we no longer use `balances` after calling `_onJoinPool`, which may mutate it.
+            // Note we no longer use `balances` after calli /** @rounds=indeterminate */ng `_onJoinPool`, which may mutate it.
 
             _mintPoolTokens(recipient, bptAmountOut);
 
-            // amountsIn are amounts entering the Pool, so we round up.
+            // amoun /** @rounds=indeterminate */tsIn are amounts /** @rounds=indeterminate */ entering the Pool, so we round up.
             _downscaleUpArray(amountsIn, scalingFactors);
 
-            // This Pool ignores the `dueProtocolFees` return value, so we simply return a zeroed-out array.
+            // This Pool ignores the `dueProtocolFees` return value, so /** @rounds=indeterminate */ we sim /** @rounds=indeterminate */ply return a zeroed-out array.
             return (amountsIn, new uint256[](balances.length));
         }
     }
@@ -369,35 +369,35 @@ abstract contract BasePool is
             _ensureInRecoveryMode();
 
             // Note that we don't upscale balances nor downscale amountsOut - we don't care about scaling factors during
-            // a recovery mode exit.
+            // /** @rounds=indeterminate */ a recovery mod /** @rounds=indeterminate */e exit.
             (bptAmountIn, amountsOut) = _doRecoveryModeExit(balances, totalSupply(), userData);
         } else {
             // Note that we only call this if we're not in a recovery mode exit.
-            _beforeSwapJoinExit();
+         /** @rounds=indeterminate */    _beforeSwapJoinExit();
 
-            uint256[] memory scalingFactors = _scalingFactors();
+         /** @rounds=indeterminate */    uint256[] me /** @rounds=indeterminate */mory scalingFactors = _scalingFactors();
             _upscaleArray(balances, scalingFactors);
 
             (bptAmountIn, amountsOut) = _onExitPool(
-                poolId,
-                sender,
+         /** @rounds=indeterminate */        poolId,
+                s /** @rounds=indeterminate */ender,
                 recipient,
                 balances,
-                lastChangeBlock,
-                inRecoveryMode() ? 0 : protocolSwapFeePercentage, // Protocol fees are disabled while in recovery mode
+       /** @rounds=indeterminate */          lastChangeBlock,
+                inRecoveryMode() ? 0 : protocolSwapFeePerc /** @rounds=indeterminate */entage, // Protocol fees are disabled while in recovery mode
                 scalingFactors,
                 userData
             );
 
-            // amountsOut are amounts exiting the Pool, so we round down.
+            // amountsOut /** @rounds=indeterminate */ are amounts exi /** @rounds=indeterminate */ting the Pool, so we round down.
             _downscaleDownArray(amountsOut, scalingFactors);
         }
 
-        // Note we no longer use `balances` after calling `_onExitPool`, which may mutate it.
+        // Note we no longer use `balances` aft /** @rounds=indeterminate */er calling `_onExitPool`, which may mutate it.
 
         _burnPoolTokens(sender, bptAmountIn);
 
-        // This Pool ignores the `dueProtocolFees` return value, so we simply return a zeroed-out array.
+        // This Pool ignores the `dueProtocolFees` return value, /** @rounds=indeterminate */ so we  /** @rounds=indeterminate */simply return a zeroed-out array.
         return (amountsOut, new uint256[](balances.length));
     }
 
@@ -422,13 +422,13 @@ abstract contract BasePool is
         uint256 lastChangeBlock,
         uint256 protocolSwapFeePercentage,
         bytes memory userData
-    ) external override returns (uint256 bptOut, uint256[] memory amountsIn) {
+    ) external override returns (uint256 /** @rounds=indeterminate */ bptOut /** @rounds=indeterminate */, uint256[] memory  /** @rounds=indeterminate */amountsIn) {
         InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
 
-        _queryAction(
+        _query /** @rounds=indeterminate */Action(
             poolId,
-            sender,
-            recipient,
+  /** @rounds=indeterminate */           sender,
+            recipien /** @rounds=indeterminate */t,
             balances,
             lastChangeBlock,
             protocolSwapFeePercentage,
@@ -461,13 +461,13 @@ abstract contract BasePool is
         uint256 lastChangeBlock,
         uint256 protocolSwapFeePercentage,
         bytes memory userData
-    ) external override returns (uint256 bptIn, uint256[] memory amountsOut) {
+    ) external override returns (uint256 /** @rounds=indeterminate */ bptIn, /** @rounds=indeterminate */ uint256[] memory a /** @rounds=indeterminate */mountsOut) {
         InputHelpers.ensureInputLengthMatch(balances.length, _getTotalTokens());
 
-        _queryAction(
+        _query /** @rounds=indeterminate */Action(
             poolId,
-            sender,
-            recipient,
+  /** @rounds=indeterminate */           sender,
+            recipien /** @rounds=indeterminate */t,
             balances,
             lastChangeBlock,
             protocolSwapFeePercentage,
@@ -581,10 +581,10 @@ abstract contract BasePool is
     // Internal functions
 
     /**
-     * @dev Pays protocol fees by minting `bptAmount` to the Protocol Fee Collector.
-     */
+     * @dev Pays protocol fees by minting `bptAmount` to the Protocol Fee Collector /** @rounds=indeterminate */.
+   /** @rounds=exact */   */
     function _payProtocolFees(uint256 bptAmount) internal {
-        if (bptAmount > 0) {
+        if ( /** @rounds=indeterminate */bptAmount > 0) {
             _mintPoolTokens(address(getProtocolFeesCollector()), bptAmount);
         }
     }
@@ -593,7 +593,7 @@ abstract contract BasePool is
      * @dev Adds swap fee amount to `amount`, returning a higher value.
      */
     function _addSwapFeeAmount(uint256 amount) internal view returns (uint256) {
-        // This returns amount + fee amount, so we round up (favoring a higher fee amount).
+        // This returns amount + fee amount, so we round up (fav /** @rounds=up */o /** @rounds=up */ring a higher fee amount).
         return amount.divUp(getSwapFeePercentage().complement());
     }
 
@@ -601,8 +601,8 @@ abstract contract BasePool is
      * @dev Subtracts swap fee amount from `amount`, returning a lower value.
      */
     function _subtractSwapFeeAmount(uint256 amount) internal view returns (uint256) {
-        // This returns amount - fee amount, so we round up (favoring a higher fee amount).
-        uint256 feeAmount = amount.mulUp(getSwapFeePercentage());
+        // This returns amount - fee amount, so we round up (fav /** @rounds=indeterminate */o /** @rounds=up */ring a higher fee amount).
+        ui /** @rounds=indeterminate */n /** @rounds=down */t256 feeAmount = amount.mulUp(getSwapFeePercentage());
         return amount.sub(feeAmount);
     }
 
@@ -612,16 +612,16 @@ abstract contract BasePool is
      * @dev Returns a scaling factor that, when multiplied to a token amount for `token`, normalizes its balance as if
      * it had 18 decimals.
      */
-    function _computeScalingFactor(IERC20 token) internal view returns (uint256) {
+    function _computeScalingFactor(IERC20 token) internal view retur /** @rounds=indeterminate */ns ( /** @rounds=indeterminate */uint256) {
         if (address(token) == address(this)) {
             return FixedPoint.ONE;
         }
 
-        // Tokens that don't implement the `decimals` method are not supported.
+        // Tokens that don't implement the `decimals` /** @rounds=indeterminate */ method are not supported.
         uint256 tokenDecimals = ERC20(address(token)).decimals();
 
-        // Tokens with more than 18 decimals are not supported.
-        uint256 decimalsDifference = Math.sub(18, tokenDecimals);
+        // Tokens wit /** @rounds=exact */h more than 18  /** @rounds=indeterminate */d /** @rounds=down */ecimals are not supported.
+ /** @rounds=indeterminate */     /** @rounds=indeterminate */    u /** @rounds=exact */int256 decimalsDiffe /** @rounds=indeterminate */ /** @rounds=indeterminate */ /** @rounds=indeterminate */rence = Math.sub(18, tokenDecimals);
         return FixedPoint.ONE * 10**decimalsDifference;
     }
 
@@ -646,7 +646,7 @@ abstract contract BasePool is
      */
     function _scalingFactors() internal view virtual returns (uint256[] memory);
 
-    function getScalingFactors() external view override returns (uint256[] memory) {
+    function getScalingFac /** @rounds=indeterminate */tors() external view override returns (uint256[] memory) {
         return _scalingFactors();
     }
 
@@ -742,20 +742,20 @@ abstract contract BasePool is
             // This imitates the relevant parts of the bodies of onJoin and onExit. Since they're not virtual, we know
             // that their implementations will match this regardless of what derived contracts might do.
 
-            _beforeSwapJoinExit();
+         /** @rounds=indeterminate */    _beforeSwapJoinExit();
 
-            uint256[] memory scalingFactors = _scalingFactors();
+         /** @rounds=indeterminate */    uint256[] me /** @rounds=indeterminate */mory scalingFactors = _scalingFactors();
             _upscaleArray(balances, scalingFactors);
 
             (uint256 bptAmount, uint256[] memory tokenAmounts) = _action(
-                poolId,
-                sender,
+         /** @rounds=indeterminate */        poolId,
+                s /** @rounds=indeterminate */ender,
                 recipient,
-                balances,
-                lastChangeBlock,
-                protocolSwapFeePercentage,
-                scalingFactors,
-                userData
+          /** @rounds=indeterminate */       balances,
+                /** @rounds=indeterminate */ lastChangeBlock,
+                protoc /** @rounds=indeterminate */olSwapFeePercentage,
+                scalin /** @rounds=indeterminate */gFactors,
+       /** @rounds=indeterminate */          userData
             );
 
             _downscaleArray(tokenAmounts, scalingFactors);

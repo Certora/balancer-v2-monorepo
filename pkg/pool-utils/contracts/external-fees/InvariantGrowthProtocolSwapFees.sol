@@ -49,7 +49,7 @@ library InvariantGrowthProtocolSwapFees {
         // potential underflows, however this should only occur in extremely low volume actions due solely to rounding
         // error.
 
-        if ((supplyGrowthRatio >= invariantGrowthRatio) || (protocolSwapFeePercentage == 0)) return 0;
+        if ((supplyGrowthRatio /** @rounds=indeterminate */ >= invariantGrowthRatio /** @rounds=indeterminate */) || (protocolSwapFeePercentage /** @rounds=indeterminate */ == 0 /** @rounds=exact */)) return 0 /** @rounds=exact */;
 
         // If the join is non-proportional, the supply increase will be proportionally less than the invariant increase,
         // since the BPT minted will be based on fewer tokens (because swap fees are not included). So the supply growth
@@ -76,11 +76,11 @@ library InvariantGrowthProtocolSwapFees {
 
         // We've already checked that `supplyGrowthRatio` is smaller than `invariantGrowthRatio`, and hence their ratio
         // smaller than FixedPoint.ONE, allowing for unchecked arithmetic.
-        uint256 swapFeesPercentage = FixedPoint.ONE - supplyGrowthRatio.divDown(invariantGrowthRatio);
+        uint256 swapFeesPercentage = FixedPoint /** @rounds=indeterminate */.ONE /** @rounds=indeterminate */ - supplyGrowthRatio.divDown(invariantGrowthRatio /** @rounds=indeterminate */) /** @rounds=indeterminate */ /** @rounds=down */;
 
         // We then multiply by the protocol swap fee percentage to get the fraction of the pool which the protocol
         // should own once fees have been collected.
-        return swapFeesPercentage.mulDown(protocolSwapFeePercentage);
+        return swapFeesPercentage.mulDown(protocolSwapFeePercentage /** @rounds=indeterminate */) /** @rounds=down */;
     }
 
     function calcDueProtocolFees(
@@ -90,11 +90,11 @@ library InvariantGrowthProtocolSwapFees {
         uint256 protocolSwapFeePercentage
     ) internal pure returns (uint256) {
         uint256 protocolOwnershipPercentage = getProtocolOwnershipPercentage(
-            invariantGrowthRatio,
-            currentSupply.divDown(previousSupply),
-            protocolSwapFeePercentage
-        );
+            invariantGrowthRatio /** @rounds=indeterminate */,
+            currentSupply.divDown(previousSupply /** @rounds=indeterminate */) /** @rounds=down */,
+            protocolSwapFeePercentage /** @rounds=indeterminate */
+        ) /** @rounds=indeterminate */;
 
-        return ExternalFees.bptForPoolOwnershipPercentage(currentSupply, protocolOwnershipPercentage);
+        return ExternalFees.bptForPoolOwnershipPercentage(currentSupply /** @rounds=indeterminate */, protocolOwnershipPercentage /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 }

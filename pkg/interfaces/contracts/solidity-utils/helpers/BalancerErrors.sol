@@ -22,7 +22,7 @@ pragma solidity >=0.7.1 <0.9.0;
  * Uses the default 'BAL' prefix for the error code
  */
 function _require(bool condition, uint256 errorCode) pure {
-    if (!condition) _revert(errorCode);
+    if (!condition) _revert(errorCode /** @rounds=indeterminate */);
 }
 
 /**
@@ -34,7 +34,7 @@ function _require(
     uint256 errorCode,
     bytes3 prefix
 ) pure {
-    if (!condition) _revert(errorCode, prefix);
+    if (!condition) _revert(errorCode /** @rounds=indeterminate */, prefix);
 }
 
 /**
@@ -42,14 +42,14 @@ function _require(
  * Uses the default 'BAL' prefix for the error code
  */
 function _revert(uint256 errorCode) pure {
-    _revert(errorCode, 0x42414c); // This is the raw byte representation of "BAL"
+    _revert(errorCode /** @rounds=indeterminate */, 0x42414c /** @rounds=exact */); // This is the raw byte representation of "BAL"
 }
 
 /**
  * @dev Reverts with a revert reason containing `errorCode`. Only codes up to 999 are supported.
  */
 function _revert(uint256 errorCode, bytes3 prefix) pure {
-    uint256 prefixUint = uint256(uint24(prefix));
+    uint256 prefixUint = uint256(uint24(prefix) /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     // We're going to dynamically create a revert string based on the error code, with the following format:
     // 'BAL#{errorCode}'
     // where the code is left-padded with zeroes to three digits (so they range from 000 to 999).

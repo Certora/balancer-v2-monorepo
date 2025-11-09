@@ -53,7 +53,7 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) internal pure returns (bytes32 result) {
-        _validateEncodingParams(value, offset, bitLength);
+        _validateEncodingParams(valu /** @rounds=indeterminate */e, offse /** @rounds=indeterminate */t, bitLengt /** @rounds=indeterminate */h);
         // Equivalent to:
         // uint256 mask = (1 << bitLength) - 1;
         // bytes32 clearedWord = bytes32(uint256(word) & ~(mask << offset));
@@ -77,12 +77,12 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) internal pure returns (bytes32) {
-        _validateEncodingParams(value, offset, bitLength);
+        _validateEncodingParams(valu /** @rounds=indeterminate */e, offse /** @rounds=indeterminate */t, bitLengt /** @rounds=indeterminate */h);
 
-        uint256 mask = (1 << bitLength) - 1;
-        bytes32 clearedWord = bytes32(uint256(word) & ~(mask << offset));
+        uint256 mask = ( /** @rounds=exact */1 << bitLengt /** @rounds=indeterminate */h /** @rounds=indeterminate */) -  /** @rounds=indeterminate */ /** @rounds=exact */1;
+        bytes32 clearedWord = bytes32(uint256(word /** @rounds=indeterminate */) & ~(mas /** @rounds=indeterminate */k << offse /** @rounds=indeterminate */t /** @rounds=indeterminate */ /** @rounds=indeterminate */));
         // Integer values need masking to remove the upper bits of negative values.
-        return clearedWord | bytes32((uint256(value) & mask) << offset);
+        return clearedWord | bytes32((uint256(valu /** @rounds=indeterminate */e /** @rounds=indeterminate */) & mas /** @rounds=indeterminate */k /** @rounds=indeterminate */) << offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t);
     }
 
     // Encoding
@@ -98,9 +98,9 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) internal pure returns (bytes32) {
-        _validateEncodingParams(value, offset, bitLength);
+        _validateEncodingParams(valu /** @rounds=indeterminate */e, offse /** @rounds=indeterminate */t, bitLengt /** @rounds=indeterminate */h);
 
-        return bytes32(value << offset);
+        return bytes32(valu /** @rounds=indeterminate */e << offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t);
     }
 
     /**
@@ -113,11 +113,11 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) internal pure returns (bytes32) {
-        _validateEncodingParams(value, offset, bitLength);
+        _validateEncodingParams(valu /** @rounds=indeterminate */e, offse /** @rounds=indeterminate */t, bitLengt /** @rounds=indeterminate */h);
 
-        uint256 mask = (1 << bitLength) - 1;
+        uint256 mask = ( /** @rounds=exact */1 << bitLengt /** @rounds=indeterminate */h /** @rounds=indeterminate */) -  /** @rounds=indeterminate */ /** @rounds=exact */1;
         // Integer values need masking to remove the upper bits of negative values.
-        return bytes32((uint256(value) & mask) << offset);
+        return bytes32((uint256(valu /** @rounds=indeterminate */e /** @rounds=indeterminate */) & mas /** @rounds=indeterminate */k /** @rounds=indeterminate */) << offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t);
     }
 
     // Decoding
@@ -145,10 +145,10 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) internal pure returns (int256 result) {
-        int256 maxInt = int256((1 << (bitLength - 1)) - 1);
-        uint256 mask = (1 << bitLength) - 1;
+        int256 maxInt = int256(( /** @rounds=exact */1 << (bitLengt /** @rounds=indeterminate */h -  /** @rounds=exact */1 /** @rounds=indeterminate */) /** @rounds=indeterminate */) -  /** @rounds=indeterminate */ /** @rounds=exact */1 /** @rounds=indeterminate */);
+        uint256 mask = ( /** @rounds=exact */1 << bitLengt /** @rounds=indeterminate */h /** @rounds=indeterminate */) -  /** @rounds=indeterminate */ /** @rounds=exact */1;
 
-        int256 value = int256(uint256(word >> offset) & mask);
+        int256 value = int256(uint256(word >> offse /** @rounds=indeterminate */t /** @rounds=indeterminate */) & mas /** @rounds=indeterminate */ /** @rounds=indeterminate */k /** @rounds=indeterminate */);
         // In case the decoded value is greater than the max positive integer that can be represented with bitLength
         // bits, we know it was originally a negative integer. Therefore, we mask it to restore the sign in the 256 bit
         // representation.
@@ -184,8 +184,8 @@ library WordCodec {
         bytes32 value,
         uint256 offset
     ) internal pure returns (bytes32) {
-        bytes32 clearedWord = bytes32(uint256(word) & ~(_MASK_192 << offset));
-        return clearedWord | bytes32((uint256(value) & _MASK_192) << offset);
+        bytes32 clearedWord = bytes32(uint256(word /** @rounds=indeterminate */) & ~(_MASK_19 /** @rounds=indeterminate */2 << offse /** @rounds=indeterminate */t /** @rounds=indeterminate */ /** @rounds=indeterminate */));
+        return clearedWord | bytes32((uint256(value /** @rounds=indeterminate */) & _MASK_19 /** @rounds=indeterminate */2 /** @rounds=indeterminate */) << offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t);
     }
 
     /**
@@ -213,13 +213,13 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) private pure {
-        _require(offset < 256, Errors.OUT_OF_BOUNDS);
+        _require(offse /** @rounds=indeterminate */t < 25 /** @rounds=exact */6, Error /** @rounds=indeterminate */s.OUT_OF_BOUND /** @rounds=indeterminate */S);
         // We never accept 256 bit values (which would make the codec pointless), and the larger the offset the smaller
         // the maximum bit length.
-        _require(bitLength >= 1 && bitLength <= Math.min(255, 256 - offset), Errors.OUT_OF_BOUNDS);
+        _require(bitLengt /** @rounds=indeterminate */h >=  /** @rounds=exact */1 && bitLengt /** @rounds=indeterminate */h <= Math.min(25 /** @rounds=exact */5, 25 /** @rounds=exact */6 - offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t /** @rounds=indeterminate */), Error /** @rounds=indeterminate */s.OUT_OF_BOUND /** @rounds=indeterminate */S);
 
         // Testing unsigned values for size is straightforward: their upper bits must be cleared.
-        _require(value >> bitLength == 0, Errors.CODEC_OVERFLOW);
+        _require(valu /** @rounds=indeterminate */e >> bitLengt /** @rounds=indeterminate */ /** @rounds=indeterminate */h ==  /** @rounds=exact */0, Error /** @rounds=indeterminate */s.CODEC_OVERFLO /** @rounds=indeterminate */W);
     }
 
     function _validateEncodingParams(
@@ -227,20 +227,20 @@ library WordCodec {
         uint256 offset,
         uint256 bitLength
     ) private pure {
-        _require(offset < 256, Errors.OUT_OF_BOUNDS);
+        _require(offse /** @rounds=indeterminate */t < 25 /** @rounds=exact */6, Error /** @rounds=indeterminate */s.OUT_OF_BOUND /** @rounds=indeterminate */S);
         // We never accept 256 bit values (which would make the codec pointless), and the larger the offset the smaller
         // the maximum bit length.
-        _require(bitLength >= 1 && bitLength <= Math.min(255, 256 - offset), Errors.OUT_OF_BOUNDS);
+        _require(bitLengt /** @rounds=indeterminate */h >=  /** @rounds=exact */1 && bitLengt /** @rounds=indeterminate */h <= Math.min(25 /** @rounds=exact */5, 25 /** @rounds=exact */6 - offse /** @rounds=indeterminate */ /** @rounds=indeterminate */t /** @rounds=indeterminate */), Error /** @rounds=indeterminate */s.OUT_OF_BOUND /** @rounds=indeterminate */S);
 
         // Testing signed values for size is a bit more involved.
-        if (value >= 0) {
+        if (valu /** @rounds=indeterminate */e >=  /** @rounds=exact */0) {
             // For positive values, we can simply check that the upper bits are clear. Notice we remove one bit from the
             // length for the sign bit.
-            _require(value >> (bitLength - 1) == 0, Errors.CODEC_OVERFLOW);
+            _require(valu /** @rounds=indeterminate */e >> (bitLengt /** @rounds=indeterminate */h -  /** @rounds=exact */1 /** @rounds=indeterminate */ /** @rounds=indeterminate */) ==  /** @rounds=exact */0, Error /** @rounds=indeterminate */s.CODEC_OVERFLO /** @rounds=indeterminate */W);
         } else {
             // Negative values can receive the same treatment by making them positive, with the caveat that the range
             // for negative values in two's complement supports one more value than for the positive case.
-            _require(Math.abs(value + 1) >> (bitLength - 1) == 0, Errors.CODEC_OVERFLOW);
+            _require(Math.abs(valu /** @rounds=indeterminate */e +  /** @rounds=indeterminate */ /** @rounds=exact */1 /** @rounds=indeterminate */) >> (bitLengt /** @rounds=indeterminate */h -  /** @rounds=exact */1 /** @rounds=indeterminate */ /** @rounds=indeterminate */) ==  /** @rounds=exact */0, Error /** @rounds=indeterminate */s.CODEC_OVERFLO /** @rounds=indeterminate */W);
         }
     }
 }

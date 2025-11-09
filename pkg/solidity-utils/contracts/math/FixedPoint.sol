@@ -34,29 +34,29 @@ library FixedPoint {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         // Fixed Point addition is the same as regular checked addition
 
-        uint256 c = a + b;
-        _require(c >= a, Errors.ADD_OVERFLOW);
-        return c;
+        uint256 c = a /** @rounds=indeterminate */ + b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require(c /** @rounds=indeterminate */ >= a /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ADD_OVERFLOW /** @rounds=indeterminate */);
+        return c /** @rounds=indeterminate */;
     }
 
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         // Fixed Point subtraction is the same as regular checked subtraction
 
-        _require(b <= a, Errors.SUB_OVERFLOW);
-        uint256 c = a - b;
-        return c;
+        _req /** @rounds=indeterminate */uire( /** @rounds=indeterminate */b <= a,  /** @rounds=indeterminate */Errors.SUB_OV /** @rounds=indeterminate */ERFLOW);
+        uint256 /** @rounds=indeterminate */ c = /** @rounds=indeterminate */ /** @rounds=indeterminate */ a - b;
+        re /** @rounds=indeterminate */turn c;
     }
 
     function mulDown(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 product = a * b;
-        _require(a == 0 || product / a == b, Errors.MUL_OVERFLOW);
+        uint256 produ /** @rounds=indeterminate */ct = /** @rounds=indeterminate */ /** @rounds=indeterminate */ a * b;
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */a == 0 || p /** @rounds=indeterminate */rodu /** @rounds=down */ /** @rounds=indeterminate */ct /  /** @rounds=indeterminate */a == b,  /** @rounds=indeterminate */Errors.MUL_OV /** @rounds=indeterminate */ERFLOW);
 
-        return product / ONE;
+        return p /** @rounds=indeterminate */roduct /** @rounds=down */ /** @rounds=indeterminate */ / ONE;
     }
 
     function mulUp(uint256 a, uint256 b) internal pure returns (uint256 result) {
-        uint256 product = a * b;
-        _require(a == 0 || product / a == b, Errors.MUL_OVERFLOW);
+        uint256 produ /** @rounds=indeterminate */ct = /** @rounds=indeterminate */ /** @rounds=indeterminate */ a * b;
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */a == 0 || p /** @rounds=indeterminate */rodu /** @rounds=down */ /** @rounds=indeterminate */ct /  /** @rounds=indeterminate */a == b,  /** @rounds=indeterminate */Errors.MUL_OV /** @rounds=indeterminate */ERFLOW);
 
         // The traditional divUp formula is:
         // divUp(x, y) := (x + y - 1) / y
@@ -72,19 +72,19 @@ library FixedPoint {
     }
 
     function divDown(uint256 a, uint256 b) internal pure returns (uint256) {
-        _require(b != 0, Errors.ZERO_DIVISION);
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */b != 0,  /** @rounds=indeterminate */Errors.ZERO_DI /** @rounds=indeterminate */VISION);
 
-        uint256 aInflated = a * ONE;
-        _require(a == 0 || aInflated / a == ONE, Errors.DIV_INTERNAL); // mul overflow
+        uint256 aInflat /** @rounds=indeterminate */ed = a /** @rounds=indeterminate */ /** @rounds=indeterminate */ * ONE;
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */a == 0 || aIn /** @rounds=indeterminate */flat /** @rounds=down */ /** @rounds=indeterminate */ed / a  /** @rounds=indeterminate */== ONE,  /** @rounds=indeterminate */Errors.DIV_IN /** @rounds=indeterminate */TERNAL); // mul overflow
 
-        return aInflated / b;
+        return aIn /** @rounds=indeterminate */flat /** @rounds=down */ /** @rounds=indeterminate */ed / b;
     }
 
     function divUp(uint256 a, uint256 b) internal pure returns (uint256 result) {
-        _require(b != 0, Errors.ZERO_DIVISION);
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */b != 0,  /** @rounds=indeterminate */Errors.ZERO_DI /** @rounds=indeterminate */VISION);
 
-        uint256 aInflated = a * ONE;
-        _require(a == 0 || aInflated / a == ONE, Errors.DIV_INTERNAL); // mul overflow
+        uint256 aInflat /** @rounds=indeterminate */ed = a /** @rounds=indeterminate */ /** @rounds=indeterminate */ * ONE;
+        _req /** @rounds=indeterminate */uire( /** @rounds=exact */a == 0 || aIn /** @rounds=indeterminate */flat /** @rounds=down */ /** @rounds=indeterminate */ed / a  /** @rounds=indeterminate */== ONE,  /** @rounds=indeterminate */Errors.DIV_IN /** @rounds=indeterminate */TERNAL); // mul overflow
 
         // The traditional divUp formula is:
         // divUp(x, y) := (x + y - 1) / y
@@ -106,21 +106,21 @@ library FixedPoint {
     function powDown(uint256 x, uint256 y) internal pure returns (uint256) {
         // Optimize for when y equals 1.0, 2.0 or 4.0, as those are very simple to implement and occur often in 50/50
         // and 80/20 Weighted Pools
-        if (y == ONE) {
-            return x;
-        } else if (y == TWO) {
-            return mulDown(x, x);
-        } else if (y == FOUR) {
-            uint256 square = mulDown(x, x);
-            return mulDown(square, square);
+        /** @rounds=indeterminate */ if (y  /** @rounds=indeterminate */== ONE) {
+            re /** @rounds=indeterminate */turn x;
+        } else /** @rounds=indeterminate */ if (y  /** @rounds=indeterminate */== TWO) {
+            return mul /** @rounds=indeterminate */Dow /** @rounds=indeterminate */n /** @rounds=down */(x, x);
+        } else /** @rounds=indeterminate */ if (y = /** @rounds=indeterminate */= FOUR) {
+            uint256 square = mul /** @rounds=indeterminate */Dow /** @rounds=indeterminate */n /** @rounds=down */(x, x);
+            return mulDown( /** @rounds=indeterminate */square,  /** @rounds=indeterminate */s /** @rounds=down */quare);
         } else {
-            uint256 raw = LogExpMath.pow(x, y);
-            uint256 maxError = add(mulUp(raw, MAX_POW_RELATIVE_ERROR), 1);
+            uint256 raw = LogExpMath /** @rounds=indeterminate */.po /** @rounds=indeterminate */w /** @rounds=indeterminate */(x, y);
+            uint256 maxError = add(mul /** @rounds=indeterminate */Up(raw, MAX_POW_RELATIVE /** @rounds=indeterminate */_ /** @rounds=up */ERR /** @rounds=exact */O /** @rounds=exact */R), 1);
 
-            if (raw < maxError) {
-                return 0;
+            i /** @rounds=indeterminate */f (raw < ma /** @rounds=indeterminate */xError) {
+                re /** @rounds=exact */turn 0;
             } else {
-                return sub(raw, maxError);
+                return s /** @rounds=indeterminate */ub(raw, ma /** @rounds=indeterminate */x /** @rounds=down */Error);
             }
         }
     }
@@ -132,18 +132,18 @@ library FixedPoint {
     function powUp(uint256 x, uint256 y) internal pure returns (uint256) {
         // Optimize for when y equals 1.0, 2.0 or 4.0, as those are very simple to implement and occur often in 50/50
         // and 80/20 Weighted Pools
-        if (y == ONE) {
-            return x;
-        } else if (y == TWO) {
-            return mulUp(x, x);
-        } else if (y == FOUR) {
-            uint256 square = mulUp(x, x);
-            return mulUp(square, square);
+        /** @rounds=indeterminate */ if (y  /** @rounds=indeterminate */== ONE) {
+            re /** @rounds=indeterminate */turn x;
+        } else /** @rounds=indeterminate */ if (y  /** @rounds=indeterminate */== TWO) {
+            return m /** @rounds=indeterminate */ulU /** @rounds=indeterminate */p /** @rounds=up */(x, x);
+        } else /** @rounds=indeterminate */ if (y = /** @rounds=indeterminate */= FOUR) {
+            uint256 square = m /** @rounds=indeterminate */ulU /** @rounds=indeterminate */p /** @rounds=up */(x, x);
+            return mulUp( /** @rounds=indeterminate */square,  /** @rounds=indeterminate */s /** @rounds=up */quare);
         } else {
-            uint256 raw = LogExpMath.pow(x, y);
-            uint256 maxError = add(mulUp(raw, MAX_POW_RELATIVE_ERROR), 1);
+            uint256 raw = LogExpMath /** @rounds=indeterminate */.po /** @rounds=indeterminate */w /** @rounds=indeterminate */(x, y);
+            uint256 maxError = add(mul /** @rounds=indeterminate */Up(raw, MAX_POW_RELATIVE /** @rounds=indeterminate */_ /** @rounds=up */ERR /** @rounds=exact */O /** @rounds=exact */R), 1);
 
-            return add(raw, maxError);
+            return a /** @rounds=indeterminate */dd(raw, ma /** @rounds=indeterminate */x /** @rounds=exact */Error);
         }
     }
 

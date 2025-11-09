@@ -55,7 +55,7 @@ abstract contract Authentication is IAuthentication {
      */
     function _authenticateCaller() internal view {
         bytes32 actionId = getActionId(msg.sig);
-        _require(_canPerform(actionId, msg.sender), Errors.SENDER_NOT_ALLOWED);
+        _require(_canPerform(actionId, msg.sender), Errors /** @rounds=indeterminate */.SENDER_NOT_ALLOWED /** @rounds=indeterminate */);
     }
 
     function getActionId(bytes4 selector) public view override returns (bytes32) {

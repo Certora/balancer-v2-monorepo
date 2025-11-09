@@ -37,13 +37,13 @@ abstract contract BaseGeneralPool is IGeneralPool, BasePool {
     ) external override onlyVault(swapRequest.poolId) returns (uint256) {
         _beforeSwapJoinExit();
 
-        _validateIndexes(indexIn, indexOut, _getTotalTokens());
-        uint256[] memory scalingFactors = _scalingFactors();
+        _validateIndexes(indexIn /** @rounds=indeterminate */, indexOut /** @rounds=indeterminate */, _getTotalTokens() /** @rounds=indeterminate */);
+        uint256[] memory scalingFactors = _scalingFactors() /** @rounds=indeterminate */;
 
         return
             swapRequest.kind == IVault.SwapKind.GIVEN_IN
-                ? _swapGivenIn(swapRequest, balances, indexIn, indexOut, scalingFactors)
-                : _swapGivenOut(swapRequest, balances, indexIn, indexOut, scalingFactors);
+                ? _swapGivenIn(swapRequest, balances /** @rounds=indeterminate */, indexIn /** @rounds=indeterminate */, indexOut /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */)
+                : _swapGivenOut(swapRequest, balances /** @rounds=indeterminate */, indexIn /** @rounds=indeterminate */, indexOut /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     function _swapGivenIn(
@@ -54,15 +54,15 @@ abstract contract BaseGeneralPool is IGeneralPool, BasePool {
         uint256[] memory scalingFactors
     ) internal virtual returns (uint256) {
         // Fees are subtracted before scaling, to reduce the complexity of the rounding direction analysis.
-        swapRequest.amount = _subtractSwapFeeAmount(swapRequest.amount);
+        swapRequest.amount = _subtractSwapFeeAmount(swapRequest /** @rounds=indeterminate */.amount /** @rounds=indeterminate */) /** @rounds=down */;
 
-        _upscaleArray(balances, scalingFactors);
-        swapRequest.amount = _upscale(swapRequest.amount, scalingFactors[indexIn]);
+        _upscaleArray(balances /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */);
+        swapRequest.amount = _upscale(swapRequest /** @rounds=indeterminate */.amount /** @rounds=indeterminate */, scalingFactors[indexIn] /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
-        uint256 amountOut = _onSwapGivenIn(swapRequest, balances, indexIn, indexOut);
+        uint256 amountOut = _onSwapGivenIn(swapRequest, balances /** @rounds=indeterminate */, indexIn /** @rounds=indeterminate */, indexOut /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // amountOut tokens are exiting the Pool, so we round down.
-        return _downscaleDown(amountOut, scalingFactors[indexOut]);
+        return _downscaleDown(amountOut /** @rounds=indeterminate */, scalingFactors[indexOut] /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     function _swapGivenOut(
@@ -72,16 +72,16 @@ abstract contract BaseGeneralPool is IGeneralPool, BasePool {
         uint256 indexOut,
         uint256[] memory scalingFactors
     ) internal virtual returns (uint256) {
-        _upscaleArray(balances, scalingFactors);
-        swapRequest.amount = _upscale(swapRequest.amount, scalingFactors[indexOut]);
+        _upscaleArray(balances /** @rounds=indeterminate */, scalingFactors /** @rounds=indeterminate */);
+        swapRequest.amount = _upscale(swapRequest /** @rounds=indeterminate */.amount /** @rounds=indeterminate */, scalingFactors[indexOut] /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
-        uint256 amountIn = _onSwapGivenOut(swapRequest, balances, indexIn, indexOut);
+        uint256 amountIn = _onSwapGivenOut(swapRequest, balances /** @rounds=indeterminate */, indexIn /** @rounds=indeterminate */, indexOut /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // amountIn tokens are entering the Pool, so we round up.
-        amountIn = _downscaleUp(amountIn, scalingFactors[indexIn]);
+        amountIn = _downscaleUp(amountIn /** @rounds=indeterminate */, scalingFactors[indexIn] /** @rounds=indeterminate */) /** @rounds=indeterminate */;
 
         // Fees are added after scaling happens, to reduce the complexity of the rounding direction analysis.
-        return _addSwapFeeAmount(amountIn);
+        return _addSwapFeeAmount(amountIn /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     /*
@@ -124,6 +124,6 @@ abstract contract BaseGeneralPool is IGeneralPool, BasePool {
         uint256 indexOut,
         uint256 limit
     ) private pure {
-        _require(indexIn < limit && indexOut < limit, Errors.OUT_OF_BOUNDS);
+        _require(indexIn /** @rounds=indeterminate */ < limit /** @rounds=indeterminate */ && indexOut /** @rounds=indeterminate */ < limit /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.OUT_OF_BOUNDS /** @rounds=indeterminate */);
     }
 }

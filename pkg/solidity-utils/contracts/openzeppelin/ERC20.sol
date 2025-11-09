@@ -56,7 +56,7 @@ contract ERC20 is IERC20 {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _decimals = 18;
+        _decimals = 18 /** @rounds=exact */;
     }
 
     /**
@@ -88,7 +88,7 @@ contract ERC20 is IERC20 {
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
     function decimals() public view returns (uint8) {
-        return _decimals;
+        return _decimals /** @rounds=indeterminate */;
     }
 
     /**
@@ -98,7 +98,7 @@ contract ERC20 is IERC20 {
      * storage values).
      */
     function totalSupply() public view virtual override returns (uint256) {
-        return _totalSupply;
+        return _totalSupply /** @rounds=indeterminate */;
     }
 
     /**
@@ -108,14 +108,14 @@ contract ERC20 is IERC20 {
      * storage values).
      */
     function _setTotalSupply(uint256 value) internal virtual {
-        _totalSupply = value;
+        _totalSupply = value /** @rounds=indeterminate */;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view override returns (uint256) {
-        return _balances[account];
+        return _balances[account] /** @rounds=indeterminate */;
     }
 
     /**
@@ -127,7 +127,7 @@ contract ERC20 is IERC20 {
      * - the caller must have a balance of at least `amount`.
      */
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        _transfer(msg.sender, recipient, amount);
+        _transfer(msg.sender, recipient, amount /** @rounds=indeterminate */);
         return true;
     }
 
@@ -135,7 +135,7 @@ contract ERC20 is IERC20 {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return _allowances[owner][spender];
+        return _allowances[owner][spender] /** @rounds=indeterminate */;
     }
 
     /**
@@ -146,7 +146,7 @@ contract ERC20 is IERC20 {
      * - `spender` cannot be the zero address.
      */
     function approve(address spender, uint256 amount) public virtual override returns (bool) {
-        _approve(msg.sender, spender, amount);
+        _approve(msg.sender, spender, amount /** @rounds=indeterminate */);
         return true;
     }
 
@@ -168,11 +168,11 @@ contract ERC20 is IERC20 {
         address recipient,
         uint256 amount
     ) public virtual override returns (bool) {
-        _transfer(sender, recipient, amount);
+        _transfer(sender, recipient, amount /** @rounds=indeterminate */);
         _approve(
             sender,
             msg.sender,
-            _allowances[sender][msg.sender].sub(amount, Errors.ERC20_TRANSFER_EXCEEDS_ALLOWANCE)
+            _allowances[sender][msg.sender].sub(amount /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ERC20_TRANSFER_EXCEEDS_ALLOWANCE /** @rounds=indeterminate */) /** @rounds=down */
         );
         return true;
     }
@@ -190,7 +190,7 @@ contract ERC20 is IERC20 {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(msg.sender, spender, _allowances[msg.sender][spender].add(addedValue));
+        _approve(msg.sender, spender, _allowances[msg.sender][spender].add(addedValue /** @rounds=indeterminate */) /** @rounds=exact */);
         return true;
     }
 
@@ -212,7 +212,7 @@ contract ERC20 is IERC20 {
         _approve(
             msg.sender,
             spender,
-            _allowances[msg.sender][spender].sub(subtractedValue, Errors.ERC20_DECREASED_ALLOWANCE_BELOW_ZERO)
+            _allowances[msg.sender][spender].sub(subtractedValue /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ERC20_DECREASED_ALLOWANCE_BELOW_ZERO /** @rounds=indeterminate */) /** @rounds=down */
         );
         return true;
     }
@@ -236,14 +236,14 @@ contract ERC20 is IERC20 {
         address recipient,
         uint256 amount
     ) internal virtual {
-        _require(sender != address(0), Errors.ERC20_TRANSFER_FROM_ZERO_ADDRESS);
-        _require(recipient != address(0), Errors.ERC20_TRANSFER_TO_ZERO_ADDRESS);
+        _require(sender != address(0 /** @rounds=exact */), Errors /** @rounds=indeterminate */.ERC20_TRANSFER_FROM_ZERO_ADDRESS /** @rounds=indeterminate */);
+        _require(recipient != address(0 /** @rounds=exact */), Errors /** @rounds=indeterminate */.ERC20_TRANSFER_TO_ZERO_ADDRESS /** @rounds=indeterminate */);
 
-        _beforeTokenTransfer(sender, recipient, amount);
+        _beforeTokenTransfer(sender, recipient, amount /** @rounds=indeterminate */);
 
-        _balances[sender] = _balances[sender].sub(amount, Errors.ERC20_TRANSFER_EXCEEDS_BALANCE);
-        _balances[recipient] = _balances[recipient].add(amount);
-        emit Transfer(sender, recipient, amount);
+        _balances[sender] = _balances[sender].sub(amount /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ERC20_TRANSFER_EXCEEDS_BALANCE /** @rounds=indeterminate */) /** @rounds=down */;
+        _balances[recipient] = _balances[recipient].add(amount /** @rounds=indeterminate */) /** @rounds=exact */;
+        emit Transfer(sender, recipient, amount /** @rounds=indeterminate */);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
@@ -256,11 +256,11 @@ contract ERC20 is IERC20 {
      * - `to` cannot be the zero address.
      */
     function _mint(address account, uint256 amount) internal virtual {
-        _beforeTokenTransfer(address(0), account, amount);
+        _beforeTokenTransfer(address(0 /** @rounds=exact */), account, amount /** @rounds=indeterminate */);
 
-        _setTotalSupply(totalSupply().add(amount));
-        _balances[account] = _balances[account].add(amount);
-        emit Transfer(address(0), account, amount);
+        _setTotalSupply(totalSupply().add(amount /** @rounds=indeterminate */) /** @rounds=exact */);
+        _balances[account] = _balances[account].add(amount /** @rounds=indeterminate */) /** @rounds=exact */;
+        emit Transfer(address(0 /** @rounds=exact */), account, amount /** @rounds=indeterminate */);
     }
 
     /**
@@ -275,13 +275,13 @@ contract ERC20 is IERC20 {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
-        _require(account != address(0), Errors.ERC20_BURN_FROM_ZERO_ADDRESS);
+        _require(account != address(0 /** @rounds=exact */), Errors /** @rounds=indeterminate */.ERC20_BURN_FROM_ZERO_ADDRESS /** @rounds=indeterminate */);
 
-        _beforeTokenTransfer(account, address(0), amount);
+        _beforeTokenTransfer(account, address(0 /** @rounds=exact */), amount /** @rounds=indeterminate */);
 
-        _balances[account] = _balances[account].sub(amount, Errors.ERC20_BURN_EXCEEDS_BALANCE);
-        _setTotalSupply(totalSupply().sub(amount));
-        emit Transfer(account, address(0), amount);
+        _balances[account] = _balances[account].sub(amount /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ERC20_BURN_EXCEEDS_BALANCE /** @rounds=indeterminate */) /** @rounds=down */;
+        _setTotalSupply(totalSupply().sub(amount /** @rounds=indeterminate */) /** @rounds=down */);
+        emit Transfer(account, address(0 /** @rounds=exact */), amount /** @rounds=indeterminate */);
     }
 
     /**
@@ -302,8 +302,8 @@ contract ERC20 is IERC20 {
         address spender,
         uint256 amount
     ) internal virtual {
-        _allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
+        _allowances[owner][spender] = amount /** @rounds=indeterminate */;
+        emit Approval(owner, spender, amount /** @rounds=indeterminate */);
     }
 
     /**
@@ -314,7 +314,7 @@ contract ERC20 is IERC20 {
      * {decimals} to ever change, and may work incorrectly if it does.
      */
     function _setupDecimals(uint8 decimals_) internal {
-        _decimals = decimals_;
+        _decimals = decimals_ /** @rounds=indeterminate */;
     }
 
     /**

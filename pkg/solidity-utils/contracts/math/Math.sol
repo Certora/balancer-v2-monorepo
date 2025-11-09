@@ -27,36 +27,36 @@ library Math {
      * @dev Returns the addition of two unsigned integers of 256 bits, reverting on overflow.
      */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        _require(c >= a, Errors.ADD_OVERFLOW);
-        return c;
+        uint256 c = a /** @rounds=indeterminate */ + b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require(c /** @rounds=indeterminate */ >= a /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.ADD_OVERFLOW /** @rounds=indeterminate */);
+        return c /** @rounds=indeterminate */;
     }
 
     /**
      * @dev Returns the addition of two signed integers, reverting on overflow.
      */
     function add(int256 a, int256 b) internal pure returns (int256) {
-        int256 c = a + b;
-        _require((b >= 0 && c >= a) || (b < 0 && c < a), Errors.ADD_OVERFLOW);
-        return c;
+        int256 c = a /** @rounds=indeterminate */ + b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require((b /** @rounds=indeterminate */ >= 0 /** @rounds=exact */ && c /** @rounds=indeterminate */ >= a /** @rounds=indeterminate */) || (b /** @rounds=indeterminate */ < 0 /** @rounds=exact */ && c /** @rounds=indeterminate */ < a /** @rounds=indeterminate */), Errors /** @rounds=indeterminate */.ADD_OVERFLOW /** @rounds=indeterminate */);
+        return c /** @rounds=indeterminate */;
     }
 
     /**
      * @dev Returns the subtraction of two unsigned integers of 256 bits, reverting on overflow.
      */
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        _require(b <= a, Errors.SUB_OVERFLOW);
-        uint256 c = a - b;
-        return c;
+        _require(b /** @rounds=indeterminate */ <= a /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.SUB_OVERFLOW /** @rounds=indeterminate */);
+        uint256 c = a /** @rounds=indeterminate */ - b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        return c /** @rounds=indeterminate */;
     }
 
     /**
      * @dev Returns the subtraction of two signed integers, reverting on overflow.
      */
     function sub(int256 a, int256 b) internal pure returns (int256) {
-        int256 c = a - b;
-        _require((b >= 0 && c <= a) || (b < 0 && c > a), Errors.SUB_OVERFLOW);
-        return c;
+        int256 c = a /** @rounds=indeterminate */ - b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require((b /** @rounds=indeterminate */ >= 0 /** @rounds=exact */ && c /** @rounds=indeterminate */ <= a /** @rounds=indeterminate */) || (b /** @rounds=indeterminate */ < 0 /** @rounds=exact */ && c /** @rounds=indeterminate */ > a /** @rounds=indeterminate */), Errors /** @rounds=indeterminate */.SUB_OVERFLOW /** @rounds=indeterminate */);
+        return c /** @rounds=indeterminate */;
     }
 
     /**
@@ -81,9 +81,9 @@ library Math {
     }
 
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a * b;
-        _require(a == 0 || c / a == b, Errors.MUL_OVERFLOW);
-        return c;
+        uint256 c = a /** @rounds=indeterminate */ * b /** @rounds=indeterminate */ /** @rounds=indeterminate */;
+        _require(a /** @rounds=indeterminate */ == 0 /** @rounds=exact */ || c /** @rounds=indeterminate */ / a /** @rounds=down */ /** @rounds=indeterminate */ == b /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.MUL_OVERFLOW /** @rounds=indeterminate */);
+        return c /** @rounds=indeterminate */;
     }
 
     function div(
@@ -91,16 +91,16 @@ library Math {
         uint256 b,
         bool roundUp
     ) internal pure returns (uint256) {
-        return roundUp ? divUp(a, b) : divDown(a, b);
+        return roundUp ? divUp(a /** @rounds=indeterminate */, b /** @rounds=indeterminate */) : divDown(a /** @rounds=indeterminate */, b /** @rounds=indeterminate */) /** @rounds=indeterminate */;
     }
 
     function divDown(uint256 a, uint256 b) internal pure returns (uint256) {
-        _require(b != 0, Errors.ZERO_DIVISION);
-        return a / b;
+        _require(b /** @rounds=indeterminate */ != 0 /** @rounds=exact */, Errors /** @rounds=indeterminate */.ZERO_DIVISION /** @rounds=indeterminate */);
+        return a /** @rounds=indeterminate */ / b /** @rounds=down */ /** @rounds=indeterminate */;
     }
 
     function divUp(uint256 a, uint256 b) internal pure returns (uint256 result) {
-        _require(b != 0, Errors.ZERO_DIVISION);
+        _require(b /** @rounds=indeterminate */ != 0 /** @rounds=exact */, Errors /** @rounds=indeterminate */.ZERO_DIVISION /** @rounds=indeterminate */);
 
         // Equivalent to:
         // result = a == 0 ? 0 : 1 + (a - 1) / b;

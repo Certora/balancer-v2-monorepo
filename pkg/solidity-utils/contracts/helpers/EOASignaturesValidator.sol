@@ -31,7 +31,7 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
     }
 
     function getNextNonce(address account) public view override returns (uint256) {
-        return _nextNonce[account];
+        return _nextNonce[account] /** @rounds=indeterminate */;
     }
 
     function _ensureValidSignature(
@@ -40,7 +40,7 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
         bytes memory signature,
         uint256 errorCode
     ) internal {
-        return _ensureValidSignature(account, structHash, signature, type(uint256).max, errorCode);
+        return _ensureValidSignature(account, structHash, signature, type(uint256) /** @rounds=indeterminate */.max /** @rounds=indeterminate */, errorCode /** @rounds=indeterminate */);
     }
 
     function _ensureValidSignature(
@@ -51,19 +51,19 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
         uint256 errorCode
     ) internal {
         bytes32 digest = _hashTypedDataV4(structHash);
-        _require(_isValidSignature(account, digest, signature), errorCode);
+        _require(_isValidSignature(account, digest, signature), errorCode /** @rounds=indeterminate */);
 
         // We could check for the deadline before validating the signature, but this leads to saner error processing (as
         // we only care about expired deadlines if the signature is correct) and only affects the gas cost of the revert
         // scenario, which will only occur infrequently, if ever.
         // The deadline is timestamp-based: it should not be relied upon for sub-minute accuracy.
         // solhint-disable-next-line not-rely-on-time
-        _require(deadline >= block.timestamp, Errors.EXPIRED_SIGNATURE);
+        _require(deadline /** @rounds=indeterminate */ >= block /** @rounds=indeterminate */.timestamp /** @rounds=indeterminate */, Errors /** @rounds=indeterminate */.EXPIRED_SIGNATURE /** @rounds=indeterminate */);
 
         // We only advance the nonce after validating the signature. This is irrelevant for this module, but it can be
         // important in derived contracts that override _isValidSignature (e.g. SignaturesValidator), as we want for
         // the observable state to still have the current nonce as the next valid one.
-        _nextNonce[account] += 1;
+        _nextNonce[account] += 1 /** @rounds=exact */;
     }
 
     function _isValidSignature(
@@ -71,7 +71,7 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
         bytes32 digest,
         bytes memory signature
     ) internal view virtual returns (bool) {
-        _require(signature.length == 65, Errors.MALFORMED_SIGNATURE);
+        _require(signature /** @rounds=indeterminate */.length /** @rounds=indeterminate */ == 65 /** @rounds=exact */, Errors /** @rounds=indeterminate */.MALFORMED_SIGNATURE /** @rounds=indeterminate */);
 
         bytes32 r;
         bytes32 s;
@@ -85,10 +85,10 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
             v := byte(0, mload(add(signature, 0x60)))
         }
 
-        address recoveredAddress = ecrecover(digest, v, r, s);
+        address recoveredAddress = ecrecover(digest, v /** @rounds=indeterminate */, r, s);
 
         // ecrecover returns the zero address on recover failure, so we need to handle that explicitly.
-        return (recoveredAddress != address(0) && recoveredAddress == account);
+        return (recoveredAddress != address(0 /** @rounds=exact */) && recoveredAddress == account);
     }
 
     function _toArraySignature(
@@ -96,7 +96,7 @@ abstract contract EOASignaturesValidator is ISignaturesValidator, EIP712 {
         bytes32 r,
         bytes32 s
     ) internal pure returns (bytes memory) {
-        bytes memory signature = new bytes(65);
+        bytes memory signature = new bytes(65 /** @rounds=exact */);
         // solhint-disable-next-line no-inline-assembly
         assembly {
             mstore(add(signature, 32), r)

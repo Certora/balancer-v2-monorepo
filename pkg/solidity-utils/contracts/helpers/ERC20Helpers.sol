@@ -32,7 +32,7 @@ function _sortTokens(
     IERC20 tokenB
 ) pure returns (IERC20[] memory tokens) {
     bool aFirst = tokenA < tokenB;
-    IERC20[] memory sortedTokens = new IERC20[](2);
+    IERC20[] memory sortedTokens = new IERC20[](2 /** @rounds=exact */);
 
     sortedTokens[0] = aFirst ? tokenA : tokenB;
     sortedTokens[1] = aFirst ? tokenB : tokenA;
@@ -41,28 +41,28 @@ function _sortTokens(
 }
 
 function _insertSorted(IERC20[] memory tokens, IERC20 token) pure returns (IERC20[] memory sorted) {
-    sorted = new IERC20[](tokens.length + 1);
+    sorted = new IERC20[](tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */ + 1 /** @rounds=indeterminate */ /** @rounds=exact */);
 
-    if (tokens.length == 0) {
+    if (tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */ == 0 /** @rounds=exact */) {
         sorted[0] = token;
         return sorted;
     }
 
     uint256 i;
-    for (i = tokens.length; i > 0 && tokens[i - 1] > token; i--) sorted[i] = tokens[i - 1];
-    for (uint256 j = 0; j < i; j++) sorted[j] = tokens[j];
+    for (i = tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */; i /** @rounds=indeterminate */ > 0 /** @rounds=exact */ && tokens[i - 1] > token; i--) sorted[i] = tokens[i - 1];
+    for (uint256 j = 0 /** @rounds=exact */; j /** @rounds=indeterminate */ < i /** @rounds=indeterminate */; j++) sorted[j] = tokens[j];
     sorted[i] = token;
 }
 
 function _findTokenIndex(IERC20[] memory tokens, IERC20 token) pure returns (uint256) {
     // Note that while we know tokens are initially sorted, we cannot assume this will hold throughout
     // the pool's lifetime, as pools with mutable tokens can append and remove tokens in any order.
-    uint256 tokensLength = tokens.length;
-    for (uint256 i = 0; i < tokensLength; i++) {
+    uint256 tokensLength = tokens /** @rounds=indeterminate */.length /** @rounds=indeterminate */;
+    for (uint256 i = 0 /** @rounds=exact */; i /** @rounds=indeterminate */ < tokensLength /** @rounds=indeterminate */; i++) {
         if (tokens[i] == token) {
-            return i;
+            return i /** @rounds=indeterminate */;
         }
     }
 
-    _revert(Errors.INVALID_TOKEN);
+    _revert(Errors /** @rounds=indeterminate */.INVALID_TOKEN /** @rounds=indeterminate */);
 }
