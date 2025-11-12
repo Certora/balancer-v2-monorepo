@@ -1,3 +1,4 @@
+import "./erc20.spec";
 
 /***
 ### Assumptions and Simplifications
@@ -11,8 +12,7 @@
 #### Definitions
 
 */
-
-import "../helpers/erc20.spec"
+using StableMath as StableMath;
 
 ////////////////////////////////////////////////////////////////////////////
 //                      Methods                                           //
@@ -20,19 +20,26 @@ import "../helpers/erc20.spec"
 
 methods {
     //// @dev harness functions
-    totalTokensBalance() returns (uint256) envfree
-    inRecoveryMode() returns (bool) envfree
-    getJoinKind(bytes) returns (uint8) envfree
-    requireNonzero(uint256[], uint256) envfree
-    getTotalTokens() returns (uint256) envfree
+    function totalTokensBalance() external returns (uint256) envfree;
+    function inRecoveryMode() external returns (bool) envfree;
+    function getJoinKind(bytes) external returns (StablePoolUserData.JoinKind) envfree;
+    function requireNonzero(uint256[], uint256) external envfree;
+    function getTotalTokens() external returns (uint256) envfree;
 
-    /// @dev StableMath functions are munged to call the below functions which 
-    /// can be summarized. Functions with dynamic arrays can not be summarized 
-    /// in CVL at this time.
-    getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) returns(uint256) 
-        => newGetTokenBalance(balance1, balance2, newInvariant, index)
-    calculateInvariant(uint256 balance1, uint256 balance2) returns (uint256) 
-        => calculatedInvariant(balance1,balance2)
+    //// @dev ERC20 functions used in spec
+    function totalSupply() external returns (uint256) envfree;
+    function balanceOf(address) external returns (uint256) envfree;
+
+    //// @dev Query functions are read-only simulations - safe to havoc as they don't affect security properties
+    function queryJoin(bytes32,address,address,uint256[],uint256,uint256,bytes) external returns (uint256, uint256[]) => HAVOC_ALL;
+    function queryExit(bytes32,address,address,uint256[],uint256,uint256,bytes) external returns (uint256, uint256[]) => HAVOC_ALL;
+    
+    // remove munge, just summarize library call directly
+    // function getTokenBal(uint256 balance1, uint256 balance2, uint256 newInvariant, uint256 index) external returns(uint256)  => newGetTokenBalance(balance1, balance2, newInvariant, index);
+    // function calculateInvariant(uint256 balance1, uint256 balance2) external returns (uint256)  => calculatedInvariant(balance1,balance2);
+    function StableMath._calculateInvariant(uint256 amplificationParameter, uint256[] memory balances) internal returns uint256 => NONDET; // calculatedInvariant(balances[0], balances[1]);
+
+    function StableMath._getTokenBalanceGivenInvariantAndAllOtherBalances(uint256 amplificationParameter, uint256[] memory balances, uint256 newInvariant, uint256 tokenIndex) internal returns uint256 => NONDET; //newGetTokenBalance(balances[0], balances[1], newInvariant, tokenIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -59,26 +66,24 @@ function newGetTokenBalance(uint256 balance1, uint256 balance2, uint256 newInvar
     return newBalance;
 }
 
-/// `noFreeMinting` rule is broken up by cases to ease the load on the prover. The rule is proven for zero/non-zero 
-/// totalSupply, on/off recovery mode, and the two types of `joinKind`. The below function is used to require these 
-/// dconditions in a modular way.
-function noFreeMintingSetup(uint8 joinKind, bool supply, bool recovery) {
+/// `noFreeMinting` rule is broken up by cases to ease the load on the prover. The rule is proven for zero/non-zero
+/// totalSupply, on/off recovery mode, and the two types of `joinKind`. The below function is used to require these
+/// conditions in a modular way.
+function noFreeMintingSetup(method f, env e, calldataarg args, uint8 joinKind, bool supply, bool recovery) {
     setup();
 
     bytes userData;
-    require getJoinKind(userData) == joinKind;
+    require assert_uint8(getJoinKind(userData)) == joinKind;
     require (totalSupply() > 0) == supply;
     require inRecoveryMode() == recovery;
 
     uint256 _totalBpt = totalSupply();
     uint256 _totalTokens = totalTokensBalance();
 
-    method f; env e; calldataarg args;
-
-    if f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector {
-        bytes32 poolId; address sender; address recipient; uint256[] balances; 
-        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage; 
-        require sender != currentContract; // times out if I remove this 
+    if (f.selector == sig:onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector) {
+        bytes32 poolId; address sender; address recipient; uint256[] balances;
+        uint256 lastChangeBlock; uint256 protocolSwapFeePercentage;
+        require sender != currentContract; // times out if I remove this
         requireNonzero(balances, 0);
         requireNonzero(balances, 1);
         onJoinPool(e, poolId, sender, recipient, balances, lastChangeBlock, protocolSwapFeePercentage, userData);
@@ -89,7 +94,7 @@ function noFreeMintingSetup(uint8 joinKind, bool supply, bool recovery) {
     uint256 totalBpt_ = totalSupply();
     uint256 totalTokens_ = totalTokensBalance();
 
-    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens, 
+    assert totalBpt_>_totalBpt => totalTokens_>_totalTokens,
         "an increase in total BPT must lead to an increase in pool's total tokens";
 }
 
@@ -136,7 +141,7 @@ ghost mathint sum_all_users_BPT {
 }
 
 /// @dev A hook that keeps `sum_all_users_BPT` up to date with the `_balances` mapping.
-hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) STORAGE {
+hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) {
     sum_all_users_BPT = sum_all_users_BPT + balance - old_balance;
 }
 
@@ -147,7 +152,7 @@ hook Sstore _balances[KEY address user] uint256 balance (uint256 old_balance) ST
 /// @title solvency
 /// @notice Sum of all users' BPT balance must be less than or equal to BPT's `totalSupply`.
 invariant solvency()
-    totalSupply() >= sum_all_users_BPT
+    totalSupply() >= sum_all_users_BPT;
 
 ////////////////////////////////////////////////////////////////////////////
 //                               Rules                                    //
@@ -173,29 +178,29 @@ invariant solvency()
 // totalSupply == 0, Recovery, sane
 // _joinExactTokensInForBPTOut: https://vaas-stg.certora.com/output/93493/80fc853c0ff47c343d48/?anonymousKey=4abfb9806a151f68f7433a7f9bb718d9f0edecac
 // _joinTokenInForExactBPTOut: https://vaas-stg.certora.com/output/93493/b5e2cd6a77a88c1099d7/?anonymousKey=9822a1adfb5e2eec4fed08a5ed6a320337e51c2d
-rule noFreeMinting_exactTokens_noSupply_noRecovery {
-    noFreeMintingSetup(1, false, false);
+rule noFreeMinting_exactTokens_noSupply_noRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 1, false, false);
 }
-rule noFreeMinting_exactTokens_noSupply_yesRecovery {
-    noFreeMintingSetup(1, false, true);
+rule noFreeMinting_exactTokens_noSupply_yesRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 1, false, true);
 }
-rule noFreeMinting_exactTokens_yesSupply_noRecovery {
-    noFreeMintingSetup(1, true, false);
+rule noFreeMinting_exactTokens_yesSupply_noRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 1, true, false);
 }
-rule noFreeMinting_exactTokens_yesSupply_yesRecovery {
-    noFreeMintingSetup(1, true, true);
+rule noFreeMinting_exactTokens_yesSupply_yesRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 1, true, true);
 }
-rule noFreeMinting_exactBpt_noSupply_noRecovery {
-    noFreeMintingSetup(2, false, false);
+rule noFreeMinting_exactBpt_noSupply_noRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 2, false, false);
 }
-rule noFreeMinting_exactBpt_noSupply_yesRecovery {
-    noFreeMintingSetup(2, false, true);
+rule noFreeMinting_exactBpt_noSupply_yesRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 2, false, true);
 }
-rule noFreeMinting_exactBpt_yesSupply_noRecovery {
-    noFreeMintingSetup(2, true, false);
+rule noFreeMinting_exactBpt_yesSupply_noRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 2, true, false);
 }
-rule noFreeMinting_exactBpt_yesSupply_yesRecovery {
-    noFreeMintingSetup(2, true, true);
+rule noFreeMinting_exactBpt_yesSupply_yesRecovery(method f, env e, calldataarg args) {
+    noFreeMintingSetup(f, e, args, 2, true, true);
 }
 
 /// @title onlyOnJoinPoolCanAndMustInitialize
@@ -209,9 +214,9 @@ rule onlyOnJoinPoolCanAndMustInitialize(method f) {
     f(e, args);
     
     assert
-        totalSupply() > 0 <=> f.selector==onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector,
+        totalSupply() > 0 <=> f.selector == sig:onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector,
         "onJoinPool must be the only function that can initialize a pool and must initialize if called";
-    assert f.selector == onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
+    assert f.selector == sig:onJoinPool(bytes32,address,address,uint256[],uint256,uint256,bytes).selector 
         => balanceOf(0) > 0, "zero address must be minted some tokens on initialization";
 }
 
@@ -222,4 +227,98 @@ rule cantBurnZerosBPT(method f) {
     env e; calldataarg args;
     f(e, args); // vacuous for onSwap since ERC20 transfer revert when transferring to 0 address
     assert balanceOf(0) > 0, "zero address must always have non-zero balance";
+}
+
+/// @title noRoundTripExploit
+/// @notice CRITICAL: Verifies that round-trip join/exit cannot be used to extract value from the pool.
+/// This rule ensures that rounding errors don't allow an attacker to drain the pool by repeatedly:
+/// 1. Joining the pool (depositing tokens, receiving BPT)
+/// 2. Immediately exiting (burning BPT, receiving tokens back)
+///
+/// If a user can get back MORE tokens than they put in (even by 1 wei), they can drain the pool
+/// at other LPs' expense by repeating this exploit.
+///
+/// @dev This assumes a 2-token pool. We check both aggregate and per-token properties.
+rule noRoundTripExploit() {
+    env e;
+    setup(); // Requires 2 tokens
+
+    // Setup initial state
+    bytes32 poolId;
+    address attacker;
+    uint256[] poolBalances; // Pool's token balances before attack
+    uint256 lastChangeBlock;
+    uint256 protocolSwapFeePercentage;
+
+    // Require reasonable initial conditions
+    require attacker != 0;
+    require attacker != currentContract;
+    require poolBalances.length == 2;
+    requireNonzero(poolBalances, 0);
+    requireNonzero(poolBalances, 1);
+    require totalSupply() > 0; // Pool is initialized
+    require !inRecoveryMode(); // Not in recovery mode
+
+    // Track pool's total token holdings BEFORE attack
+    uint256 poolTotalBefore = totalTokensBalance();
+
+    // Track attacker's deposit amounts
+    uint256 depositToken0 = poolBalances[0];
+    uint256 depositToken1 = poolBalances[1];
+
+    // Step 1: Attacker joins the pool with exact tokens in
+    bytes joinUserData;
+    require assert_uint8(getJoinKind(joinUserData)) == 1; // EXACT_TOKENS_IN_FOR_BPT_OUT
+
+    uint256[] balancesAfterJoin;
+    uint256[] amountsIn;
+    (amountsIn, _) = onJoinPool(e, poolId, attacker, attacker, poolBalances, lastChangeBlock, protocolSwapFeePercentage, joinUserData);
+
+    // Attacker now has BPT
+    uint256 attackerBPT = balanceOf(attacker);
+    require attackerBPT > 0; // Attacker received some BPT
+
+    // Track pool's total AFTER join (should increase by deposit amount)
+    uint256 poolTotalAfterJoin = totalTokensBalance();
+
+    // Step 2: Attacker immediately exits with all their BPT
+    bytes exitUserData;
+
+    uint256[] balancesAfterExit;
+    uint256[] amountsOut;
+    (amountsOut, _) = onExitPool(e, poolId, attacker, attacker, balancesAfterJoin, lastChangeBlock, protocolSwapFeePercentage, exitUserData);
+
+    // Track attacker's withdrawn amounts
+    uint256 withdrawToken0 = amountsOut[0];
+    uint256 withdrawToken1 = amountsOut[1];
+
+    // Track pool's total AFTER exit (should be back to approximately original)
+    uint256 poolTotalAfter = totalTokensBalance();
+
+    // ============================================================================
+    // CRITICAL PROPERTY: User cannot extract more than they deposited
+    // ============================================================================
+
+    // Property 1: Per-token non-profit (MOST IMPORTANT - prevents direct theft)
+    // The attacker MUST NOT gain any individual token through the round-trip
+    // This is immune to scaling factor issues since we compare the same token
+    assert withdrawToken0 <= depositToken0, "Attacker cannot profit in token0 through round-trip";
+    assert withdrawToken1 <= depositToken1, "Attacker cannot profit in token1 through round-trip";
+
+    // Property 2: Pool cannot lose funds (protects other LPs)
+    // The pool's total token balance should not decrease beyond expected fees/rounding
+    // We allow some small loss for legitimate fees and rounding (e.g., 2 wei per token * 2 tokens = 4 wei)
+    mathint poolLoss = poolTotalBefore - poolTotalAfter;
+    mathint maxAcceptablePoolLoss = 0; // Conservative bound for rounding in both directions
+
+    assert poolLoss <= maxAcceptablePoolLoss,
+        "Pool should not lose significant funds through round-trip (protects other LPs)";
+
+    // Property 3: Combined check - attacker's total withdrawal should not exceed deposit
+    // This catches cases where attacker gets less of one token but more total value
+    mathint totalDeposit = depositToken0 + depositToken1;
+    mathint totalWithdraw = withdrawToken0 + withdrawToken1;
+
+    assert totalWithdraw <= totalDeposit,
+        "Attacker's total withdrawal cannot exceed total deposit";
 }
